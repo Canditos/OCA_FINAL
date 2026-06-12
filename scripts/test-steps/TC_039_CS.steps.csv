@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Ensure SUT is offline,Network,— offline —,SUT offline
+2,Start and stop a transaction entirely while offline,EV,-,Full offline transaction lifecycle
+3,Restore network connection,Network,— reconnect —,SUT reconnects
+4,SUT sends StartTransaction (offline started),SUT → CSMS,"StartTransaction(connectorId, idTag, ...)",Start communicated after reconnect
+5,CSMS accepts,CSMS → SUT,"StartTransaction(Accepted, transactionId)",Transaction accepted
+6,SUT sends StopTransaction (offline stopped),SUT → CSMS,"StopTransaction(transactionId, reason=Local, meterStop)",Stop communicated after reconnect

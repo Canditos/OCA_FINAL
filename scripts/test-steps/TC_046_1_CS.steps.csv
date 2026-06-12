@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ReserveNow to reserve a specific connector,CSMS → SUT,"ReserveNow(connectorId, reservationId=1, expiryDate=..., idTag)",Reservation request sent
+2,SUT accepts reservation,SUT → CSMS,ReserveNow.Response(status=Accepted),Connector reserved
+3,SUT reports connector as Reserved,SUT → CSMS,"StatusNotification(connectorId, Reserved)",Status Reserved
+4,EV driver plugs cable and presents reserved IdTag,EV,-,Reserved IdTag presented
+5,SUT authorizes (IdTag matches reservation) and starts transaction,SUT → CSMS,"Authorize(idTag) + StartTransaction(connectorId, idTag, reservationId=1, meterStart)",Transaction started with reservationId
+6,CSMS accepts,CSMS → SUT,"StartTransaction(Accepted, transactionId)",Transaction active on reserved connector

@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,EV driver plugs cable and presents an invalid/unknown IdTag,EV,-,Invalid IdTag presented
+2,SUT sends Authorize with the invalid IdTag,SUT → CSMS,Authorize(invalidIdTag),Authorize sent with invalid IdTag
+3,CSMS rejects the authorization,CSMS → SUT,Authorize(Invalid),Authorization rejected
+4,SUT informs user and does NOT start transaction,SUT,-,Transaction NOT started; user notified of invalid IdTag

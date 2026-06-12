@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends SignedUpdateFirmware with valid signature,CSMS → SUT,"SignedUpdateFirmware(location=ftp://..., retrieveDate=..., signature=valid)",Secure firmware update request sent
+2,SUT validates signature and starts download,SUT → CSMS,SignedUpdateFirmware.Response(status=Accepted),"Update accepted, signature valid"
+3,SUT sends SignedFirmwareStatusNotification as download progresses,SUT → CSMS,SignedFirmwareStatusNotification(status=Downloading),Firmware download in progress
+4,SUT completes download,SUT → CSMS,SignedFirmwareStatusNotification(status=Downloaded),Download completed
+5,SUT installs firmware,SUT → CSMS,SignedFirmwareStatusNotification(status=Installing),Installation in progress
+6,SUT completes installation,SUT → CSMS,SignedFirmwareStatusNotification(status=Installed),Secure firmware update completed

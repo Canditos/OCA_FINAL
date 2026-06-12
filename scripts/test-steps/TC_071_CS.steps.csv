@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Configure ClockAlignedDataInterval (e.g. 900s),Pre-condition,"ChangeConfiguration(ClockAlignedDataInterval, 900)",Clock-aligned interval configured
+2,Start a charging session,Pre-condition,StartTransaction,Transaction active
+3,SUT sends clock-aligned meter values at each 15-min boundary,SUT → CSMS,"MeterValues(connectorId, transactionId, context=Sample.Clock, measurand[]=Energy.Active.Import.Register)",Clock-aligned meter values received at expected intervals
+4,Verify meter values align to clock boundaries,CSMS (verify),— verify —,Timestamps are aligned to 15-min clock boundaries

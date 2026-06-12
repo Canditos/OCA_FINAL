@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Ensure no transaction is active,Pre-condition,-,No active transaction
+2,CSMS sends SetChargingProfile with TxProfile purpose (but no transaction),CSMS → SUT,"SetChargingProfile(chargingProfile={purpose=TxProfile, ...})",TxProfile sent without transaction
+3,SUT rejects because no transaction exists for TxProfile,SUT → CSMS,SetChargingProfile.Response(status=Rejected),Profile rejected (no transaction)

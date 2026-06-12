@@ -1,0 +1,10 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Set connector to Inoperative via ChangeAvailability,CSMS → SUT,"ChangeAvailability(connectorId, Inoperative)",Connector set to Inoperative
+2,SUT confirms the availability change,SUT → CSMS,ChangeAvailability.Response(status=Accepted/Scheduled),Change accepted
+3,SUT reports Inoperative status,SUT → CSMS,"StatusNotification(connectorId, Inoperative)",Status Inoperative
+4,CSMS sends Reset(Hard),CSMS → SUT,Reset(Hard),Hard reset request sent
+5,SUT acknowledges reset,SUT → CSMS,Reset.Response(status=Accepted),Reset accepted
+6,SUT reboots,SUT (reboot),— SUT powers off and on —,SUT reboots
+7,SUT reconnects and sends BootNotification,SUT → CSMS,BootNotification,SUT registers after reboot
+8,CSMS accepts boot,CSMS → SUT,BootNotification(Accepted),Boot accepted
+9,SUT reports connector status,SUT → CSMS,"StatusNotification(connectorId, Available)",Connectors available after reboot

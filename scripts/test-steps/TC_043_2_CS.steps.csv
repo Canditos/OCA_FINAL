@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends SendLocalList with an old/stale version number,CSMS → SUT,"SendLocalList(listVersion=0, updateType=Full, ...) when current is version 5",SendLocalList with old version
+2,SUT returns VersionMismatch,SUT → CSMS,SendLocalList.Response(status=VersionMismatch),Version mismatch detected and reported

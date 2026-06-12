@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Set up multiple charging profiles at different stack levels,Pre-condition,SetChargingProfile (multiple),Multiple profiles active at different stack levels
+2,CSMS sends GetCompositeSchedule for a connector,CSMS → SUT,"GetCompositeSchedule(connectorId=1, duration=86400)",Get composite schedule request
+3,SUT returns the composite schedule combining all profiles,SUT → CSMS,"GetCompositeSchedule.Response(status=Accepted, schedule=[...])",Composite schedule reflects the merged profiles (stacked)

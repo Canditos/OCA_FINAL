@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends GetDiagnostics with upload location,CSMS → SUT,"GetDiagnostics(location=ftp://..., retries=3, retryInterval=300)",Get diagnostics request sent
+2,SUT starts uploading diagnostics and reports Uploading,SUT → CSMS,DiagnosticsStatusNotification(status=Uploading),Diagnostics upload started
+3,SUT completes upload and reports Uploaded,SUT → CSMS,DiagnosticsStatusNotification(status=Uploaded),Diagnostics upload completed successfully

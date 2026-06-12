@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a charging session (transaction active),Pre-condition,StartTransaction,Transaction active
+2,Simulate network connection loss (CSMS disconnects),Network,— WebSocket disconnect —,SUT loses connection to CSMS
+3,SUT continues charging and queues meter values locally,SUT (offline),— local queuing —,Meter values queued during offline period
+4,Restore network connection,Network,— WebSocket reconnect —,SUT reconnects to CSMS
+5,SUT sends queued meter values to CSMS,SUT → CSMS,"MeterValues(connectorId, transactionId, ...)",Queued meter values sent after reconnection

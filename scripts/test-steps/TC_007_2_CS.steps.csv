@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Populate the authorization cache on SUT (prior successful auth),Pre-condition,Authorize(accepted),IdTag is cached
+2,CSMS sends RemoteStartTransaction with a cached IdTag,CSMS → SUT,"RemoteStartTransaction(connectorId, idTag)",Remote start request sent with cached IdTag
+3,SUT uses cached authorization (no Authorize to CSMS),SUT (internal),— cache lookup —,SUT authorizes locally
+4,SUT locks connector and starts transaction,SUT → CSMS,"StartTransaction(connectorId, idTag, meterStart)",Transaction started
+5,CSMS accepts,CSMS → SUT,"StartTransaction(Accepted, transactionId)",Transaction active

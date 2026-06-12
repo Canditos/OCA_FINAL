@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a charging session with non-fixed cable,Pre-condition,StartTransaction,"Transaction active, non-fixed cable"
+2,CSMS sends UnlockConnector,CSMS → SUT,UnlockConnector(connectorId),Unlock request sent during active transaction
+3,SUT stops the transaction first,SUT → CSMS,"StopTransaction(transactionId, reason=UnlockCommand, meterStop)",Transaction stopped due to unlock command
+4,SUT unlocks the connector,SUT,-,Connector unlocked
+5,SUT responds with Unlocked status,SUT → CSMS,UnlockConnector.Response(status=Unlocked),Unlock successful after stopping transaction

@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a transaction on a connector (Occupied),Pre-condition,StartTransaction,Connector occupied
+2,CSMS sends ReserveNow for the occupied connector,CSMS → SUT,"ReserveNow(connectorId, reservationId=1, ...)",Reserve request on occupied connector
+3,SUT rejects reservation with status Occupied,SUT → CSMS,ReserveNow.Response(status=Occupied),Reservation rejected (connector occupied)

@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Configure MeterValueSampleInterval (e.g. 60s),Pre-condition,"ChangeConfiguration(MeterValueSampleInterval, 60)",Sampling interval configured
+2,Start a charging session,Pre-condition,StartTransaction,Transaction active
+3,SUT sends sampled meter values at configured interval during charging,SUT → CSMS,"MeterValues(connectorId, transactionId, context=Sample.Periodic, measurand[]=Energy.Active.Import.Register)",Sampled meter values received periodically
+4,"Verify meter values contain valid measurands (energy, power, etc.)",CSMS (verify),— verify —,Meter values contain valid measurands with correct units and values

@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,EV driver presents IdTag (identification first),EV,-,IdTag presented
+2,SUT sends Authorize,SUT → CSMS,Authorize(idTag),Authorize request sent
+3,CSMS authorizes the IdTag,CSMS → SUT,Authorize(Accepted),IdTag authorized
+4,EV driver does NOT plug the cable within ConnectionTimeOut period,EV (timeout),— wait for ConnectionTimeOut —,ConnectionTimeOut expires
+5,SUT aborts the pending session and returns connector to Available,SUT → CSMS,"StatusNotification(connectorId, Available)",Connector returns to Available after timeout

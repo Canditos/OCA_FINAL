@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends SetChargingProfile with TxDefaultProfile,CSMS → SUT,"SetChargingProfile(connectorId=0, chargingProfile={purpose=TxDefaultProfile, stackLevel=1, chargingProfileRate[...]})",TxDefaultProfile sent
+2,SUT accepts the charging profile,SUT → CSMS,SetChargingProfile.Response(status=Accepted),Profile accepted
+3,CSMS requests composite schedule for a connector,CSMS → SUT,"GetCompositeSchedule(connectorId=1, duration=3600)",Get composite schedule request
+4,SUT returns the composite schedule based on TxDefaultProfile,SUT → CSMS,"GetCompositeSchedule.Response(status=Accepted, schedule=[...])",Composite schedule returned matching TxDefaultProfile

@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends UpdateFirmware with invalid download location,CSMS → SUT,"UpdateFirmware(location=ftp://invalid-uri, ...)",Firmware update with bad URI
+2,SUT attempts to download but fails,SUT,— download fails —,Firmware download fails
+3,SUT reports DownloadFailed,SUT → CSMS,FirmwareStatusNotification(status=DownloadFailed),Download failed reported

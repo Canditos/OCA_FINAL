@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends RemoteStartTransaction before cable is plugged,CSMS → SUT,"RemoteStartTransaction(connectorId, idTag)",Remote start request sent before plugin
+2,SUT may send Authorize or wait for cable,SUT → CSMS,Authorize(idTag) [optional],SUT handles remote start request
+3,EV driver plugs cable into the connector,EV,-,Cable plugged in after remote start
+4,SUT detects plug and sets Preparing status,SUT → CSMS,"StatusNotification(connectorId, Preparing)",Status set to Preparing
+5,SUT locks connector and starts transaction,SUT → CSMS,"StartTransaction(connectorId, idTag, meterStart)",Transaction started
+6,CSMS accepts,CSMS → SUT,"StartTransaction(Accepted, transactionId)",Transaction active

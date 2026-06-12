@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ReserveNow,CSMS → SUT,"ReserveNow(connectorId, reservationId=1, ...)",Reservation sent
+2,SUT accepts,SUT → CSMS,ReserveNow.Response(Accepted),Reserved
+3,CSMS sends RemoteStartTransaction with reserved IdTag,CSMS → SUT,"RemoteStartTransaction(connectorId, idTag)",Remote start on reserved connector
+4,SUT authorizes and starts transaction,SUT → CSMS,"StartTransaction(connectorId, idTag, reservationId=1, meterStart)",Transaction started via remote start on reserved connector

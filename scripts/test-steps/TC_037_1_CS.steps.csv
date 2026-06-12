@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Ensure SUT is offline (no connection to CSMS),Network,— offline —,SUT not connected
+2,EV driver plugs cable and presents a valid known IdTag,EV,-,Valid IdTag presented while offline
+3,SUT starts transaction locally (offline authorization),SUT (offline),— local start —,Transaction started while offline
+4,Restore network connection,Network,— reconnect —,SUT reconnects to CSMS
+5,SUT sends StartTransaction to CSMS (for the offline-started transaction),SUT → CSMS,"StartTransaction(connectorId, idTag, meterStart, offline=true)",StartTransaction communicated after reconnection
+6,CSMS accepts the transaction,CSMS → SUT,"StartTransaction(Accepted, transactionId)",Transaction accepted retrospectively

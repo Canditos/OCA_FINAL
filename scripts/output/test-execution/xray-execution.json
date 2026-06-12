@@ -1,0 +1,576 @@
+{
+  "info": {
+    "summary": "OCPP 1.6 Certification Execution",
+    "description": "OCPP 1.6 Certification Test Execution\nGenerated: 2026-05-14T21:46:08.213Z\nTotal Tests: 113",
+    "version": "1.0",
+    "user": "Certification Pipeline",
+    "startDate": "2026-05-14"
+  },
+  "tests": [
+    {
+      "testKey": "[OCPP 1.6] tc_bi_restore_configuration — Restore all configuration keys to their default values",
+      "status": "TODO",
+      "comment": "Suite: MAINTENANCE | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] tc_bi_stop_transactions — Stop all active transactions before proceeding",
+      "status": "TODO",
+      "comment": "Suite: MAINTENANCE | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] tc_bi_clear_cache — Clear the local authorization cache",
+      "status": "TODO",
+      "comment": "Suite: MAINTENANCE | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] tc_bi_clear_local_auth_list — Clear the local authorization list",
+      "status": "TODO",
+      "comment": "Suite: MAINTENANCE | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] tc_bi_restore_availability — Restore all connectors to Available state",
+      "status": "TODO",
+      "comment": "Suite: MAINTENANCE | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] tc_bi_reset_hard — Perform a hard reset of the charge point",
+      "status": "TODO",
+      "comment": "Suite: MAINTENANCE | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_023_4_CS — Start local Charging Session - Authorize invalid",
+      "status": "TODO",
+      "comment": "Suite: Authorization | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_023_5_CS — Start remote Charging Session - Authorize invalid",
+      "status": "TODO",
+      "comment": "Suite: Authorization | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_024_CS — Start Charging Session - Lock Failure",
+      "status": "TODO",
+      "comment": "Suite: Authorization | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_061_1_CS — Clear Authorization Data in Authorization Cache - Local",
+      "status": "TODO",
+      "comment": "Suite: Authorization | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_061_2_CS — Clear Authorization Data in Authorization Cache - Remote",
+      "status": "TODO",
+      "comment": "Suite: Authorization | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_062_CS — Data Transfer to a Charge Point",
+      "status": "TODO",
+      "comment": "Suite: DataTransfer | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_044_1_CS — Firmware Update - Download and Install",
+      "status": "TODO",
+      "comment": "Suite: FirmwareManagement | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_044_2_CS — Firmware Update - Download Failed",
+      "status": "TODO",
+      "comment": "Suite: FirmwareManagement | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_044_3_CS — Firmware Update - Installation Failed",
+      "status": "TODO",
+      "comment": "Suite: FirmwareManagement | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_045_1_CS — Get Diagnostics",
+      "status": "TODO",
+      "comment": "Suite: FirmwareManagement | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_045_2_CS — Get Diagnostics - Upload Failed",
+      "status": "TODO",
+      "comment": "Suite: FirmwareManagement | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_008_1_CS — Regular Start Charging Session - Id in Local Authorization List",
+      "status": "TODO",
+      "comment": "Suite: LocalAuthList | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_008_2_CS — Remote Start Charging Session - Id in Local Authorization List",
+      "status": "TODO",
+      "comment": "Suite: LocalAuthList | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_042_1_CS — Get Local List Version (not supported)",
+      "status": "TODO",
+      "comment": "Suite: LocalAuthList | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_042_2_CS — Get Local List Version (empty)",
+      "status": "TODO",
+      "comment": "Suite: LocalAuthList | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_043_1_CS — Send Local Authorization List - NotSupported",
+      "status": "TODO",
+      "comment": "Suite: LocalAuthList | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_043_2_CS — Send Local Authorization List - VersionMismatch",
+      "status": "TODO",
+      "comment": "Suite: LocalAuthList | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_043_3_CS — Send Local Authorization List - Failed",
+      "status": "TODO",
+      "comment": "Suite: LocalAuthList | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_043_CS — Send Local Authorization List",
+      "status": "TODO",
+      "comment": "Suite: LocalAuthList | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_070_CS — Sampled Meter Values",
+      "status": "TODO",
+      "comment": "Suite: MeterValues | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_071_CS — Clock-aligned Meter Values",
+      "status": "TODO",
+      "comment": "Suite: MeterValues | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_001_CS — Cold Boot Charge Point",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_002_CS — Cold Boot Charge Point - Pending",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_013_CS — Hard Reset Without transaction",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_014_CS — Soft Reset Without Transaction",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_015_CS — Hard Reset With Transaction",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_016_CS — Soft Reset With Transaction",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_019_CS — Retrieve configuration",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_021_CS — Change/set Configuration",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_032_1_CS — Power failure boot charging point - stop transactions before going down",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_032_2_CS — Power failure boot charging point - stop transactions",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_034_CS — Power Failure with Unavailable Status",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_040_1_CS — Configuration key - NotSupported",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_040_2_CS — Configuration key - Invalid value",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_041_CS — Fault Behavior",
+      "status": "TODO",
+      "comment": "Suite: Provisioning | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_010_CS — Remote Start Charging Session - Cable Plugged in First",
+      "status": "TODO",
+      "comment": "Suite: RemoteControl | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_011_1_CS — Remote Start Charging Session - Remote Start First",
+      "status": "TODO",
+      "comment": "Suite: RemoteControl | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_011_2_CS — Remote Start Charging Session - Time Out",
+      "status": "TODO",
+      "comment": "Suite: RemoteControl | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_012_CS — Remote Stop Charging Session",
+      "status": "TODO",
+      "comment": "Suite: RemoteControl | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_017_1_CS — Unlock connector - no charging session (Not fixed cable)",
+      "status": "TODO",
+      "comment": "Suite: RemoteControl | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_017_2_CS — Unlock connector - no charging session (Fixed cable)",
+      "status": "TODO",
+      "comment": "Suite: RemoteControl | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_018_1_CS — Unlock Connector - With Charging Session (Not fixed cable)",
+      "status": "TODO",
+      "comment": "Suite: RemoteControl | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_018_2_CS — Unlock Connector - With Charging Session (Fixed cable)",
+      "status": "TODO",
+      "comment": "Suite: RemoteControl | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_026_CS — Remote Start Charging Session - Rejected",
+      "status": "TODO",
+      "comment": "Suite: RemoteControl | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_027_CS — Remote start transaction - connector id shall not be 0",
+      "status": "TODO",
+      "comment": "Suite: RemoteControl | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_028_CS — Remote Stop Transaction - Rejected",
+      "status": "TODO",
+      "comment": "Suite: RemoteControl | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_030_CS — Unlock Connector - Unlock Failure",
+      "status": "TODO",
+      "comment": "Suite: RemoteControl | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_031_CS — Unlock Connector - Unknown Connector",
+      "status": "TODO",
+      "comment": "Suite: RemoteControl | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_054_CS — Trigger Message",
+      "status": "TODO",
+      "comment": "Suite: RemoteTrigger | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_055_CS — Trigger Message - Rejected",
+      "status": "TODO",
+      "comment": "Suite: RemoteTrigger | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_046_1_CS — Reservation of a Connector - Local start transaction",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_046_2_CS — Reservation of a Connector - Remote start transaction",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_047_CS — Reservation of a Connector - Expire",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_048_1_CS — Reservation of a Connector - Faulted",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_048_2_CS — Reservation of a Connector - Occupied",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_048_3_CS — Reservation of a Connector - Unavailable",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_048_4_CS — Reservation of a Connector - Rejected",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_049_CS — Reservation of a Charge Point - Transaction",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_050_1_CS — Reservation of a Charge Point - Faulted",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_050_2_CS — Reservation of a Charge Point - Occupied",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_050_3_CS — Reservation of a Charge Point - Unavailable",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_050_4_CS — Reservation of a Charge Point - Rejected",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_051_CS — Cancel Reservation",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_052_CS — Cancel Reservation - Rejected",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_053_1_CS — Use a reserved Connector with parentIdTag - Local",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_053_2_CS — Use a reserved Connector with parentIdTag - Remote",
+      "status": "TODO",
+      "comment": "Suite: Reservation | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_073_CS — Update Charge Point Password for HTTP Basic Authentication",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_074_CS — Update Charge Point Certificate by request of Central System",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_075_1_CS — Install a certificate on the Charge Point - ManufacturerRootCertificate",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_075_2_CS — Install a certificate on the Charge Point - CentralSystemRootCertificate",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_076_CS — Delete a specific certificate from the Charge Point",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_077_CS — Invalid ChargePointCertificate Security Event",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_078_CS — Invalid CentralSystemCertificate Security Event",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_079_CS — Get Security Log",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_080_CS — Secure Firmware Update",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_081_CS — Secure Firmware Update - Invalid Signature",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_083_CS — Upgrade security profile",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_084_CS — Downgrade security profile - Rejected",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_085_CS — Basic Authentication - Valid username/password combination",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_086_CS — TLS - server-side certificate - Valid certificate",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_087_CS — TLS - Client-side certificate - valid certificate",
+      "status": "TODO",
+      "comment": "Suite: Security | No CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_056_CS — Central Smart Charging - TxDefaultProfile",
+      "status": "TODO",
+      "comment": "Suite: SmartCharging | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_057_CS — Central Smart Charging - TxProfile",
+      "status": "TODO",
+      "comment": "Suite: SmartCharging | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_058_1_CS — Central Smart Charging - No ongoing transaction",
+      "status": "TODO",
+      "comment": "Suite: SmartCharging | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_058_2_CS — Central Smart Charging - Wrong transactionId",
+      "status": "TODO",
+      "comment": "Suite: SmartCharging | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_059_CS — Remote Start Transaction with Charging Profile",
+      "status": "TODO",
+      "comment": "Suite: SmartCharging | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_060_CS — Remote Start Transaction with Charging Profile - Rejected",
+      "status": "TODO",
+      "comment": "Suite: SmartCharging | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_066_CS — Get Composite Schedule",
+      "status": "TODO",
+      "comment": "Suite: SmartCharging | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_067_CS — Clear Charging Profile",
+      "status": "TODO",
+      "comment": "Suite: SmartCharging | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_072_CS — Stacking Charging Profiles",
+      "status": "TODO",
+      "comment": "Suite: SmartCharging | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_082_CS — Central Smart Charging - TxDefaultProfile - with ongoing transaction",
+      "status": "TODO",
+      "comment": "Suite: SmartCharging | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_003_CS — Regular Charging Session - Plugin First",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_004_1_CS — Regular Charging Session - Identification First",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_004_2_CS — Regular Charging Session - Identification First - ConnectionTimeOut",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_005_1_CS — EV Side Disconnected - StopTransactionOnEVSideDisconnect=true - UnlockConnector=true",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_005_2_CS — EV Side Disconnected - StopTransactionOnEVSideDisconnect=true - UnlockConnector=false",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_005_3_CS — EV Side Disconnected - StopTransactionOnEVSideDisconnect=false - UnlockConnector=false",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_007_1_CS — Regular Start Charging Session - Cached Id",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_007_2_CS — Remote Start Charging Session - Cached Id",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_036_CS — Connection Loss During Transaction",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_037_1_CS — Offline Start Transaction - Valid IdTag",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_037_2_CS — Offline Start Transaction - Invalid IdTag - StopTransactionOnInvalidId=false",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_037_3_CS — Offline Start Transaction - Invalid IdTag - StopTransactionOnInvalidId=true",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_038_CS — Offline Stop Transaction",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_039_CS — Offline Transaction",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_068_CS — Stop transaction - IdTag in StopTransaction matches IdTag in StartTransaction",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    },
+    {
+      "testKey": "[OCPP 1.6] TC_069_CS — Stop transaction - ParentIdTag in StopTransaction matches ParentIdTag in StartTransaction",
+      "status": "TODO",
+      "comment": "Suite: Transactions | Needs CDS"
+    }
+  ]
+}

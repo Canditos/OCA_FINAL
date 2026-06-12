@@ -1,0 +1,8 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends SetChargingProfile with TxDefaultProfile,CSMS → SUT,"SetChargingProfile(chargingProfile={purpose=TxDefaultProfile, ...})",Profile set
+2,SUT accepts,SUT → CSMS,SetChargingProfile.Response(Accepted),Profile accepted
+3,CSMS sends ClearChargingProfile (clear by id),CSMS → SUT,ClearChargingProfile(id=1),Clear profile by id
+4,SUT clears the profile,SUT → CSMS,ClearChargingProfile.Response(status=Accepted),Profile cleared
+5,Verify profile cleared: GetCompositeSchedule should show no schedule,CSMS → SUT,"GetCompositeSchedule(connectorId=1, duration=3600)",Composite schedule empty after clearing
+6,"Repeat with ClearChargingProfile(chargingProfilePurpose=TxDefault, stackLevel=1)",CSMS → SUT,"ClearChargingProfile(chargingProfilePurpose=TxDefaultProfile, stackLevel=1)",Clear profile by purpose and stack level
+7,SUT clears and confirms,SUT → CSMS,ClearChargingProfile.Response(Accepted),Profile cleared

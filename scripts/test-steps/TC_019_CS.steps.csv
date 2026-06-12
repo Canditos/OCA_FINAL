@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends GetConfiguration for specific key,CSMS → SUT,GetConfiguration(key=SupportedFeatureProfiles),Request for specific configuration key
+2,SUT returns the requested configuration key value,SUT → CSMS,"GetConfiguration.Response(configurationKey=[{key,value,readonly}])",Configuration key value returned
+3,CSMS sends GetConfiguration with empty key list (all keys),CSMS → SUT,GetConfiguration(key=[]),Request for all configuration keys
+4,SUT returns all supported configuration keys,SUT → CSMS,GetConfiguration.Response(configurationKey=[...]),All configuration keys returned

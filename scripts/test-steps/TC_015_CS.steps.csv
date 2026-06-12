@@ -1,0 +1,8 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a regular charging session (transaction active),Pre-condition,StartTransaction,Transaction active
+2,CSMS sends Reset(Hard),CSMS → SUT,Reset(Hard),Hard reset sent during transaction
+3,SUT acknowledges reset,SUT → CSMS,Reset.Response(status=Accepted),Reset accepted
+4,SUT stops the active transaction due to reset,SUT → CSMS,"StopTransaction(transactionId, reason=HardReset, meterStop)",Transaction stopped with reason HardReset
+5,SUT reboots,SUT (reboot),— SUT reboots —,SUT reboots
+6,SUT reconnects and sends BootNotification,SUT → CSMS,BootNotification,Boot after hard reset
+7,CSMS accepts,CSMS → SUT,BootNotification(Accepted),Boot accepted

@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends RemoteStopTransaction with an unknown/non-existent transactionId,CSMS → SUT,RemoteStopTransaction(transactionId=0),Remote stop with unknown transactionId
+2,SUT rejects because transactionId does not exist,SUT → CSMS,RemoteStopTransaction.Response(status=Rejected),Remote stop rejected (unknown transaction)

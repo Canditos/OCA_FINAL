@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends SendLocalList to SUT that does not support local auth lists,CSMS → SUT,"SendLocalList(listVersion=1, updateType=Full, localAuthorizationList=[...])",SendLocalList request
+2,SUT returns NotSupported,SUT → CSMS,SendLocalList.Response(status=NotSupported),Local list not supported

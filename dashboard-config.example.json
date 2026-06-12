@@ -1,0 +1,12 @@
+{
+    "octtBaseUrl": "https://your-org.octt.openchargealliance.org",
+    "octtToken": "your-octt-api-token",
+    "octtOcppVersion": "ocpp1.6",
+    "octtRole": "CS",
+    "cdsIp": "192.168.100.10",
+    "cdsPort": 51001,
+    "jiraBaseUrl": "https://your-domain.atlassian.net",
+    "jiraEmail": "your-email@example.com",
+    "jiraApiToken": "your-jira-api-token",
+    "jiraProjectKey": "CERT"
+}

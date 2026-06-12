@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends GetInstalledCertificateIds to list all certs,CSMS → SUT,GetInstalledCertificateIds(certificateType=CentralSystemRootCertificate),List installed certificates
+2,SUT returns list of installed certificate hashes,SUT → CSMS,"GetInstalledCertificateIds.Response(status=Accepted, certificateHashDataChain=[...])",Installed certificates listed
+3,CSMS sends DeleteCertificate with a certificate hash,CSMS → SUT,"DeleteCertificate(certificateHashData={hashAlgorithm=SHA256, ...})",Delete certificate request
+4,SUT deletes the certificate,SUT → CSMS,DeleteCertificate.Response(status=Accepted),Certificate deleted
+5,Verify deletion: GetInstalledCertificateIds no longer shows the deleted cert,CSMS → SUT,GetInstalledCertificateIds(...),Deleted certificate no longer in list

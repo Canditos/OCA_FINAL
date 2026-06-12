@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends DataTransfer with an unknown vendorId,CSMS → SUT,"DataTransfer(vendorId=UnknownVendor, messageId=test, data=hello)",Data transfer request with unknown vendor
+2,SUT responds with UnknownVendorId or Rejected,SUT → CSMS,DataTransfer.Response(status=UnknownVendorId),Data transfer rejected (unknown vendor)

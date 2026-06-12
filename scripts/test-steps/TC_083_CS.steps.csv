@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ChangeConfiguration to upgrade SecurityProfile,CSMS → SUT,"ChangeConfiguration(key=SecurityProfile, value=2)",Upgrade security profile to 2
+2,SUT accepts,SUT → CSMS,ChangeConfiguration.Response(Accepted),Security profile accepted
+3,CSMS sends Reset(Hard) to apply the new security settings,CSMS → SUT,Reset(Hard),Hard reset to apply security upgrade
+4,SUT reboots,SUT (reboot),— reboot —,SUT reboots
+5,SUT reconnects using the higher security profile (TLS),SUT → CSMS,BootNotification (over TLS),SUT reconnects with upgraded security

@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends SendLocalList with authorized IdTags,CSMS → SUT,"SendLocalList(listVersion=1, updateType=Full, localAuthorizationList=[{idTag}])",Local authorization list sent
+2,SUT confirms receipt of local list,SUT → CSMS,SendLocalList.Response(status=Accepted),Local list accepted
+3,EV driver plugs cable and presents IdTag from local list,EV,-,IdTag from local list presented
+4,SUT authorizes locally (no Authorize request to CSMS),SUT (local),— local auth —,SUT finds IdTag in local list
+5,SUT starts transaction using locally authorized IdTag,SUT → CSMS,"StartTransaction(connectorId, idTag, meterStart)",Transaction started with locally authorized IdTag
+6,CSMS accepts and transaction proceeds,CSMS → SUT,"StartTransaction(Accepted, transactionId)",Transaction active

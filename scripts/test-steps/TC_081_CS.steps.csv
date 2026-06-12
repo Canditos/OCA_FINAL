@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends SignedUpdateFirmware with INVALID signature,CSMS → SUT,"SignedUpdateFirmware(location=ftp://..., retrieveDate=..., signature=invalid)",Secure update with invalid signature
+2,SUT validates signature and rejects it,SUT → CSMS,SignedUpdateFirmware.Response(status=Rejected),Update rejected (invalid signature)
+3,SUT sends SecurityEventNotification about the invalid signature,SUT → CSMS,"SecurityEventNotification(type=InvalidFirmwareSignature, ...)",Security event for invalid firmware signature

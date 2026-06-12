@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends SendLocalList with authorized IdTags,CSMS → SUT,"SendLocalList(listVersion=1, updateType=Full, localAuthorizationList=[{idTag}])",Local list sent
+2,SUT confirms,SUT → CSMS,SendLocalList.Response(Accepted),Local list accepted
+3,CSMS sends RemoteStartTransaction with IdTag from local list,CSMS → SUT,"RemoteStartTransaction(connectorId, idTag)",Remote start with locally authorized IdTag
+4,SUT authorizes locally and locks connector,SUT (local),— local auth —,"SUT finds IdTag in local list, proceeds"
+5,SUT starts transaction,SUT → CSMS,"StartTransaction(connectorId, idTag, meterStart)",Transaction started via remote start with local list

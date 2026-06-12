@@ -1,0 +1,8 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Power on / restart the Charge Point,Manual,-,SUT powers on and establishes WebSocket connection to CSMS
+2,SUT sends BootNotification to register with the Central System,SUT → CSMS,"BootNotification(chargePointVendor, chargePointModel)",BootNotification request sent
+3,CSMS rejects the first boot with a wait time,CSMS → SUT,"BootNotification(Rejected, waitTime=60)",SUT receives Rejected status with waitTime=60s
+4,SUT waits for the specified wait time,SUT (internal),— wait 60s —,SUT waits before retrying
+5,SUT retries BootNotification after wait time expires,SUT → CSMS,"BootNotification(chargePointVendor, chargePointModel)",BootNotification retry sent
+6,CSMS accepts the boot and SUT registration completes,CSMS → SUT,"BootNotification(Accepted, currentTime, interval)",Boot accepted; SUT receives current time and heartbeat interval
+7,SUT reports status for each connector,SUT → CSMS,"StatusNotification(connectorId, Available, NoError)",All connectors reported as Available

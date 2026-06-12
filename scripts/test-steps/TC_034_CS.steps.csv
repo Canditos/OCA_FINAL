@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Set connector to Unavailable via ChangeAvailability,CSMS → SUT,"ChangeAvailability(connectorId, Inoperative)",Connector set Inoperative
+2,SUT confirms,SUT → CSMS,ChangeAvailability.Response(Accepted),Change accepted
+3,SUT reports Unavailable,SUT → CSMS,"StatusNotification(connectorId, Unavailable)",Status Unavailable
+4,Simulate power cycle (power off then on),SUT (power),— power cycle —,SUT powers off and on
+5,SUT boots and sends BootNotification,SUT → CSMS,BootNotification,SUT reconnects after power cycle
+6,Verify connector status persists as Unavailable after reboot,SUT → CSMS,"StatusNotification(connectorId, Unavailable)",Unavailable status persists across power cycle

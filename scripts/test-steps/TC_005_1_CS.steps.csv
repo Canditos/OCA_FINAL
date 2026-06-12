@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a regular charging session (transaction active),Pre-condition,StartTransaction,Transaction is active on connector
+2,EV driver disconnects the cable from the EV side,EV,-,Cable disconnected at EV side
+3,SUT detects EV disconnection and stops the transaction,SUT → CSMS,"StopTransaction(transactionId, reason=EVDisconnected, meterStop)",Transaction stopped with reason EVDisconnected
+4,CSMS confirms the stop,CSMS → SUT,StopTransaction.Response(idTagInfo=Accepted),Stop acknowledged
+5,SUT unlocks the connector (UnlockConnectorOnEVSideDisconnect=true),SUT,— connector unlocks —,Connector unlocked
+6,SUT updates connector status,SUT → CSMS,"StatusNotification(connectorId, Available)",Connector returns to Available

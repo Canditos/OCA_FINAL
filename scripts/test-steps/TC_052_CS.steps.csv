@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends CancelReservation with unknown/non-existent reservationId,CSMS → SUT,CancelReservation(reservationId=999),Cancel unknown reservation
+2,SUT rejects with status Rejected,SUT → CSMS,CancelReservation.Response(status=Rejected),Cancellation rejected (unknown reservation)

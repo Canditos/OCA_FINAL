@@ -1,0 +1,114 @@
+Test Case ID,Title,Suite,Number of Steps
+tc_bi_restore_configuration,Maintenance — restore configuration,MAINTENANCE,2
+tc_bi_stop_transactions,Maintenance — stop all transactions,MAINTENANCE,2
+tc_bi_clear_cache,Maintenance — clear cache,MAINTENANCE,1
+tc_bi_clear_local_auth_list,Maintenance — clear local auth list,MAINTENANCE,1
+tc_bi_restore_availability,Maintenance — restore availability,MAINTENANCE,2
+tc_bi_reset_hard,Maintenance — hard reset,MAINTENANCE,2
+TC_001_CS,Cold Boot Charge Point,ColdBoot,7
+TC_002_CS,Cold Boot Charge Point - Pending,ColdBoot,7
+TC_003_CS,Regular Charging Session - Plugin First,StartSession,10
+TC_004_1_CS,Regular Charging Session - Identification First,StartSession,9
+TC_004_2_CS,Regular Charging Session - Identification First - ConnectionTimeOut,StartSession,5
+TC_005_1_CS,EV Side Disconnected - StopTxnOnEVSideDisconnect=true - UnlockConnectorOnEVSideDisconnect=true,StopSession,6
+TC_005_2_CS,EV Side Disconnected - StopTxnOnEVSideDisconnect=true - UnlockConnectorOnEVSideDisconnect=false,StopSession,6
+TC_005_3_CS,EV Side Disconnected - StopTxnOnEVSideDisconnect=false - UnlockConnectorOnEVSideDisconnect=false,StopSession,4
+TC_068_CS,Stop transaction - Same idTag,StopSession,6
+TC_069_CS,Stop transaction - Same ParentIdTag,StopSession,5
+TC_007_1_CS,Regular Start - Cached Id,Cache,5
+TC_007_2_CS,Remote Start - Cached Id,Cache,5
+TC_061_1_CS,Clear Cache - Local,Cache,6
+TC_061_2_CS,Clear Cache - Remote,Cache,6
+TC_010_CS,Remote Start - Cable Plugged First,RemoteActions,8
+TC_011_1_CS,Remote Start - Remote Start First,RemoteActions,6
+TC_011_2_CS,Remote Start - Time Out,RemoteActions,3
+TC_012_CS,Remote Stop Charging Session,RemoteActions,5
+TC_013_CS,Hard Reset Without Transaction,Resetting,9
+TC_014_CS,Soft Reset Without Transaction,Resetting,7
+TC_015_CS,Hard Reset With Transaction,Resetting,7
+TC_016_CS,Soft Reset With Transaction,Resetting,6
+TC_017_1_CS,Unlock - No Session (Not Fixed Cable),Unlocking,4
+TC_017_2_CS,Unlock - No Session (Fixed Cable),Unlocking,3
+TC_018_1_CS,Unlock - With Session (Not Fixed Cable),Unlocking,5
+TC_018_2_CS,Unlock - With Session (Fixed Cable),Unlocking,3
+TC_019_CS,Retrieve Configuration,Configuration,4
+TC_021_CS,Change/Set Configuration,Configuration,4
+TC_070_CS,Sampled Meter Values,MeterValues,4
+TC_071_CS,Clock-aligned Meter Values,MeterValues,4
+TC_023_4_CS,Start Local - Authorize Invalid,BasicActions,4
+TC_023_5_CS,Start Remote - Authorize Invalid,BasicActions,4
+TC_024_CS,Start - Lock Failure,BasicActions,5
+TC_026_CS,Remote Start - Rejected,RemoteActionsNonHappy,3
+TC_027_CS,Remote Start - ConnectorId=0,RemoteActionsNonHappy,2
+TC_028_CS,Remote Stop - Rejected,RemoteActionsNonHappy,2
+TC_030_CS,Unlock - Unlock Failure,UnlockingNonHappy,3
+TC_031_CS,Unlock - Unknown Connector,UnlockingNonHappy,2
+TC_032_1_CS,Power Failure - Stop Before Down,PowerFailure,5
+TC_032_2_CS,Power Failure - Stop After Down,PowerFailure,5
+TC_034_CS,Power Failure - Unavailable Status,PowerFailure,6
+TC_036_CS,Connection Loss During Transaction,OfflineBehavior,5
+TC_037_1_CS,Offline Start - Valid IdTag,OfflineBehavior,6
+TC_037_2_CS,Offline Start - Invalid IdTag (StopOnInvalid=false),OfflineBehavior,5
+TC_037_3_CS,Offline Start - Invalid IdTag (StopOnInvalid=true),OfflineBehavior,6
+TC_038_CS,Offline Stop Transaction,OfflineBehavior,6
+TC_039_CS,Offline Transaction,OfflineBehavior,6
+TC_040_1_CS,Config Key - NotSupported,ConfigKeysNonHappy,2
+TC_040_2_CS,Config Key - Invalid Value,ConfigKeysNonHappy,2
+TC_041_CS,Fault Behavior,FaultBehavior,4
+TC_008_1_CS,Local Auth List - Regular Start,LocalAuthList,6
+TC_008_2_CS,Local Auth List - Remote Start,LocalAuthList,5
+TC_042_1_CS,Get Local List Version (Not Supported),LocalAuthList,2
+TC_042_2_CS,Get Local List Version (Empty),LocalAuthList,4
+TC_043_CS,Send Local Authorization List,LocalAuthList,6
+TC_043_1_CS,Send Local List - NotSupported,LocalAuthList,2
+TC_043_2_CS,Send Local List - VersionMismatch,LocalAuthList,2
+TC_043_3_CS,Send Local List - Failed,LocalAuthList,2
+TC_044_1_CS,Firmware Update - Download and Install,FirmwareManagement,5
+TC_044_2_CS,Firmware Update - Download Failed,FirmwareManagement,3
+TC_044_3_CS,Firmware Update - Installation Failed,FirmwareManagement,4
+TC_045_1_CS,Get Diagnostics,Diagnostics,3
+TC_045_2_CS,Get Diagnostics - Upload Failed,Diagnostics,3
+TC_046_1_CS,Reserve Connector - Local Start,Reservation,6
+TC_046_2_CS,Reserve Connector - Remote Start,Reservation,4
+TC_047_CS,Reserve Connector - Expire,Reservation,4
+TC_048_1_CS,Reserve Connector - Faulted,Reservation,3
+TC_048_2_CS,Reserve Connector - Occupied,Reservation,3
+TC_048_3_CS,Reserve Connector - Unavailable,Reservation,3
+TC_048_4_CS,Reserve Connector - Rejected,Reservation,2
+TC_049_CS,Reserve ChargePoint - Transaction,Reservation,3
+TC_050_1_CS,Reserve ChargePoint - Faulted,Reservation,3
+TC_050_2_CS,Reserve ChargePoint - Occupied,Reservation,3
+TC_050_3_CS,Reserve ChargePoint - Unavailable,Reservation,3
+TC_050_4_CS,Reserve ChargePoint - Rejected,Reservation,2
+TC_051_CS,Cancel Reservation,Reservation,5
+TC_052_CS,Cancel Reservation - Rejected,Reservation,2
+TC_053_1_CS,Reserved - parentIdTag Local,Reservation,4
+TC_053_2_CS,Reserved - parentIdTag Remote,Reservation,4
+TC_054_CS,Trigger Message,RemoteTrigger,9
+TC_055_CS,Trigger Message - Rejected,RemoteTrigger,2
+TC_056_CS,Smart Charging - TxDefaultProfile,SmartCharging,4
+TC_057_CS,Smart Charging - TxProfile,SmartCharging,5
+TC_058_1_CS,Smart Charging - No Transaction,SmartCharging,3
+TC_058_2_CS,Smart Charging - Wrong TransactionId,SmartCharging,3
+TC_059_CS,Remote Start with ChargingProfile,SmartCharging,4
+TC_060_CS,Remote Start with ChargingProfile - Rejected,SmartCharging,2
+TC_066_CS,Get Composite Schedule,SmartCharging,3
+TC_067_CS,Clear Charging Profile,SmartCharging,7
+TC_072_CS,Stacking Charging Profiles,SmartCharging,6
+TC_082_CS,Smart Charging - TxDefault Ongoing Tx,SmartCharging,4
+TC_062_CS,Data Transfer to Charge Point,DataTransfer,2
+TC_073_CS,Update BasicAuth Password,Security,4
+TC_074_CS,Update ChargePoint Certificate,Security,4
+TC_075_1_CS,Install ManufacturerRootCertificate,Security,4
+TC_075_2_CS,Install CentralSystemRootCertificate,Security,3
+TC_076_CS,Delete Certificate,Security,5
+TC_077_CS,Invalid ChargePointCertificate,Security,5
+TC_078_CS,Invalid CentralSystemCertificate,Security,2
+TC_079_CS,Get Security Log,Security,3
+TC_080_CS,Secure Firmware Update,Security,6
+TC_081_CS,Secure Firmware Update - Invalid Sig,Security,3
+TC_083_CS,Upgrade Security Profile,Security,5
+TC_084_CS,Downgrade Security Profile - Rejected,Security,2
+TC_085_CS,Basic Authentication,Security,3
+TC_086_CS,TLS - Server Certificate,Security,4
+TC_087_CS,TLS - Client Certificate,Security,4

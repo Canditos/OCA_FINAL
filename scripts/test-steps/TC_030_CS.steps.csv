@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends UnlockConnector,CSMS → SUT,UnlockConnector(connectorId),Unlock request sent
+2,SUT attempts to unlock but lock mechanism fails,SUT (hardware),— lock failure —,Unlock mechanism fails
+3,SUT responds with UnlockFailed status,SUT → CSMS,UnlockConnector.Response(status=UnlockFailed),Unlock failed reported

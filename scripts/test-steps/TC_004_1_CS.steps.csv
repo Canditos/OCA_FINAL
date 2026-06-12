@@ -1,0 +1,10 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Ensure SUT is registered and connectors are Available,Pre-condition,StatusNotification(Available),SUT is ready
+2,EV driver presents RFID/IdTag for authorization first (before plugging),EV,-,IdTag presented to SUT
+3,SUT sends Authorize request,SUT → CSMS,Authorize(idTag),Authorize request sent
+4,CSMS authorizes the IdTag,CSMS → SUT,Authorize(Accepted),IdTag authorized
+5,EV driver plugs cable into the connector,EV,-,Connector plugged in after authorization
+6,SUT detects plug event and updates status,SUT → CSMS,"StatusNotification(connectorId, Preparing)",Status transitions to Preparing
+7,SUT locks connector and starts transaction,SUT → CSMS,"StartTransaction(connectorId, idTag, meterStart)",StartTransaction request sent
+8,CSMS accepts the transaction,CSMS → SUT,"StartTransaction(Accepted, transactionId)",Transaction started
+9,SUT updates connector status to Charging,SUT → CSMS,"StatusNotification(connectorId, Charging)",Connector status set to Charging

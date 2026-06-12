@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends RemoteStartTransaction with an invalid IdTag,CSMS → SUT,"RemoteStartTransaction(connectorId, invalidIdTag)",Remote start with invalid IdTag
+2,SUT sends Authorize with the invalid IdTag,SUT → CSMS,Authorize(invalidIdTag),Authorize sent with invalid IdTag
+3,CSMS rejects authorization,CSMS → SUT,Authorize(Invalid),Authorization rejected
+4,SUT does NOT start transaction,SUT,-,No transaction started; connector remains Available

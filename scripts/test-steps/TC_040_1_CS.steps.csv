@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ChangeConfiguration with an unknown/unsupported key,CSMS → SUT,"ChangeConfiguration(key=Testing, value=1)",ChangeConfiguration with unsupported key
+2,SUT rejects with NotSupported status,SUT → CSMS,ChangeConfiguration.Response(status=NotSupported),Configuration change rejected - key not supported

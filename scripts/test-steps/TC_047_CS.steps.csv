@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ReserveNow with a short expiry time,CSMS → SUT,"ReserveNow(connectorId, reservationId=1, expiryDate=now+30s, idTag)",Reservation with short expiry
+2,SUT accepts and sets connector Reserved,SUT → CSMS,ReserveNow.Response(Accepted),Connector Reserved
+3,Wait for expiry time to pass,Time,— wait —,Reservation expires
+4,SUT returns connector to Available after expiry,SUT → CSMS,"StatusNotification(connectorId, Available)",Connector returns to Available after reservation expiry

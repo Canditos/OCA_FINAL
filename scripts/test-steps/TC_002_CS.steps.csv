@@ -1,0 +1,8 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Power on / restart the Charge Point,Manual,-,SUT powers on and establishes WebSocket connection to CSMS
+2,SUT sends BootNotification,SUT → CSMS,"BootNotification(chargePointVendor, chargePointModel)",BootNotification request sent
+3,CSMS rejects with long wait time to keep SUT in pending state,CSMS → SUT,"BootNotification(Rejected, waitTime=3600)",SUT enters pending state with waitTime=3600s
+4,CSMS sends GetConfiguration while SUT is in pending state,CSMS → SUT,GetConfiguration(key=SupportedFeatureProfiles),SUT responds despite being in pending state
+5,SUT responds to configuration request,SUT → CSMS,"GetConfiguration.Response(unknownKey=[], configurationKey=[...])",SUT returns configuration values while pending
+6,CSMS sends ChangeConfiguration while SUT is in pending state,CSMS → SUT,"ChangeConfiguration(key=MeterValueSampleInterval, value=300)",SUT accepts configuration change while pending
+7,SUT responds to configuration change,SUT → CSMS,ChangeConfiguration.Response(status=Accepted),SUT accepts ChangeConfiguration in pending state

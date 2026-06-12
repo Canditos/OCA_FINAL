@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Set connector to Unavailable/Inoperative,Pre-condition,ChangeAvailability(Inoperative),Connector Unavailable
+2,CSMS sends ReserveNow for the unavailable connector,CSMS → SUT,"ReserveNow(connectorId, reservationId=1, ...)",Reserve request on unavailable connector
+3,SUT rejects with status Unavailable,SUT → CSMS,ReserveNow.Response(status=Unavailable),Reservation rejected (connector unavailable)

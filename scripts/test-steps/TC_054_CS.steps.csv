@@ -1,0 +1,10 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends TriggerMessage for MeterValues,CSMS → SUT,"TriggerMessage(requestedMessage=MeterValues, connectorId=1)",Trigger for MeterValues
+2,SUT acknowledges trigger and sends requested message,SUT → CSMS,TriggerMessage.Response(status=Accepted),Trigger accepted
+3,SUT sends the triggered MeterValues,SUT → CSMS,"MeterValues(connectorId, ...)",MeterValues sent in response to trigger
+4,CSMS sends TriggerMessage for Heartbeat,CSMS → SUT,TriggerMessage(requestedMessage=Heartbeat),Trigger for Heartbeat
+5,SUT acknowledges and sends Heartbeat,SUT → CSMS,Heartbeat,Heartbeat sent
+6,CSMS sends TriggerMessage for StatusNotification,CSMS → SUT,"TriggerMessage(requestedMessage=StatusNotification, connectorId=1)",Trigger for StatusNotification
+7,SUT sends StatusNotification,SUT → CSMS,"StatusNotification(connectorId, Available)",StatusNotification sent
+8,CSMS sends TriggerMessage for DiagnosticsStatusNotification,CSMS → SUT,TriggerMessage(requestedMessage=DiagnosticsStatusNotification),Trigger for DiagnosticsStatusNotification
+9,SUT sends DiagnosticsStatusNotification,SUT → CSMS,DiagnosticsStatusNotification(status=Idle),DiagnosticsStatusNotification sent

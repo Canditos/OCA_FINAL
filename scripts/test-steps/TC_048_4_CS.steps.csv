@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ReserveNow when reservation is not supported,CSMS → SUT,"ReserveNow(connectorId, reservationId=1, ...)",Reserve request when unsupported
+2,SUT rejects with status Rejected,SUT → CSMS,ReserveNow.Response(status=Rejected),Reservation rejected (not supported)

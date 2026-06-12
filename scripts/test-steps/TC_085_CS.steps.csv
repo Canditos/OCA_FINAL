@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,SUT establishes WebSocket connection with HTTP Basic Authentication header,SUT → CSMS,— WebSocket upgrade with Authorization: Basic ... —,SUT connects using Basic Authentication
+2,CSMS validates the Basic Auth credentials,CSMS,— validate —,Basic Authentication credentials accepted
+3,SUT sends BootNotification to complete registration,SUT → CSMS,BootNotification,SUT registered successfully using Basic Auth

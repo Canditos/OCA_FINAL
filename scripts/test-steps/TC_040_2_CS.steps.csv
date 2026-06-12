@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ChangeConfiguration with an invalid value (e.g. negative),CSMS → SUT,"ChangeConfiguration(key=MeterValueSampleInterval, value=-1)",ChangeConfiguration with invalid value
+2,SUT rejects with Rejected status,SUT → CSMS,ChangeConfiguration.Response(status=Rejected),Configuration change rejected - invalid value

@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends RemoteStartTransaction with wrong ChargingProfilePurpose (e.g. TxDefaultProfile instead of TxProfile),CSMS → SUT,"RemoteStartTransaction(connectorId, idTag, chargingProfile={purpose=TxDefaultProfile, ...})",Remote start with wrong profile purpose
+2,SUT rejects the remote start because TxDefaultProfile not allowed in RemoteStart,SUT → CSMS,RemoteStartTransaction.Response(status=Rejected),Remote start rejected (wrong profile purpose)

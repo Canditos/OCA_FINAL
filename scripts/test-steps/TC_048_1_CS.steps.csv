@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Set connector to Faulted state,Pre-condition,StatusNotification(Faulted),Connector in Faulted state
+2,CSMS sends ReserveNow for the faulted connector,CSMS → SUT,"ReserveNow(connectorId, reservationId=1, ...)",Reserve request on faulted connector
+3,SUT rejects reservation with status Faulted,SUT → CSMS,ReserveNow.Response(status=Faulted),Reservation rejected (connector faulted)

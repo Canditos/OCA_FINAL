@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ChangeConfiguration to downgrade SecurityProfile,CSMS → SUT,"ChangeConfiguration(key=SecurityProfile, value=0)",Attempt to downgrade security profile
+2,SUT rejects the downgrade,SUT → CSMS,ChangeConfiguration.Response(status=Rejected),Security downgrade rejected

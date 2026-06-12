@@ -1,0 +1,4887 @@
+{
+  "testExecution": {
+    "fields": {
+      "project": {
+        "key": "OCTT"
+      },
+      "summary": "OCTT for OCPP 1.6",
+      "description": "OCPP 1.6 Certification Test Execution\n\nGenerated: 2026-05-30T02:13:25.677Z\nTotal Tests: 113\n\nSuites covered:\n  - MAINTENANCE (6 tests)\n  - ColdBoot (2 tests)\n  - StartSession (3 tests)\n  - StopSession (5 tests)\n  - Cache (4 tests)\n  - RemoteActions (4 tests)\n  - Resetting (4 tests)\n  - Unlocking (4 tests)\n  - Configuration (2 tests)\n  - MeterValues (2 tests)\n  - BasicActions (3 tests)\n  - RemoteActionsNonHappy (3 tests)\n  - UnlockingNonHappy (2 tests)\n  - PowerFailure (3 tests)\n  - OfflineBehavior (6 tests)\n  - ConfigKeysNonHappy (2 tests)\n  - FaultBehavior (1 tests)\n  - LocalAuthList (8 tests)\n  - FirmwareManagement (3 tests)\n  - Diagnostics (2 tests)\n  - Reservation (16 tests)\n  - RemoteTrigger (2 tests)\n  - SmartCharging (10 tests)\n  - DataTransfer (1 tests)\n  - Security (15 tests)",
+      "issuetype": {
+        "name": "Test Execution"
+      },
+      "labels": [
+        "OCPP",
+        "ocpp1.6",
+        "certification",
+        "automated"
+      ]
+    }
+  },
+  "tests": [
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_001_CS — Cold Boot Charge Point",
+        "description": "Cold Boot Charge Point\n\nSuite: ColdBoot\nNo CDS required — protocol-only test. Reboot test — requires extended timeouts (max_timeout_period=600, long_operation_timeout=650).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 7",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "coldboot",
+          "no-cds",
+          "reboot"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Power on / restart the Charge Point",
+          "data": "",
+          "result": "SUT powers on and establishes WebSocket connection to CSMS"
+        },
+        {
+          "action": "SUT sends BootNotification to register with the Central System",
+          "data": "",
+          "result": "BootNotification request sent"
+        },
+        {
+          "action": "CSMS rejects the first boot with a wait time",
+          "data": "",
+          "result": "SUT receives Rejected status with waitTime=60s"
+        },
+        {
+          "action": "SUT waits for the specified wait time",
+          "data": "",
+          "result": "SUT waits before retrying"
+        },
+        {
+          "action": "SUT retries BootNotification after wait time expires",
+          "data": "",
+          "result": "BootNotification retry sent"
+        },
+        {
+          "action": "CSMS accepts the boot and SUT registration completes",
+          "data": "",
+          "result": "Boot accepted; SUT receives current time and heartbeat interval"
+        },
+        {
+          "action": "SUT reports status for each connector",
+          "data": "",
+          "result": "All connectors reported as Available"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_002_CS — Cold Boot Charge Point - Pending",
+        "description": "Cold Boot Charge Point - Pending\n\nSuite: ColdBoot\nNo CDS required — protocol-only test. Reboot test — requires extended timeouts (max_timeout_period=600, long_operation_timeout=650).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 7",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "coldboot",
+          "no-cds",
+          "reboot"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Power on / restart the Charge Point",
+          "data": "",
+          "result": "SUT powers on and establishes WebSocket connection to CSMS"
+        },
+        {
+          "action": "SUT sends BootNotification",
+          "data": "",
+          "result": "BootNotification request sent"
+        },
+        {
+          "action": "CSMS rejects with long wait time to keep SUT in pending state",
+          "data": "",
+          "result": "SUT enters pending state with waitTime=3600s"
+        },
+        {
+          "action": "CSMS sends GetConfiguration while SUT is in pending state",
+          "data": "",
+          "result": "SUT responds despite being in pending state"
+        },
+        {
+          "action": "SUT responds to configuration request",
+          "data": "",
+          "result": "SUT returns configuration values while pending"
+        },
+        {
+          "action": "CSMS sends ChangeConfiguration while SUT is in pending state",
+          "data": "",
+          "result": "SUT accepts configuration change while pending"
+        },
+        {
+          "action": "SUT responds to configuration change",
+          "data": "",
+          "result": "SUT accepts ChangeConfiguration in pending state"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_003_CS — Regular Charging Session - Plugin First",
+        "description": "Regular Charging Session - Plugin First\n\nSuite: StartSession\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 10",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "startsession",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Ensure SUT is registered and connectors are Available",
+          "data": "",
+          "result": "SUT is ready for charging session"
+        },
+        {
+          "action": "EV driver plugs cable into the connector",
+          "data": "",
+          "result": "Connector mechanically plugged in"
+        },
+        {
+          "action": "SUT detects plug event and updates connector status",
+          "data": "",
+          "result": "Status transitions to Preparing"
+        },
+        {
+          "action": "EV driver presents RFID/IdTag for authorization",
+          "data": "",
+          "result": "IdTag presented to SUT"
+        },
+        {
+          "action": "SUT sends Authorize request to CSMS",
+          "data": "",
+          "result": "Authorize request sent with the presented IdTag"
+        },
+        {
+          "action": "CSMS authorizes the IdTag",
+          "data": "",
+          "result": "IdTag authorized; SUT may proceed"
+        },
+        {
+          "action": "SUT locks the connector (if applicable) and starts transaction",
+          "data": "",
+          "result": "StartTransaction request sent with initial meter value"
+        },
+        {
+          "action": "CSMS accepts the transaction",
+          "data": "",
+          "result": "Transaction started; SUT receives transactionId"
+        },
+        {
+          "action": "SUT updates connector status to Charging",
+          "data": "",
+          "result": "Connector status set to Charging"
+        },
+        {
+          "action": "Energy transfer begins (EV simulated charging)",
+          "data": "",
+          "result": "Charging in progress"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_004_1_CS — Regular Charging Session - Identification First",
+        "description": "Regular Charging Session - Identification First\n\nSuite: StartSession\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 9",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "startsession",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Ensure SUT is registered and connectors are Available",
+          "data": "",
+          "result": "SUT is ready"
+        },
+        {
+          "action": "EV driver presents RFID/IdTag for authorization first (before plugging)",
+          "data": "",
+          "result": "IdTag presented to SUT"
+        },
+        {
+          "action": "SUT sends Authorize request",
+          "data": "",
+          "result": "Authorize request sent"
+        },
+        {
+          "action": "CSMS authorizes the IdTag",
+          "data": "",
+          "result": "IdTag authorized"
+        },
+        {
+          "action": "EV driver plugs cable into the connector",
+          "data": "",
+          "result": "Connector plugged in after authorization"
+        },
+        {
+          "action": "SUT detects plug event and updates status",
+          "data": "",
+          "result": "Status transitions to Preparing"
+        },
+        {
+          "action": "SUT locks connector and starts transaction",
+          "data": "",
+          "result": "StartTransaction request sent"
+        },
+        {
+          "action": "CSMS accepts the transaction",
+          "data": "",
+          "result": "Transaction started"
+        },
+        {
+          "action": "SUT updates connector status to Charging",
+          "data": "",
+          "result": "Connector status set to Charging"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_004_2_CS — Regular Charging Session - Identification First - ConnectionTimeOut",
+        "description": "Regular Charging Session - Identification First - ConnectionTimeOut\n\nSuite: StartSession\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "startsession",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "EV driver presents IdTag (identification first)",
+          "data": "",
+          "result": "IdTag presented"
+        },
+        {
+          "action": "SUT sends Authorize",
+          "data": "",
+          "result": "Authorize request sent"
+        },
+        {
+          "action": "CSMS authorizes the IdTag",
+          "data": "",
+          "result": "IdTag authorized"
+        },
+        {
+          "action": "EV driver does NOT plug the cable within ConnectionTimeOut period",
+          "data": "",
+          "result": "ConnectionTimeOut expires"
+        },
+        {
+          "action": "SUT aborts the pending session and returns connector to Available",
+          "data": "",
+          "result": "Connector returns to Available after timeout"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_005_1_CS — EV Side Disconnected - StopTxnOnEVSideDisconnect=true - UnlockConnectorOnEVSideDisconnect=true",
+        "description": "EV Side Disconnected - StopTxnOnEVSideDisconnect=true - UnlockConnectorOnEVSideDisconnect=true\n\nSuite: StopSession\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "stopsession",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a regular charging session (transaction active)",
+          "data": "",
+          "result": "Transaction is active on connector"
+        },
+        {
+          "action": "EV driver disconnects the cable from the EV side",
+          "data": "",
+          "result": "Cable disconnected at EV side"
+        },
+        {
+          "action": "SUT detects EV disconnection and stops the transaction",
+          "data": "",
+          "result": "Transaction stopped with reason EVDisconnected"
+        },
+        {
+          "action": "CSMS confirms the stop",
+          "data": "",
+          "result": "Stop acknowledged"
+        },
+        {
+          "action": "SUT unlocks the connector (UnlockConnectorOnEVSideDisconnect=true)",
+          "data": "",
+          "result": "Connector unlocked"
+        },
+        {
+          "action": "SUT updates connector status",
+          "data": "",
+          "result": "Connector returns to Available"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_005_2_CS — EV Side Disconnected - StopTxnOnEVSideDisconnect=true - UnlockConnectorOnEVSideDisconnect=false",
+        "description": "EV Side Disconnected - StopTxnOnEVSideDisconnect=true - UnlockConnectorOnEVSideDisconnect=false\n\nSuite: StopSession\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "stopsession",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a regular charging session (transaction active)",
+          "data": "",
+          "result": "Transaction active"
+        },
+        {
+          "action": "EV driver disconnects the cable from the EV side",
+          "data": "",
+          "result": "Cable disconnected at EV side"
+        },
+        {
+          "action": "SUT detects EV disconnection and stops the transaction",
+          "data": "",
+          "result": "Transaction stopped"
+        },
+        {
+          "action": "CSMS confirms the stop",
+          "data": "",
+          "result": "Stop acknowledged"
+        },
+        {
+          "action": "SUT does NOT unlock the connector (UnlockConnectorOnEVSideDisconnect=false)",
+          "data": "",
+          "result": "Connector remains locked"
+        },
+        {
+          "action": "SUT updates connector status",
+          "data": "",
+          "result": "Connector Available but still locked"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_005_3_CS — EV Side Disconnected - StopTxnOnEVSideDisconnect=false - UnlockConnectorOnEVSideDisconnect=false",
+        "description": "EV Side Disconnected - StopTxnOnEVSideDisconnect=false - UnlockConnectorOnEVSideDisconnect=false\n\nSuite: StopSession\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "stopsession",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a regular charging session (transaction active)",
+          "data": "",
+          "result": "Transaction active"
+        },
+        {
+          "action": "EV driver disconnects the cable from the EV side",
+          "data": "",
+          "result": "Cable disconnected at EV side"
+        },
+        {
+          "action": "SUT detects EV disconnection but does NOT stop transaction",
+          "data": "",
+          "result": "Transaction continues; status set to SuspendedEV"
+        },
+        {
+          "action": "SUT keeps connector locked (no unlock)",
+          "data": "",
+          "result": "Connector remains locked, transaction still active"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_007_1_CS — Regular Start - Cached Id",
+        "description": "Regular Start - Cached Id\n\nSuite: Cache\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "cache",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Perform a successful charging session to populate the authorization cache",
+          "data": "",
+          "result": "IdTag is now cached on SUT"
+        },
+        {
+          "action": "EV driver presents the same cached IdTag at another connector",
+          "data": "",
+          "result": "Cached IdTag presented"
+        },
+        {
+          "action": "SUT uses cached authorization (no Authorize request sent to CSMS)",
+          "data": "",
+          "result": "SUT authorizes locally from cache"
+        },
+        {
+          "action": "SUT starts transaction using the cached IdTag",
+          "data": "",
+          "result": "StartTransaction sent without prior Authorize"
+        },
+        {
+          "action": "CSMS accepts the transaction",
+          "data": "",
+          "result": "Transaction started from cached authorization"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_007_2_CS — Remote Start - Cached Id",
+        "description": "Remote Start - Cached Id\n\nSuite: Cache\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "cache",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Populate the authorization cache on SUT (prior successful auth)",
+          "data": "",
+          "result": "IdTag is cached"
+        },
+        {
+          "action": "CSMS sends RemoteStartTransaction with a cached IdTag",
+          "data": "",
+          "result": "Remote start request sent with cached IdTag"
+        },
+        {
+          "action": "SUT uses cached authorization (no Authorize to CSMS)",
+          "data": "",
+          "result": "SUT authorizes locally"
+        },
+        {
+          "action": "SUT locks connector and starts transaction",
+          "data": "",
+          "result": "Transaction started"
+        },
+        {
+          "action": "CSMS accepts",
+          "data": "",
+          "result": "Transaction active"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_008_1_CS — Local Auth List - Regular Start",
+        "description": "Local Auth List - Regular Start\n\nSuite: LocalAuthList\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "LOCAL_AUTH_LIST",
+          "localauthlist",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends SendLocalList with authorized IdTags",
+          "data": "",
+          "result": "Local authorization list sent"
+        },
+        {
+          "action": "SUT confirms receipt of local list",
+          "data": "",
+          "result": "Local list accepted"
+        },
+        {
+          "action": "EV driver plugs cable and presents IdTag from local list",
+          "data": "",
+          "result": "IdTag from local list presented"
+        },
+        {
+          "action": "SUT authorizes locally (no Authorize request to CSMS)",
+          "data": "",
+          "result": "SUT finds IdTag in local list"
+        },
+        {
+          "action": "SUT starts transaction using locally authorized IdTag",
+          "data": "",
+          "result": "Transaction started with locally authorized IdTag"
+        },
+        {
+          "action": "CSMS accepts and transaction proceeds",
+          "data": "",
+          "result": "Transaction active"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_008_2_CS — Local Auth List - Remote Start",
+        "description": "Local Auth List - Remote Start\n\nSuite: LocalAuthList\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "LOCAL_AUTH_LIST",
+          "localauthlist",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends SendLocalList with authorized IdTags",
+          "data": "",
+          "result": "Local list sent"
+        },
+        {
+          "action": "SUT confirms",
+          "data": "",
+          "result": "Local list accepted"
+        },
+        {
+          "action": "CSMS sends RemoteStartTransaction with IdTag from local list",
+          "data": "",
+          "result": "Remote start with locally authorized IdTag"
+        },
+        {
+          "action": "SUT authorizes locally and locks connector",
+          "data": "",
+          "result": "SUT finds IdTag in local list, proceeds"
+        },
+        {
+          "action": "SUT starts transaction",
+          "data": "",
+          "result": "Transaction started via remote start with local list"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_010_CS — Remote Start - Cable Plugged First",
+        "description": "Remote Start - Cable Plugged First\n\nSuite: RemoteActions\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 8",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "remoteactions",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Check configuration: AuthorizeRemoteTxRequests",
+          "data": "",
+          "result": "Configuration value retrieved"
+        },
+        {
+          "action": "EV driver plugs cable into the connector",
+          "data": "",
+          "result": "Cable plugged in"
+        },
+        {
+          "action": "SUT reports Preparing status",
+          "data": "",
+          "result": "Status set to Preparing"
+        },
+        {
+          "action": "CSMS sends RemoteStartTransaction",
+          "data": "",
+          "result": "Remote start request sent"
+        },
+        {
+          "action": "SUT authorizes the IdTag",
+          "data": "",
+          "result": "Authorize sent if AuthorizeRemoteTxRequests=true"
+        },
+        {
+          "action": "CSMS authorizes",
+          "data": "",
+          "result": "IdTag authorized"
+        },
+        {
+          "action": "SUT locks connector and starts transaction",
+          "data": "",
+          "result": "Transaction started"
+        },
+        {
+          "action": "CSMS accepts",
+          "data": "",
+          "result": "Transaction active"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_011_1_CS — Remote Start - Remote Start First",
+        "description": "Remote Start - Remote Start First\n\nSuite: RemoteActions\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "remoteactions",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends RemoteStartTransaction before cable is plugged",
+          "data": "",
+          "result": "Remote start request sent before plugin"
+        },
+        {
+          "action": "SUT may send Authorize or wait for cable",
+          "data": "",
+          "result": "SUT handles remote start request"
+        },
+        {
+          "action": "EV driver plugs cable into the connector",
+          "data": "",
+          "result": "Cable plugged in after remote start"
+        },
+        {
+          "action": "SUT detects plug and sets Preparing status",
+          "data": "",
+          "result": "Status set to Preparing"
+        },
+        {
+          "action": "SUT locks connector and starts transaction",
+          "data": "",
+          "result": "Transaction started"
+        },
+        {
+          "action": "CSMS accepts",
+          "data": "",
+          "result": "Transaction active"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_011_2_CS — Remote Start - Time Out",
+        "description": "Remote Start - Time Out\n\nSuite: RemoteActions\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "remoteactions",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends RemoteStartTransaction",
+          "data": "",
+          "result": "Remote start sent"
+        },
+        {
+          "action": "EV driver does NOT plug the cable within the connection timeout",
+          "data": "",
+          "result": "ConnectionTimeOut expires"
+        },
+        {
+          "action": "SUT aborts the pending start and returns connector to Available",
+          "data": "",
+          "result": "Connector returns to Available after timeout"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_012_CS — Remote Stop Charging Session",
+        "description": "Remote Stop Charging Session\n\nSuite: RemoteActions\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "remoteactions",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a regular charging session (transaction active)",
+          "data": "",
+          "result": "Transaction active with known transactionId"
+        },
+        {
+          "action": "CSMS sends RemoteStopTransaction",
+          "data": "",
+          "result": "Remote stop request sent"
+        },
+        {
+          "action": "SUT stops the energy transfer and unlocks connector",
+          "data": "",
+          "result": "Transaction stopped with reason Remote"
+        },
+        {
+          "action": "CSMS confirms",
+          "data": "",
+          "result": "Stop acknowledged"
+        },
+        {
+          "action": "SUT updates connector status to Available",
+          "data": "",
+          "result": "Connector available"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_013_CS — Hard Reset Without Transaction",
+        "description": "Hard Reset Without Transaction\n\nSuite: Resetting\nNo CDS required — protocol-only test. Reboot test — requires extended timeouts (max_timeout_period=600, long_operation_timeout=650).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 9",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "resetting",
+          "no-cds",
+          "reboot"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Set connector to Inoperative via ChangeAvailability",
+          "data": "",
+          "result": "Connector set to Inoperative"
+        },
+        {
+          "action": "SUT confirms the availability change",
+          "data": "",
+          "result": "Change accepted"
+        },
+        {
+          "action": "SUT reports Inoperative status",
+          "data": "",
+          "result": "Status Inoperative"
+        },
+        {
+          "action": "CSMS sends Reset(Hard)",
+          "data": "",
+          "result": "Hard reset request sent"
+        },
+        {
+          "action": "SUT acknowledges reset",
+          "data": "",
+          "result": "Reset accepted"
+        },
+        {
+          "action": "SUT reboots",
+          "data": "",
+          "result": "SUT reboots"
+        },
+        {
+          "action": "SUT reconnects and sends BootNotification",
+          "data": "",
+          "result": "SUT registers after reboot"
+        },
+        {
+          "action": "CSMS accepts boot",
+          "data": "",
+          "result": "Boot accepted"
+        },
+        {
+          "action": "SUT reports connector status",
+          "data": "",
+          "result": "Connectors available after reboot"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_014_CS — Soft Reset Without Transaction",
+        "description": "Soft Reset Without Transaction\n\nSuite: Resetting\nNo CDS required — protocol-only test. Reboot test — requires extended timeouts (max_timeout_period=600, long_operation_timeout=650).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 7",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "resetting",
+          "no-cds",
+          "reboot"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Set connector to Inoperative",
+          "data": "",
+          "result": "Connector Inoperative"
+        },
+        {
+          "action": "SUT confirms",
+          "data": "",
+          "result": "Change accepted"
+        },
+        {
+          "action": "SUT reports Inoperative",
+          "data": "",
+          "result": "Status Inoperative"
+        },
+        {
+          "action": "CSMS sends Reset(Soft)",
+          "data": "",
+          "result": "Soft reset request sent"
+        },
+        {
+          "action": "SUT acknowledges",
+          "data": "",
+          "result": "Reset accepted"
+        },
+        {
+          "action": "SUT performs soft reboot",
+          "data": "",
+          "result": "SUT reboots"
+        },
+        {
+          "action": "SUT reconnects and sends BootNotification",
+          "data": "",
+          "result": "SUT re-registers after soft reset"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_015_CS — Hard Reset With Transaction",
+        "description": "Hard Reset With Transaction\n\nSuite: Resetting\nNo CDS required — protocol-only test. Reboot test — requires extended timeouts (max_timeout_period=600, long_operation_timeout=650).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 7",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "resetting",
+          "no-cds",
+          "reboot"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a regular charging session (transaction active)",
+          "data": "",
+          "result": "Transaction active"
+        },
+        {
+          "action": "CSMS sends Reset(Hard)",
+          "data": "",
+          "result": "Hard reset sent during transaction"
+        },
+        {
+          "action": "SUT acknowledges reset",
+          "data": "",
+          "result": "Reset accepted"
+        },
+        {
+          "action": "SUT stops the active transaction due to reset",
+          "data": "",
+          "result": "Transaction stopped with reason HardReset"
+        },
+        {
+          "action": "SUT reboots",
+          "data": "",
+          "result": "SUT reboots"
+        },
+        {
+          "action": "SUT reconnects and sends BootNotification",
+          "data": "",
+          "result": "Boot after hard reset"
+        },
+        {
+          "action": "CSMS accepts",
+          "data": "",
+          "result": "Boot accepted"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_016_CS — Soft Reset With Transaction",
+        "description": "Soft Reset With Transaction\n\nSuite: Resetting\nNo CDS required — protocol-only test. Reboot test — requires extended timeouts (max_timeout_period=600, long_operation_timeout=650).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "resetting",
+          "no-cds",
+          "reboot"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a charging session (transaction active)",
+          "data": "",
+          "result": "Transaction active"
+        },
+        {
+          "action": "CSMS sends Reset(Soft)",
+          "data": "",
+          "result": "Soft reset sent during transaction"
+        },
+        {
+          "action": "SUT acknowledges",
+          "data": "",
+          "result": "Reset accepted"
+        },
+        {
+          "action": "SUT stops the active transaction",
+          "data": "",
+          "result": "Transaction stopped with reason SoftReset"
+        },
+        {
+          "action": "SUT reboots",
+          "data": "",
+          "result": "SUT performs soft reset"
+        },
+        {
+          "action": "SUT reconnects and sends BootNotification",
+          "data": "",
+          "result": "Boot after soft reset"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_017_1_CS — Unlock - No Session (Not Fixed Cable)",
+        "description": "Unlock - No Session (Not Fixed Cable)\n\nSuite: Unlocking\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "unlocking",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Ensure no transaction active and cable is NOT fixed (detachable)",
+          "data": "",
+          "result": "No session, non-fixed cable"
+        },
+        {
+          "action": "CSMS sends UnlockConnector",
+          "data": "",
+          "result": "Unlock request sent"
+        },
+        {
+          "action": "SUT unlocks the connector (mechanical lock release)",
+          "data": "",
+          "result": "Connector unlocked"
+        },
+        {
+          "action": "SUT responds with Unlocked status",
+          "data": "",
+          "result": "Unlock successful"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_017_2_CS — Unlock - No Session (Fixed Cable)",
+        "description": "Unlock - No Session (Fixed Cable)\n\nSuite: Unlocking\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "unlocking",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Ensure no transaction active and cable IS fixed (permanently attached)",
+          "data": "",
+          "result": "No session, fixed cable"
+        },
+        {
+          "action": "CSMS sends UnlockConnector",
+          "data": "",
+          "result": "Unlock request sent"
+        },
+        {
+          "action": "SUT responds that unlock is not supported on fixed cable",
+          "data": "",
+          "result": "Unlock NotSupported for fixed cable"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_018_1_CS — Unlock - With Session (Not Fixed Cable)",
+        "description": "Unlock - With Session (Not Fixed Cable)\n\nSuite: Unlocking\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "unlocking",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a charging session with non-fixed cable",
+          "data": "",
+          "result": "Transaction active, non-fixed cable"
+        },
+        {
+          "action": "CSMS sends UnlockConnector",
+          "data": "",
+          "result": "Unlock request sent during active transaction"
+        },
+        {
+          "action": "SUT stops the transaction first",
+          "data": "",
+          "result": "Transaction stopped due to unlock command"
+        },
+        {
+          "action": "SUT unlocks the connector",
+          "data": "",
+          "result": "Connector unlocked"
+        },
+        {
+          "action": "SUT responds with Unlocked status",
+          "data": "",
+          "result": "Unlock successful after stopping transaction"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_018_2_CS — Unlock - With Session (Fixed Cable)",
+        "description": "Unlock - With Session (Fixed Cable)\n\nSuite: Unlocking\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "unlocking",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a charging session with fixed cable",
+          "data": "",
+          "result": "Transaction active, fixed cable"
+        },
+        {
+          "action": "CSMS sends UnlockConnector",
+          "data": "",
+          "result": "Unlock request sent during active transaction"
+        },
+        {
+          "action": "SUT responds NotSupported (fixed cable cannot unlock)",
+          "data": "",
+          "result": "Unlock NotSupported (fixed cable)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_019_CS — Retrieve Configuration",
+        "description": "Retrieve Configuration\n\nSuite: Configuration\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "configuration",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends GetConfiguration for specific key",
+          "data": "",
+          "result": "Request for specific configuration key"
+        },
+        {
+          "action": "SUT returns the requested configuration key value",
+          "data": "",
+          "result": "Configuration key value returned"
+        },
+        {
+          "action": "CSMS sends GetConfiguration with empty key list (all keys)",
+          "data": "",
+          "result": "Request for all configuration keys"
+        },
+        {
+          "action": "SUT returns all supported configuration keys",
+          "data": "",
+          "result": "All configuration keys returned"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_021_CS — Change/Set Configuration",
+        "description": "Change/Set Configuration\n\nSuite: Configuration\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "configuration",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ChangeConfiguration to set a writable key",
+          "data": "",
+          "result": "Configuration change request sent"
+        },
+        {
+          "action": "SUT accepts the configuration change",
+          "data": "",
+          "result": "Configuration change accepted"
+        },
+        {
+          "action": "Verify the new value by reading it back",
+          "data": "",
+          "result": "Request to verify change"
+        },
+        {
+          "action": "SUT returns the updated value",
+          "data": "",
+          "result": "Changed value confirmed: MeterValueSampleInterval=300"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_023_4_CS — Start Local - Authorize Invalid",
+        "description": "Start Local - Authorize Invalid\n\nSuite: BasicActions\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "basicactions",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "EV driver plugs cable and presents an invalid/unknown IdTag",
+          "data": "",
+          "result": "Invalid IdTag presented"
+        },
+        {
+          "action": "SUT sends Authorize with the invalid IdTag",
+          "data": "",
+          "result": "Authorize sent with invalid IdTag"
+        },
+        {
+          "action": "CSMS rejects the authorization",
+          "data": "",
+          "result": "Authorization rejected"
+        },
+        {
+          "action": "SUT informs user and does NOT start transaction",
+          "data": "",
+          "result": "Transaction NOT started; user notified of invalid IdTag"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_023_5_CS — Start Remote - Authorize Invalid",
+        "description": "Start Remote - Authorize Invalid\n\nSuite: BasicActions\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "basicactions",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends RemoteStartTransaction with an invalid IdTag",
+          "data": "",
+          "result": "Remote start with invalid IdTag"
+        },
+        {
+          "action": "SUT sends Authorize with the invalid IdTag",
+          "data": "",
+          "result": "Authorize sent with invalid IdTag"
+        },
+        {
+          "action": "CSMS rejects authorization",
+          "data": "",
+          "result": "Authorization rejected"
+        },
+        {
+          "action": "SUT does NOT start transaction",
+          "data": "",
+          "result": "No transaction started; connector remains Available"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_024_CS — Start - Lock Failure",
+        "description": "Start - Lock Failure\n\nSuite: BasicActions\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "basicactions",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "EV driver plugs cable and presents valid IdTag",
+          "data": "",
+          "result": "Valid IdTag presented"
+        },
+        {
+          "action": "SUT sends Authorize (valid IdTag)",
+          "data": "",
+          "result": "Authorize sent"
+        },
+        {
+          "action": "CSMS authorizes",
+          "data": "",
+          "result": "IdTag authorized"
+        },
+        {
+          "action": "SUT attempts to lock connector but lock mechanism fails",
+          "data": "",
+          "result": "Connector lock failure"
+        },
+        {
+          "action": "SUT reports lock failure and sets connector to Faulted",
+          "data": "",
+          "result": "Connector status set to Faulted with ConnectorLockFailure"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_026_CS — Remote Start - Rejected",
+        "description": "Remote Start - Rejected\n\nSuite: RemoteActionsNonHappy\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "remoteactionsnonhappy",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a charging session (connector already occupied)",
+          "data": "",
+          "result": "Connector occupied with active transaction"
+        },
+        {
+          "action": "CSMS sends RemoteStartTransaction to the same (already occupied) connector",
+          "data": "",
+          "result": "Remote start request on occupied connector"
+        },
+        {
+          "action": "SUT rejects the remote start because connector is occupied",
+          "data": "",
+          "result": "Remote start rejected (connector occupied)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_027_CS — Remote Start - ConnectorId=0",
+        "description": "Remote Start - ConnectorId=0\n\nSuite: RemoteActionsNonHappy\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "remoteactionsnonhappy",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends RemoteStartTransaction with connectorId=0 (reserved)",
+          "data": "",
+          "result": "Remote start with connectorId=0 sent"
+        },
+        {
+          "action": "SUT responds with Rejected (connectorId=0 is not valid for start)",
+          "data": "",
+          "result": "Remote start rejected for connectorId=0"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_028_CS — Remote Stop - Rejected",
+        "description": "Remote Stop - Rejected\n\nSuite: RemoteActionsNonHappy\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "remoteactionsnonhappy",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends RemoteStopTransaction with an unknown/non-existent transactionId",
+          "data": "",
+          "result": "Remote stop with unknown transactionId"
+        },
+        {
+          "action": "SUT rejects because transactionId does not exist",
+          "data": "",
+          "result": "Remote stop rejected (unknown transaction)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_030_CS — Unlock - Unlock Failure",
+        "description": "Unlock - Unlock Failure\n\nSuite: UnlockingNonHappy\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "unlockingnonhappy",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends UnlockConnector",
+          "data": "",
+          "result": "Unlock request sent"
+        },
+        {
+          "action": "SUT attempts to unlock but lock mechanism fails",
+          "data": "",
+          "result": "Unlock mechanism fails"
+        },
+        {
+          "action": "SUT responds with UnlockFailed status",
+          "data": "",
+          "result": "Unlock failed reported"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_031_CS — Unlock - Unknown Connector",
+        "description": "Unlock - Unknown Connector\n\nSuite: UnlockingNonHappy\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "unlockingnonhappy",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends UnlockConnector with non-existent connectorId",
+          "data": "",
+          "result": "Unlock request for unknown connector"
+        },
+        {
+          "action": "SUT rejects because connectorId does not exist",
+          "data": "",
+          "result": "Unlock rejected (unknown connector)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_032_1_CS — Power Failure - Stop Before Down",
+        "description": "Power Failure - Stop Before Down\n\nSuite: PowerFailure\nNo CDS required — protocol-only test. Reboot test — requires extended timeouts (max_timeout_period=600, long_operation_timeout=650).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "powerfailure",
+          "no-cds",
+          "reboot"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a charging session (transaction active)",
+          "data": "",
+          "result": "Transaction active"
+        },
+        {
+          "action": "Simulate power failure with backup power available",
+          "data": "",
+          "result": "SUT detects impending power loss, backup power active"
+        },
+        {
+          "action": "SUT stops transaction before going down (backup power allows orderly shutdown)",
+          "data": "",
+          "result": "Transaction stopped with reason PowerLoss before shutdown"
+        },
+        {
+          "action": "SUT powers off",
+          "data": "",
+          "result": "SUT shuts down"
+        },
+        {
+          "action": "Power restored: SUT boots and reconnects",
+          "data": "",
+          "result": "SUT reboots after power restoration"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_032_2_CS — Power Failure - Stop After Down",
+        "description": "Power Failure - Stop After Down\n\nSuite: PowerFailure\nNo CDS required — protocol-only test. Reboot test — requires extended timeouts (max_timeout_period=600, long_operation_timeout=650).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "powerfailure",
+          "no-cds",
+          "reboot"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a charging session (transaction active)",
+          "data": "",
+          "result": "Transaction active"
+        },
+        {
+          "action": "Simulate sudden power failure WITHOUT backup power",
+          "data": "",
+          "result": "SUT loses power immediately"
+        },
+        {
+          "action": "SUT goes off without sending StopTransaction",
+          "data": "",
+          "result": "SUT shuts down abruptly"
+        },
+        {
+          "action": "Power restored: SUT boots and reconnects",
+          "data": "",
+          "result": "SUT reboots after power restoration"
+        },
+        {
+          "action": "SUT sends StopTransaction for the interrupted transaction (from non-volatile memory)",
+          "data": "",
+          "result": "Transaction stopped after reboot with reason PowerLoss"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_034_CS — Power Failure - Unavailable Status",
+        "description": "Power Failure - Unavailable Status\n\nSuite: PowerFailure\nNo CDS required — protocol-only test. Reboot test — requires extended timeouts (max_timeout_period=600, long_operation_timeout=650).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "powerfailure",
+          "no-cds",
+          "reboot"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Set connector to Unavailable via ChangeAvailability",
+          "data": "",
+          "result": "Connector set Inoperative"
+        },
+        {
+          "action": "SUT confirms",
+          "data": "",
+          "result": "Change accepted"
+        },
+        {
+          "action": "SUT reports Unavailable",
+          "data": "",
+          "result": "Status Unavailable"
+        },
+        {
+          "action": "Simulate power cycle (power off then on)",
+          "data": "",
+          "result": "SUT powers off and on"
+        },
+        {
+          "action": "SUT boots and sends BootNotification",
+          "data": "",
+          "result": "SUT reconnects after power cycle"
+        },
+        {
+          "action": "Verify connector status persists as Unavailable after reboot",
+          "data": "",
+          "result": "Unavailable status persists across power cycle"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_036_CS — Connection Loss During Transaction",
+        "description": "Connection Loss During Transaction\n\nSuite: OfflineBehavior\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "offlinebehavior",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a charging session (transaction active)",
+          "data": "",
+          "result": "Transaction active"
+        },
+        {
+          "action": "Simulate network connection loss (CSMS disconnects)",
+          "data": "",
+          "result": "SUT loses connection to CSMS"
+        },
+        {
+          "action": "SUT continues charging and queues meter values locally",
+          "data": "",
+          "result": "Meter values queued during offline period"
+        },
+        {
+          "action": "Restore network connection",
+          "data": "",
+          "result": "SUT reconnects to CSMS"
+        },
+        {
+          "action": "SUT sends queued meter values to CSMS",
+          "data": "",
+          "result": "Queued meter values sent after reconnection"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_037_1_CS — Offline Start - Valid IdTag",
+        "description": "Offline Start - Valid IdTag\n\nSuite: OfflineBehavior\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "offlinebehavior",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Ensure SUT is offline (no connection to CSMS)",
+          "data": "",
+          "result": "SUT not connected"
+        },
+        {
+          "action": "EV driver plugs cable and presents a valid known IdTag",
+          "data": "",
+          "result": "Valid IdTag presented while offline"
+        },
+        {
+          "action": "SUT starts transaction locally (offline authorization)",
+          "data": "",
+          "result": "Transaction started while offline"
+        },
+        {
+          "action": "Restore network connection",
+          "data": "",
+          "result": "SUT reconnects to CSMS"
+        },
+        {
+          "action": "SUT sends StartTransaction to CSMS (for the offline-started transaction)",
+          "data": "",
+          "result": "StartTransaction communicated after reconnection"
+        },
+        {
+          "action": "CSMS accepts the transaction",
+          "data": "",
+          "result": "Transaction accepted retrospectively"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_037_2_CS — Offline Start - Invalid IdTag (StopOnInvalid=false)",
+        "description": "Offline Start - Invalid IdTag (StopOnInvalid=false)\n\nSuite: OfflineBehavior\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "offlinebehavior",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Configure StopTransactionOnInvalidId=false",
+          "data": "",
+          "result": "StopOnInvalidId set to false"
+        },
+        {
+          "action": "Ensure SUT is offline",
+          "data": "",
+          "result": "SUT offline"
+        },
+        {
+          "action": "EV driver presents an invalid/unknown IdTag while offline",
+          "data": "",
+          "result": "Invalid IdTag presented offline"
+        },
+        {
+          "action": "SUT starts transaction despite invalid IdTag (StopOnInvalidId=false)",
+          "data": "",
+          "result": "Transaction started with invalid IdTag offline"
+        },
+        {
+          "action": "Restore connection and SUT sends StartTransaction",
+          "data": "",
+          "result": "Transaction started offline with invalid IdTag reported"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_037_3_CS — Offline Start - Invalid IdTag (StopOnInvalid=true)",
+        "description": "Offline Start - Invalid IdTag (StopOnInvalid=true)\n\nSuite: OfflineBehavior\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "offlinebehavior",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Configure StopTransactionOnInvalidId=true",
+          "data": "",
+          "result": "StopOnInvalidId set to true"
+        },
+        {
+          "action": "Ensure SUT is offline",
+          "data": "",
+          "result": "SUT offline"
+        },
+        {
+          "action": "EV driver presents an invalid/unknown IdTag while offline",
+          "data": "",
+          "result": "Invalid IdTag presented offline"
+        },
+        {
+          "action": "SUT may start transaction but will stop it when reconnecting (invalid IdTag)",
+          "data": "",
+          "result": "SUT behavior depends on implementation"
+        },
+        {
+          "action": "Restore connection",
+          "data": "",
+          "result": "SUT reconnects"
+        },
+        {
+          "action": "SUT stops the transaction due to invalid IdTag (StopOnInvalidId=true)",
+          "data": "",
+          "result": "Transaction stopped with reason DeAuthorized"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_038_CS — Offline Stop Transaction",
+        "description": "Offline Stop Transaction\n\nSuite: OfflineBehavior\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "offlinebehavior",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a charging session (transaction active, online)",
+          "data": "",
+          "result": "Transaction active"
+        },
+        {
+          "action": "Simulate network connection loss",
+          "data": "",
+          "result": "SUT loses connection"
+        },
+        {
+          "action": "EV driver stops charging (unplug or local stop) while offline",
+          "data": "",
+          "result": "Charging stopped locally while offline"
+        },
+        {
+          "action": "SUT stops transaction locally (queues StopTransaction)",
+          "data": "",
+          "result": "StopTransaction queued locally"
+        },
+        {
+          "action": "Restore network connection",
+          "data": "",
+          "result": "SUT reconnects to CSMS"
+        },
+        {
+          "action": "SUT sends StopTransaction to CSMS",
+          "data": "",
+          "result": "StopTransaction sent after reconnection with reason Local"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_039_CS — Offline Transaction",
+        "description": "Offline Transaction\n\nSuite: OfflineBehavior\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "offlinebehavior",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Ensure SUT is offline",
+          "data": "",
+          "result": "SUT offline"
+        },
+        {
+          "action": "Start and stop a transaction entirely while offline",
+          "data": "",
+          "result": "Full offline transaction lifecycle"
+        },
+        {
+          "action": "Restore network connection",
+          "data": "",
+          "result": "SUT reconnects"
+        },
+        {
+          "action": "SUT sends StartTransaction (offline started)",
+          "data": "",
+          "result": "Start communicated after reconnect"
+        },
+        {
+          "action": "CSMS accepts",
+          "data": "",
+          "result": "Transaction accepted"
+        },
+        {
+          "action": "SUT sends StopTransaction (offline stopped)",
+          "data": "",
+          "result": "Stop communicated after reconnect"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_040_1_CS — Config Key - NotSupported",
+        "description": "Config Key - NotSupported\n\nSuite: ConfigKeysNonHappy\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "configkeysnonhappy",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ChangeConfiguration with an unknown/unsupported key",
+          "data": "",
+          "result": "ChangeConfiguration with unsupported key"
+        },
+        {
+          "action": "SUT rejects with NotSupported status",
+          "data": "",
+          "result": "Configuration change rejected - key not supported"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_040_2_CS — Config Key - Invalid Value",
+        "description": "Config Key - Invalid Value\n\nSuite: ConfigKeysNonHappy\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "configkeysnonhappy",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ChangeConfiguration with an invalid value (e.g. negative)",
+          "data": "",
+          "result": "ChangeConfiguration with invalid value"
+        },
+        {
+          "action": "SUT rejects with Rejected status",
+          "data": "",
+          "result": "Configuration change rejected - invalid value"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_041_CS — Fault Behavior",
+        "description": "Fault Behavior\n\nSuite: FaultBehavior\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "faultbehavior",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Induce a fault condition on the SUT connector",
+          "data": "",
+          "result": "Fault condition detected"
+        },
+        {
+          "action": "SUT reports Faulted status",
+          "data": "",
+          "result": "Connector status set to Faulted with appropriate error code"
+        },
+        {
+          "action": "Attempt to start a transaction on the faulted connector",
+          "data": "",
+          "result": "Attempt to start on faulted connector"
+        },
+        {
+          "action": "SUT refuses to start transaction while connector is Faulted",
+          "data": "",
+          "result": "No transaction started on faulted connector"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_042_1_CS — Get Local List Version (Not Supported)",
+        "description": "Get Local List Version (Not Supported)\n\nSuite: LocalAuthList\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "LOCAL_AUTH_LIST",
+          "localauthlist",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends GetLocalListVersion when SUT does not support local auth lists",
+          "data": "",
+          "result": "Request for local list version"
+        },
+        {
+          "action": "SUT returns NotSupported or listVersion=-1",
+          "data": "",
+          "result": "Local list version not supported"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_042_2_CS — Get Local List Version (Empty)",
+        "description": "Get Local List Version (Empty)\n\nSuite: LocalAuthList\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "LOCAL_AUTH_LIST",
+          "localauthlist",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends a local auth list (version 1) to SUT",
+          "data": "",
+          "result": "Empty local list sent with version 1"
+        },
+        {
+          "action": "SUT confirms",
+          "data": "",
+          "result": "Local list accepted (empty)"
+        },
+        {
+          "action": "CSMS sends GetLocalListVersion",
+          "data": "",
+          "result": "Request version"
+        },
+        {
+          "action": "SUT returns version 0 (empty list)",
+          "data": "",
+          "result": "Local list version 0 (empty)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_043_1_CS — Send Local List - NotSupported",
+        "description": "Send Local List - NotSupported\n\nSuite: LocalAuthList\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "LOCAL_AUTH_LIST",
+          "localauthlist",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends SendLocalList to SUT that does not support local auth lists",
+          "data": "",
+          "result": "SendLocalList request"
+        },
+        {
+          "action": "SUT returns NotSupported",
+          "data": "",
+          "result": "Local list not supported"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_043_2_CS — Send Local List - VersionMismatch",
+        "description": "Send Local List - VersionMismatch\n\nSuite: LocalAuthList\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "LOCAL_AUTH_LIST",
+          "localauthlist",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends SendLocalList with an old/stale version number",
+          "data": "",
+          "result": "SendLocalList with old version"
+        },
+        {
+          "action": "SUT returns VersionMismatch",
+          "data": "",
+          "result": "Version mismatch detected and reported"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_043_3_CS — Send Local List - Failed",
+        "description": "Send Local List - Failed\n\nSuite: LocalAuthList\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "LOCAL_AUTH_LIST",
+          "localauthlist",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends SendLocalList but SUT fails to store it",
+          "data": "",
+          "result": "SendLocalList request"
+        },
+        {
+          "action": "SUT returns Failed (e.g. out of memory, internal error)",
+          "data": "",
+          "result": "Local list storage failed"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_043_CS — Send Local Authorization List",
+        "description": "Send Local Authorization List\n\nSuite: LocalAuthList\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "LOCAL_AUTH_LIST",
+          "localauthlist",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends a Full update of local auth list (version 1)",
+          "data": "",
+          "result": "Full local list sent with version 1"
+        },
+        {
+          "action": "SUT accepts",
+          "data": "",
+          "result": "Full list accepted"
+        },
+        {
+          "action": "CSMS sends a Differential update (version 2, adds idTag3, removes idTag1)",
+          "data": "",
+          "result": "Differential update sent"
+        },
+        {
+          "action": "SUT accepts differential update",
+          "data": "",
+          "result": "Differential update accepted"
+        },
+        {
+          "action": "Verify version incremented",
+          "data": "",
+          "result": "Version check"
+        },
+        {
+          "action": "SUT returns version 2",
+          "data": "",
+          "result": "Local list version 2"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_044_1_CS — Firmware Update - Download and Install",
+        "description": "Firmware Update - Download and Install\n\nSuite: FirmwareManagement\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "FIRMWARE_MANAGEMENT",
+          "firmwaremanagement",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends UpdateFirmware with download location and install time",
+          "data": "",
+          "result": "Firmware update request sent"
+        },
+        {
+          "action": "SUT starts downloading firmware and reports Downloading status",
+          "data": "",
+          "result": "Firmware download in progress"
+        },
+        {
+          "action": "SUT completes download and reports Downloaded",
+          "data": "",
+          "result": "Firmware download completed"
+        },
+        {
+          "action": "SUT starts installing firmware and reports Installing",
+          "data": "",
+          "result": "Firmware install in progress"
+        },
+        {
+          "action": "SUT completes installation and may reboot, then reports Installed",
+          "data": "",
+          "result": "Firmware installation completed successfully"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_044_2_CS — Firmware Update - Download Failed",
+        "description": "Firmware Update - Download Failed\n\nSuite: FirmwareManagement\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "FIRMWARE_MANAGEMENT",
+          "firmwaremanagement",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends UpdateFirmware with invalid download location",
+          "data": "",
+          "result": "Firmware update with bad URI"
+        },
+        {
+          "action": "SUT attempts to download but fails",
+          "data": "",
+          "result": "Firmware download fails"
+        },
+        {
+          "action": "SUT reports DownloadFailed",
+          "data": "",
+          "result": "Download failed reported"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_044_3_CS — Firmware Update - Installation Failed",
+        "description": "Firmware Update - Installation Failed\n\nSuite: FirmwareManagement\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "FIRMWARE_MANAGEMENT",
+          "firmwaremanagement",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends UpdateFirmware with valid download location",
+          "data": "",
+          "result": "Firmware update sent"
+        },
+        {
+          "action": "SUT downloads firmware successfully",
+          "data": "",
+          "result": "Download completed"
+        },
+        {
+          "action": "SUT attempts to install but installation fails",
+          "data": "",
+          "result": "Firmware installation fails"
+        },
+        {
+          "action": "SUT reports InstallationFailed",
+          "data": "",
+          "result": "Installation failed reported"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_045_1_CS — Get Diagnostics",
+        "description": "Get Diagnostics\n\nSuite: Diagnostics\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "DIAGNOSTICS",
+          "diagnostics",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends GetDiagnostics with upload location",
+          "data": "",
+          "result": "Get diagnostics request sent"
+        },
+        {
+          "action": "SUT starts uploading diagnostics and reports Uploading",
+          "data": "",
+          "result": "Diagnostics upload started"
+        },
+        {
+          "action": "SUT completes upload and reports Uploaded",
+          "data": "",
+          "result": "Diagnostics upload completed successfully"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_045_2_CS — Get Diagnostics - Upload Failed",
+        "description": "Get Diagnostics - Upload Failed\n\nSuite: Diagnostics\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "DIAGNOSTICS",
+          "diagnostics",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends GetDiagnostics with invalid upload location",
+          "data": "",
+          "result": "Get diagnostics with bad URI"
+        },
+        {
+          "action": "SUT attempts to upload but fails",
+          "data": "",
+          "result": "Diagnostics upload fails"
+        },
+        {
+          "action": "SUT reports UploadFailed",
+          "data": "",
+          "result": "Upload failed reported"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_046_1_CS — Reserve Connector - Local Start",
+        "description": "Reserve Connector - Local Start\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ReserveNow to reserve a specific connector",
+          "data": "",
+          "result": "Reservation request sent"
+        },
+        {
+          "action": "SUT accepts reservation",
+          "data": "",
+          "result": "Connector reserved"
+        },
+        {
+          "action": "SUT reports connector as Reserved",
+          "data": "",
+          "result": "Status Reserved"
+        },
+        {
+          "action": "EV driver plugs cable and presents reserved IdTag",
+          "data": "",
+          "result": "Reserved IdTag presented"
+        },
+        {
+          "action": "SUT authorizes (IdTag matches reservation) and starts transaction",
+          "data": "",
+          "result": "Transaction started with reservationId"
+        },
+        {
+          "action": "CSMS accepts",
+          "data": "",
+          "result": "Transaction active on reserved connector"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_046_2_CS — Reserve Connector - Remote Start",
+        "description": "Reserve Connector - Remote Start\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ReserveNow",
+          "data": "",
+          "result": "Reservation sent"
+        },
+        {
+          "action": "SUT accepts",
+          "data": "",
+          "result": "Reserved"
+        },
+        {
+          "action": "CSMS sends RemoteStartTransaction with reserved IdTag",
+          "data": "",
+          "result": "Remote start on reserved connector"
+        },
+        {
+          "action": "SUT authorizes and starts transaction",
+          "data": "",
+          "result": "Transaction started via remote start on reserved connector"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_047_CS — Reserve Connector - Expire",
+        "description": "Reserve Connector - Expire\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ReserveNow with a short expiry time",
+          "data": "",
+          "result": "Reservation with short expiry"
+        },
+        {
+          "action": "SUT accepts and sets connector Reserved",
+          "data": "",
+          "result": "Connector Reserved"
+        },
+        {
+          "action": "Wait for expiry time to pass",
+          "data": "",
+          "result": "Reservation expires"
+        },
+        {
+          "action": "SUT returns connector to Available after expiry",
+          "data": "",
+          "result": "Connector returns to Available after reservation expiry"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_048_1_CS — Reserve Connector - Faulted",
+        "description": "Reserve Connector - Faulted\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Set connector to Faulted state",
+          "data": "",
+          "result": "Connector in Faulted state"
+        },
+        {
+          "action": "CSMS sends ReserveNow for the faulted connector",
+          "data": "",
+          "result": "Reserve request on faulted connector"
+        },
+        {
+          "action": "SUT rejects reservation with status Faulted",
+          "data": "",
+          "result": "Reservation rejected (connector faulted)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_048_2_CS — Reserve Connector - Occupied",
+        "description": "Reserve Connector - Occupied\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a transaction on a connector (Occupied)",
+          "data": "",
+          "result": "Connector occupied"
+        },
+        {
+          "action": "CSMS sends ReserveNow for the occupied connector",
+          "data": "",
+          "result": "Reserve request on occupied connector"
+        },
+        {
+          "action": "SUT rejects reservation with status Occupied",
+          "data": "",
+          "result": "Reservation rejected (connector occupied)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_048_3_CS — Reserve Connector - Unavailable",
+        "description": "Reserve Connector - Unavailable\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Set connector to Unavailable/Inoperative",
+          "data": "",
+          "result": "Connector Unavailable"
+        },
+        {
+          "action": "CSMS sends ReserveNow for the unavailable connector",
+          "data": "",
+          "result": "Reserve request on unavailable connector"
+        },
+        {
+          "action": "SUT rejects with status Unavailable",
+          "data": "",
+          "result": "Reservation rejected (connector unavailable)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_048_4_CS — Reserve Connector - Rejected",
+        "description": "Reserve Connector - Rejected\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ReserveNow when reservation is not supported",
+          "data": "",
+          "result": "Reserve request when unsupported"
+        },
+        {
+          "action": "SUT rejects with status Rejected",
+          "data": "",
+          "result": "Reservation rejected (not supported)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_049_CS — Reserve ChargePoint - Transaction",
+        "description": "Reserve ChargePoint - Transaction\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ReserveNow with connectorId=0 (any available connector)",
+          "data": "",
+          "result": "Reserve any connector"
+        },
+        {
+          "action": "SUT reserves any available connector",
+          "data": "",
+          "result": "A connector reserved"
+        },
+        {
+          "action": "Start a transaction on the reserved connector",
+          "data": "",
+          "result": "Transaction started on reserved connector"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_050_1_CS — Reserve ChargePoint - Faulted",
+        "description": "Reserve ChargePoint - Faulted\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Set all connectors to Faulted",
+          "data": "",
+          "result": "All connectors faulted"
+        },
+        {
+          "action": "CSMS sends ReserveNow with connectorId=0",
+          "data": "",
+          "result": "Reserve any on faulted CP"
+        },
+        {
+          "action": "SUT rejects with status Faulted (no available connector)",
+          "data": "",
+          "result": "Reservation rejected (all faulted)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_050_2_CS — Reserve ChargePoint - Occupied",
+        "description": "Reserve ChargePoint - Occupied\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "All connectors occupied with active transactions",
+          "data": "",
+          "result": "All connectors occupied"
+        },
+        {
+          "action": "CSMS sends ReserveNow with connectorId=0",
+          "data": "",
+          "result": "Reserve any on occupied CP"
+        },
+        {
+          "action": "SUT rejects with status Occupied",
+          "data": "",
+          "result": "Reservation rejected (all occupied)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_050_3_CS — Reserve ChargePoint - Unavailable",
+        "description": "Reserve ChargePoint - Unavailable\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Set all connectors to Unavailable",
+          "data": "",
+          "result": "All connectors unavailable"
+        },
+        {
+          "action": "CSMS sends ReserveNow with connectorId=0",
+          "data": "",
+          "result": "Reserve any on unavailable CP"
+        },
+        {
+          "action": "SUT rejects with status Unavailable",
+          "data": "",
+          "result": "Reservation rejected (all unavailable)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_050_4_CS — Reserve ChargePoint - Rejected",
+        "description": "Reserve ChargePoint - Rejected\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ReserveNow with connectorId=0 when not supported",
+          "data": "",
+          "result": "Reserve any when unsupported"
+        },
+        {
+          "action": "SUT rejects with status Rejected",
+          "data": "",
+          "result": "Reservation rejected (not supported)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_051_CS — Cancel Reservation",
+        "description": "Cancel Reservation\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ReserveNow to reserve a connector",
+          "data": "",
+          "result": "Connector reserved"
+        },
+        {
+          "action": "SUT confirms reservation",
+          "data": "",
+          "result": "Reservation active"
+        },
+        {
+          "action": "CSMS sends CancelReservation with the reservationId",
+          "data": "",
+          "result": "Cancel reservation request"
+        },
+        {
+          "action": "SUT cancels the reservation",
+          "data": "",
+          "result": "Reservation cancelled"
+        },
+        {
+          "action": "SUT returns connector to Available",
+          "data": "",
+          "result": "Connector available after cancellation"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_052_CS — Cancel Reservation - Rejected",
+        "description": "Cancel Reservation - Rejected\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends CancelReservation with unknown/non-existent reservationId",
+          "data": "",
+          "result": "Cancel unknown reservation"
+        },
+        {
+          "action": "SUT rejects with status Rejected",
+          "data": "",
+          "result": "Cancellation rejected (unknown reservation)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_053_1_CS — Reserved - parentIdTag Local",
+        "description": "Reserved - parentIdTag Local\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ReserveNow with parentIdTag specified",
+          "data": "",
+          "result": "Reservation with parentIdTag"
+        },
+        {
+          "action": "SUT accepts",
+          "data": "",
+          "result": "Reserved for parentIdTag"
+        },
+        {
+          "action": "EV driver presents a child IdTag (parentId matches reservation)",
+          "data": "",
+          "result": "Child IdTag presented"
+        },
+        {
+          "action": "SUT authorizes child IdTag (parentId matches reservation)",
+          "data": "",
+          "result": "Transaction started using parentIdTag reservation"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_053_2_CS — Reserved - parentIdTag Remote",
+        "description": "Reserved - parentIdTag Remote\n\nSuite: Reservation\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "RESERVATION",
+          "reservation",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ReserveNow with parentIdTag",
+          "data": "",
+          "result": "Reservation with parentIdTag"
+        },
+        {
+          "action": "SUT accepts",
+          "data": "",
+          "result": "Reserved"
+        },
+        {
+          "action": "CSMS sends RemoteStartTransaction with child IdTag",
+          "data": "",
+          "result": "Remote start with child IdTag"
+        },
+        {
+          "action": "SUT matches child IdTag to parentIdTag reservation and starts transaction",
+          "data": "",
+          "result": "Transaction started via remote start using parentIdTag reservation"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_054_CS — Trigger Message",
+        "description": "Trigger Message\n\nSuite: RemoteTrigger\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 9",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "remotetrigger",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends TriggerMessage for MeterValues",
+          "data": "",
+          "result": "Trigger for MeterValues"
+        },
+        {
+          "action": "SUT acknowledges trigger and sends requested message",
+          "data": "",
+          "result": "Trigger accepted"
+        },
+        {
+          "action": "SUT sends the triggered MeterValues",
+          "data": "",
+          "result": "MeterValues sent in response to trigger"
+        },
+        {
+          "action": "CSMS sends TriggerMessage for Heartbeat",
+          "data": "",
+          "result": "Trigger for Heartbeat"
+        },
+        {
+          "action": "SUT acknowledges and sends Heartbeat",
+          "data": "",
+          "result": "Heartbeat sent"
+        },
+        {
+          "action": "CSMS sends TriggerMessage for StatusNotification",
+          "data": "",
+          "result": "Trigger for StatusNotification"
+        },
+        {
+          "action": "SUT sends StatusNotification",
+          "data": "",
+          "result": "StatusNotification sent"
+        },
+        {
+          "action": "CSMS sends TriggerMessage for DiagnosticsStatusNotification",
+          "data": "",
+          "result": "Trigger for DiagnosticsStatusNotification"
+        },
+        {
+          "action": "SUT sends DiagnosticsStatusNotification",
+          "data": "",
+          "result": "DiagnosticsStatusNotification sent"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_055_CS — Trigger Message - Rejected",
+        "description": "Trigger Message - Rejected\n\nSuite: RemoteTrigger\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "remotetrigger",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends TriggerMessage with invalid connectorId",
+          "data": "",
+          "result": "Trigger with invalid connectorId"
+        },
+        {
+          "action": "SUT rejects with status Rejected",
+          "data": "",
+          "result": "Trigger rejected (invalid connector)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_056_CS — Smart Charging - TxDefaultProfile",
+        "description": "Smart Charging - TxDefaultProfile\n\nSuite: SmartCharging\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SMART_CHARGING",
+          "smartcharging",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends SetChargingProfile with TxDefaultProfile",
+          "data": "",
+          "result": "TxDefaultProfile sent"
+        },
+        {
+          "action": "SUT accepts the charging profile",
+          "data": "",
+          "result": "Profile accepted"
+        },
+        {
+          "action": "CSMS requests composite schedule for a connector",
+          "data": "",
+          "result": "Get composite schedule request"
+        },
+        {
+          "action": "SUT returns the composite schedule based on TxDefaultProfile",
+          "data": "",
+          "result": "Composite schedule returned matching TxDefaultProfile"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_057_CS — Smart Charging - TxProfile",
+        "description": "Smart Charging - TxProfile\n\nSuite: SmartCharging\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SMART_CHARGING",
+          "smartcharging",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a charging session (transaction active)",
+          "data": "",
+          "result": "Transaction active with transactionId"
+        },
+        {
+          "action": "CSMS sends SetChargingProfile with TxProfile for the active transaction",
+          "data": "",
+          "result": "TxProfile sent for active transaction"
+        },
+        {
+          "action": "SUT accepts",
+          "data": "",
+          "result": "TxProfile accepted"
+        },
+        {
+          "action": "CSMS requests composite schedule",
+          "data": "",
+          "result": "Get composite schedule"
+        },
+        {
+          "action": "SUT returns composite schedule reflecting TxProfile",
+          "data": "",
+          "result": "Composite schedule matches TxProfile"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_058_1_CS — Smart Charging - No Transaction",
+        "description": "Smart Charging - No Transaction\n\nSuite: SmartCharging\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SMART_CHARGING",
+          "smartcharging",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Ensure no transaction is active",
+          "data": "",
+          "result": "No active transaction"
+        },
+        {
+          "action": "CSMS sends SetChargingProfile with TxProfile purpose (but no transaction)",
+          "data": "",
+          "result": "TxProfile sent without transaction"
+        },
+        {
+          "action": "SUT rejects because no transaction exists for TxProfile",
+          "data": "",
+          "result": "Profile rejected (no transaction)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_058_2_CS — Smart Charging - Wrong TransactionId",
+        "description": "Smart Charging - Wrong TransactionId\n\nSuite: SmartCharging\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SMART_CHARGING",
+          "smartcharging",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a transaction",
+          "data": "",
+          "result": "Transaction active with transactionId=1"
+        },
+        {
+          "action": "CSMS sends SetChargingProfile with wrong/non-existent transactionId",
+          "data": "",
+          "result": "TxProfile with wrong transactionId"
+        },
+        {
+          "action": "SUT rejects because transactionId does not match",
+          "data": "",
+          "result": "Profile rejected (wrong transactionId)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_059_CS — Remote Start with ChargingProfile",
+        "description": "Remote Start with ChargingProfile\n\nSuite: SmartCharging\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SMART_CHARGING",
+          "smartcharging",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends RemoteStartTransaction with TxProfile included",
+          "data": "",
+          "result": "Remote start with charging profile"
+        },
+        {
+          "action": "SUT authorizes and starts transaction with the provided profile",
+          "data": "",
+          "result": "Transaction started with TxProfile"
+        },
+        {
+          "action": "CSMS requests composite schedule to verify profile applied",
+          "data": "",
+          "result": "Get composite schedule"
+        },
+        {
+          "action": "SUT returns composite schedule reflecting the TxProfile",
+          "data": "",
+          "result": "Composite schedule matches TxProfile from remote start"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_060_CS — Remote Start with ChargingProfile - Rejected",
+        "description": "Remote Start with ChargingProfile - Rejected\n\nSuite: SmartCharging\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SMART_CHARGING",
+          "smartcharging",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends RemoteStartTransaction with wrong ChargingProfilePurpose (e.g. TxDefaultProfile instead of TxProfile)",
+          "data": "",
+          "result": "Remote start with wrong profile purpose"
+        },
+        {
+          "action": "SUT rejects the remote start because TxDefaultProfile not allowed in RemoteStart",
+          "data": "",
+          "result": "Remote start rejected (wrong profile purpose)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_061_1_CS — Clear Cache - Local",
+        "description": "Clear Cache - Local\n\nSuite: Cache\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "cache",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Populate the authorization cache with an authorized IdTag",
+          "data": "",
+          "result": "IdTag cached"
+        },
+        {
+          "action": "CSMS sends ClearCache request",
+          "data": "",
+          "result": "ClearCache request sent"
+        },
+        {
+          "action": "SUT clears its authorization cache",
+          "data": "",
+          "result": "Cache cleared"
+        },
+        {
+          "action": "EV driver presents the previously cached IdTag (local start)",
+          "data": "",
+          "result": "Previously cached IdTag presented"
+        },
+        {
+          "action": "SUT does NOT find IdTag in cache, sends Authorize to CSMS",
+          "data": "",
+          "result": "Authorize sent because cache was cleared"
+        },
+        {
+          "action": "CSMS authorizes",
+          "data": "",
+          "result": "Authorized via CSMS (not cache)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_061_2_CS — Clear Cache - Remote",
+        "description": "Clear Cache - Remote\n\nSuite: Cache\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "cache",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Populate the authorization cache with an authorized IdTag",
+          "data": "",
+          "result": "IdTag cached"
+        },
+        {
+          "action": "CSMS sends ClearCache",
+          "data": "",
+          "result": "ClearCache sent"
+        },
+        {
+          "action": "SUT clears cache",
+          "data": "",
+          "result": "Cache cleared"
+        },
+        {
+          "action": "CSMS sends RemoteStartTransaction with the previously cached IdTag",
+          "data": "",
+          "result": "Remote start with previously cached IdTag"
+        },
+        {
+          "action": "SUT does NOT find IdTag in cache, sends Authorize",
+          "data": "",
+          "result": "Authorize sent because cache was cleared"
+        },
+        {
+          "action": "CSMS authorizes and transaction proceeds",
+          "data": "",
+          "result": "Authorized and transaction started"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_062_CS — Data Transfer to Charge Point",
+        "description": "Data Transfer to Charge Point\n\nSuite: DataTransfer\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "DATA_TRANSFER",
+          "datatransfer",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends DataTransfer with an unknown vendorId",
+          "data": "",
+          "result": "Data transfer request with unknown vendor"
+        },
+        {
+          "action": "SUT responds with UnknownVendorId or Rejected",
+          "data": "",
+          "result": "Data transfer rejected (unknown vendor)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_066_CS — Get Composite Schedule",
+        "description": "Get Composite Schedule\n\nSuite: SmartCharging\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SMART_CHARGING",
+          "smartcharging",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Set up multiple charging profiles at different stack levels",
+          "data": "",
+          "result": "Multiple profiles active at different stack levels"
+        },
+        {
+          "action": "CSMS sends GetCompositeSchedule for a connector",
+          "data": "",
+          "result": "Get composite schedule request"
+        },
+        {
+          "action": "SUT returns the composite schedule combining all profiles",
+          "data": "",
+          "result": "Composite schedule reflects the merged profiles (stacked)"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_067_CS — Clear Charging Profile",
+        "description": "Clear Charging Profile\n\nSuite: SmartCharging\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 7",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SMART_CHARGING",
+          "smartcharging",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends SetChargingProfile with TxDefaultProfile",
+          "data": "",
+          "result": "Profile set"
+        },
+        {
+          "action": "SUT accepts",
+          "data": "",
+          "result": "Profile accepted"
+        },
+        {
+          "action": "CSMS sends ClearChargingProfile (clear by id)",
+          "data": "",
+          "result": "Clear profile by id"
+        },
+        {
+          "action": "SUT clears the profile",
+          "data": "",
+          "result": "Profile cleared"
+        },
+        {
+          "action": "Verify profile cleared: GetCompositeSchedule should show no schedule",
+          "data": "",
+          "result": "Composite schedule empty after clearing"
+        },
+        {
+          "action": "Repeat with ClearChargingProfile(chargingProfilePurpose=TxDefault, stackLevel=1)",
+          "data": "",
+          "result": "Clear profile by purpose and stack level"
+        },
+        {
+          "action": "SUT clears and confirms",
+          "data": "",
+          "result": "Profile cleared"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_068_CS — Stop transaction - Same idTag",
+        "description": "Stop transaction - Same idTag\n\nSuite: StopSession\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "stopsession",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a charging session with a specific idTag",
+          "data": "",
+          "result": "Transaction active with given idTag"
+        },
+        {
+          "action": "EV driver presents the SAME idTag to stop the transaction",
+          "data": "",
+          "result": "Same idTag presented"
+        },
+        {
+          "action": "SUT sends Authorize with the same idTag",
+          "data": "",
+          "result": "Authorize request sent"
+        },
+        {
+          "action": "CSMS authorizes",
+          "data": "",
+          "result": "Authorized"
+        },
+        {
+          "action": "SUT stops the transaction because idTag matches",
+          "data": "",
+          "result": "Transaction stopped using same idTag"
+        },
+        {
+          "action": "CSMS confirms",
+          "data": "",
+          "result": "Stop acknowledged"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_069_CS — Stop transaction - Same ParentIdTag",
+        "description": "Stop transaction - Same ParentIdTag\n\nSuite: StopSession\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "stopsession",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a charging session with idTag that has a parentIdTag",
+          "data": "",
+          "result": "Transaction active with parentIdTag linked"
+        },
+        {
+          "action": "EV driver presents a DIFFERENT idTag (idTag2) that shares the same parentIdTag",
+          "data": "",
+          "result": "Different idTag with same parentIdTag presented"
+        },
+        {
+          "action": "SUT sends Authorize with idTag2",
+          "data": "",
+          "result": "Authorize request sent"
+        },
+        {
+          "action": "CSMS authorizes (parentIdTag links to active transaction)",
+          "data": "",
+          "result": "Authorized with parentIdTag"
+        },
+        {
+          "action": "SUT stops the transaction because parentIdTag matches",
+          "data": "",
+          "result": "Transaction stopped using different idTag with same parentIdTag"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_070_CS — Sampled Meter Values",
+        "description": "Sampled Meter Values\n\nSuite: MeterValues\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "metervalues",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Configure MeterValueSampleInterval (e.g. 60s)",
+          "data": "",
+          "result": "Sampling interval configured"
+        },
+        {
+          "action": "Start a charging session",
+          "data": "",
+          "result": "Transaction active"
+        },
+        {
+          "action": "SUT sends sampled meter values at configured interval during charging",
+          "data": "",
+          "result": "Sampled meter values received periodically"
+        },
+        {
+          "action": "Verify meter values contain valid measurands (energy, power, etc.)",
+          "data": "",
+          "result": "Meter values contain valid measurands with correct units and values"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_071_CS — Clock-aligned Meter Values",
+        "description": "Clock-aligned Meter Values\n\nSuite: MeterValues\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "metervalues",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Configure ClockAlignedDataInterval (e.g. 900s)",
+          "data": "",
+          "result": "Clock-aligned interval configured"
+        },
+        {
+          "action": "Start a charging session",
+          "data": "",
+          "result": "Transaction active"
+        },
+        {
+          "action": "SUT sends clock-aligned meter values at each 15-min boundary",
+          "data": "",
+          "result": "Clock-aligned meter values received at expected intervals"
+        },
+        {
+          "action": "Verify meter values align to clock boundaries",
+          "data": "",
+          "result": "Timestamps are aligned to 15-min clock boundaries"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_072_CS — Stacking Charging Profiles",
+        "description": "Stacking Charging Profiles\n\nSuite: SmartCharging\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SMART_CHARGING",
+          "smartcharging",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends first TxDefaultProfile at stackLevel=1",
+          "data": "",
+          "result": "First profile set at stackLevel 1"
+        },
+        {
+          "action": "SUT accepts",
+          "data": "",
+          "result": "Profile 1 accepted"
+        },
+        {
+          "action": "CSMS sends second TxDefaultProfile at stackLevel=2",
+          "data": "",
+          "result": "Second profile set at stackLevel 2"
+        },
+        {
+          "action": "SUT accepts",
+          "data": "",
+          "result": "Profile 2 accepted"
+        },
+        {
+          "action": "CSMS requests composite schedule",
+          "data": "",
+          "result": "Get composite schedule with stacked profiles"
+        },
+        {
+          "action": "SUT returns composite schedule applying both profiles (stackLevel 2 overrides stackLevel 1)",
+          "data": "",
+          "result": "Composite schedule reflects stacking: higher stackLevel takes precedence"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_073_CS — Update BasicAuth Password",
+        "description": "Update BasicAuth Password\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ChangeConfiguration to update AuthorizationKey",
+          "data": "",
+          "result": "Authorization key change request sent"
+        },
+        {
+          "action": "SUT accepts the new password",
+          "data": "",
+          "result": "Password accepted"
+        },
+        {
+          "action": "CSMS disconnects SUT",
+          "data": "",
+          "result": "SUT disconnected"
+        },
+        {
+          "action": "SUT reconnects using HTTP Basic Authentication with the new password",
+          "data": "",
+          "result": "SUT reconnects successfully with new password"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_074_CS — Update ChargePoint Certificate",
+        "description": "Update ChargePoint Certificate\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ExtendedTriggerMessage to trigger certificate signing",
+          "data": "",
+          "result": "Trigger certificate signing"
+        },
+        {
+          "action": "SUT sends SignCertificate request",
+          "data": "",
+          "result": "Certificate signing request sent"
+        },
+        {
+          "action": "CSMS sends CertificateSigned with the signed certificate",
+          "data": "",
+          "result": "Signed certificate sent to SUT"
+        },
+        {
+          "action": "SUT accepts and installs the certificate",
+          "data": "",
+          "result": "Certificate installed successfully"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_075_1_CS — Install ManufacturerRootCertificate",
+        "description": "Install ManufacturerRootCertificate\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends InstallCertificate for ManufacturerRootCertificate",
+          "data": "",
+          "result": "Install manufacturer root cert request"
+        },
+        {
+          "action": "SUT installs the certificate",
+          "data": "",
+          "result": "Certificate installed"
+        },
+        {
+          "action": "CSMS sends GetInstalledCertificateIds to verify",
+          "data": "",
+          "result": "Verify installed certs"
+        },
+        {
+          "action": "SUT returns list including the newly installed certificate",
+          "data": "",
+          "result": "Manufacturer root certificate confirmed installed"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_075_2_CS — Install CentralSystemRootCertificate",
+        "description": "Install CentralSystemRootCertificate\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends InstallCertificate for CentralSystemRootCertificate",
+          "data": "",
+          "result": "Install CSMS root cert request"
+        },
+        {
+          "action": "SUT installs the certificate",
+          "data": "",
+          "result": "Certificate installed"
+        },
+        {
+          "action": "Verify installation via GetInstalledCertificateIds",
+          "data": "",
+          "result": "CentralSystem root certificate confirmed installed"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_076_CS — Delete Certificate",
+        "description": "Delete Certificate\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends GetInstalledCertificateIds to list all certs",
+          "data": "",
+          "result": "List installed certificates"
+        },
+        {
+          "action": "SUT returns list of installed certificate hashes",
+          "data": "",
+          "result": "Installed certificates listed"
+        },
+        {
+          "action": "CSMS sends DeleteCertificate with a certificate hash",
+          "data": "",
+          "result": "Delete certificate request"
+        },
+        {
+          "action": "SUT deletes the certificate",
+          "data": "",
+          "result": "Certificate deleted"
+        },
+        {
+          "action": "Verify deletion: GetInstalledCertificateIds no longer shows the deleted cert",
+          "data": "",
+          "result": "Deleted certificate no longer in list"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_077_CS — Invalid ChargePointCertificate",
+        "description": "Invalid ChargePointCertificate\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ExtendedTriggerMessage(SignChargePointCertificate)",
+          "data": "",
+          "result": "Trigger certificate signing"
+        },
+        {
+          "action": "SUT sends SignCertificate with CSR",
+          "data": "",
+          "result": "CSR sent"
+        },
+        {
+          "action": "CSMS sends CertificateSigned with an INVALID certificate",
+          "data": "",
+          "result": "Invalid certificate sent"
+        },
+        {
+          "action": "SUT rejects the invalid certificate",
+          "data": "",
+          "result": "Invalid certificate rejected"
+        },
+        {
+          "action": "SUT may send SecurityEventNotification for the certificate failure",
+          "data": "",
+          "result": "Security event notification sent"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_078_CS — Invalid CentralSystemCertificate",
+        "description": "Invalid CentralSystemCertificate\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "SUT connects to CSMS but detects an invalid server certificate",
+          "data": "",
+          "result": "SUT detects invalid CSMS certificate"
+        },
+        {
+          "action": "SUT sends SecurityEventNotification",
+          "data": "",
+          "result": "Security event for invalid CSMS cert"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_079_CS — Get Security Log",
+        "description": "Get Security Log\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends GetLog for SecurityLog",
+          "data": "",
+          "result": "Get security log request"
+        },
+        {
+          "action": "SUT starts uploading security log",
+          "data": "",
+          "result": "Log upload started"
+        },
+        {
+          "action": "SUT completes log upload",
+          "data": "",
+          "result": "Security log uploaded successfully"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_080_CS — Secure Firmware Update",
+        "description": "Secure Firmware Update\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 6",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends SignedUpdateFirmware with valid signature",
+          "data": "",
+          "result": "Secure firmware update request sent"
+        },
+        {
+          "action": "SUT validates signature and starts download",
+          "data": "",
+          "result": "Update accepted, signature valid"
+        },
+        {
+          "action": "SUT sends SignedFirmwareStatusNotification as download progresses",
+          "data": "",
+          "result": "Firmware download in progress"
+        },
+        {
+          "action": "SUT completes download",
+          "data": "",
+          "result": "Download completed"
+        },
+        {
+          "action": "SUT installs firmware",
+          "data": "",
+          "result": "Installation in progress"
+        },
+        {
+          "action": "SUT completes installation",
+          "data": "",
+          "result": "Secure firmware update completed"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_081_CS — Secure Firmware Update - Invalid Sig",
+        "description": "Secure Firmware Update - Invalid Sig\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends SignedUpdateFirmware with INVALID signature",
+          "data": "",
+          "result": "Secure update with invalid signature"
+        },
+        {
+          "action": "SUT validates signature and rejects it",
+          "data": "",
+          "result": "Update rejected (invalid signature)"
+        },
+        {
+          "action": "SUT sends SecurityEventNotification about the invalid signature",
+          "data": "",
+          "result": "Security event for invalid firmware signature"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_082_CS — Smart Charging - TxDefault Ongoing Tx",
+        "description": "Smart Charging - TxDefault Ongoing Tx\n\nSuite: SmartCharging\nRequires CDS EV simulator (Keysight).\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SMART_CHARGING",
+          "smartcharging",
+          "needs-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "Start a charging session (transaction active)",
+          "data": "",
+          "result": "Transaction active"
+        },
+        {
+          "action": "CSMS sends SetChargingProfile with TxDefaultProfile while transaction is ongoing",
+          "data": "",
+          "result": "TxDefaultProfile set during active transaction"
+        },
+        {
+          "action": "SUT applies the profile to the ongoing transaction",
+          "data": "",
+          "result": "Profile accepted and applied to ongoing transaction"
+        },
+        {
+          "action": "Verify composite schedule reflects the new profile",
+          "data": "",
+          "result": "Composite schedule includes TxDefaultProfile applied during transaction"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_083_CS — Upgrade Security Profile",
+        "description": "Upgrade Security Profile\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 5",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ChangeConfiguration to upgrade SecurityProfile",
+          "data": "",
+          "result": "Upgrade security profile to 2"
+        },
+        {
+          "action": "SUT accepts",
+          "data": "",
+          "result": "Security profile accepted"
+        },
+        {
+          "action": "CSMS sends Reset(Hard) to apply the new security settings",
+          "data": "",
+          "result": "Hard reset to apply security upgrade"
+        },
+        {
+          "action": "SUT reboots",
+          "data": "",
+          "result": "SUT reboots"
+        },
+        {
+          "action": "SUT reconnects using the higher security profile (TLS)",
+          "data": "",
+          "result": "SUT reconnects with upgraded security"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_084_CS — Downgrade Security Profile - Rejected",
+        "description": "Downgrade Security Profile - Rejected\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "CSMS sends ChangeConfiguration to downgrade SecurityProfile",
+          "data": "",
+          "result": "Attempt to downgrade security profile"
+        },
+        {
+          "action": "SUT rejects the downgrade",
+          "data": "",
+          "result": "Security downgrade rejected"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_085_CS — Basic Authentication",
+        "description": "Basic Authentication\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 3",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "SUT establishes WebSocket connection with HTTP Basic Authentication header",
+          "data": "",
+          "result": "SUT connects using Basic Authentication"
+        },
+        {
+          "action": "CSMS validates the Basic Auth credentials",
+          "data": "",
+          "result": "Basic Authentication credentials accepted"
+        },
+        {
+          "action": "SUT sends BootNotification to complete registration",
+          "data": "",
+          "result": "SUT registered successfully using Basic Auth"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_086_CS — TLS - Server Certificate",
+        "description": "TLS - Server Certificate\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "SUT establishes TLS-secured WebSocket connection with valid server certificate",
+          "data": "",
+          "result": "TLS connection established"
+        },
+        {
+          "action": "SUT verifies the CSMS server certificate is valid and trusted",
+          "data": "",
+          "result": "Server certificate verified"
+        },
+        {
+          "action": "SUT sends BootNotification over the secure connection",
+          "data": "",
+          "result": "BootNotification sent over TLS"
+        },
+        {
+          "action": "CSMS accepts boot",
+          "data": "",
+          "result": "SUT registered successfully over TLS"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] TC_087_CS — TLS - Client Certificate",
+        "description": "TLS - Client Certificate\n\nSuite: Security\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 4",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "SECURITY",
+          "security",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "SUT establishes TLS-secured WebSocket with client certificate authentication",
+          "data": "",
+          "result": "TLS connection with client certificate established"
+        },
+        {
+          "action": "CSMS verifies the SUT client certificate",
+          "data": "",
+          "result": "Client certificate verified by CSMS"
+        },
+        {
+          "action": "SUT sends BootNotification over the mutually-authenticated TLS connection",
+          "data": "",
+          "result": "BootNotification sent over mTLS"
+        },
+        {
+          "action": "CSMS accepts boot",
+          "data": "",
+          "result": "SUT registered successfully over mTLS"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] tc_bi_clear_cache — Maintenance — clear cache",
+        "description": "Maintenance — clear cache\n\nSuite: MAINTENANCE\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 1",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "maintenance",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "OCTT built-in: clear the authorization cache on the SUT",
+          "data": "",
+          "result": "Authorization cache cleared"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] tc_bi_clear_local_auth_list — Maintenance — clear local auth list",
+        "description": "Maintenance — clear local auth list\n\nSuite: MAINTENANCE\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 1",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "maintenance",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "OCTT built-in: clear the local authorization list on the SUT",
+          "data": "",
+          "result": "Local authorization list cleared"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] tc_bi_reset_hard — Maintenance — hard reset",
+        "description": "Maintenance — hard reset\n\nSuite: MAINTENANCE\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "maintenance",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "OCTT built-in: perform a hard reset on the SUT",
+          "data": "",
+          "result": "SUT reboots and reconnects"
+        },
+        {
+          "action": "Wait for SUT to reconnect and register",
+          "data": "",
+          "result": "SUT boots and sends BootNotification"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] tc_bi_restore_availability — Maintenance — restore availability",
+        "description": "Maintenance — restore availability\n\nSuite: MAINTENANCE\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "maintenance",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "OCTT built-in: restore all connectors to Available state",
+          "data": "",
+          "result": "All connectors return to Available state"
+        },
+        {
+          "action": "Verify connector status",
+          "data": "",
+          "result": "Status confirmed as Available for each connector"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] tc_bi_restore_configuration — Maintenance — restore configuration",
+        "description": "Maintenance — restore configuration\n\nSuite: MAINTENANCE\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "maintenance",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "OCTT built-in: restore all configuration keys to factory defaults",
+          "data": "",
+          "result": "Configuration restored to default values"
+        },
+        {
+          "action": "Verify configuration is restored by reading back key values",
+          "data": "",
+          "result": "Configuration values match factory defaults"
+        }
+      ]
+    },
+    {
+      "fields": {
+        "project": {
+          "key": "OCTT"
+        },
+        "summary": "[OCPP 1.6] tc_bi_stop_transactions — Maintenance — stop all transactions",
+        "description": "Maintenance — stop all transactions\n\nSuite: MAINTENANCE\nNo CDS required — protocol-only test.\n\nOCPP Version: 1.6\nRole: Charging Station (CS)\nTotal Steps: 2",
+        "issuetype": {
+          "name": "Test"
+        },
+        "labels": [
+          "OCPP",
+          "ocpp1.6",
+          "CORE",
+          "maintenance",
+          "no-cds"
+        ]
+      },
+      "testType": "Manual",
+      "steps": [
+        {
+          "action": "OCTT built-in: stop all active transactions on the SUT",
+          "data": "",
+          "result": "All active transactions stopped"
+        },
+        {
+          "action": "Verify no active transactions remain",
+          "data": "",
+          "result": "All connectors return to Available state"
+        }
+      ]
+    }
+  ]
+}

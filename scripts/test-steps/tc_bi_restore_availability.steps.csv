@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,OCTT built-in: restore all connectors to Available state,CSMS → SUT,ChangeAvailability(Available) for each connector,All connectors return to Available state
+2,Verify connector status,SUT → CSMS,StatusNotification(Available),Status confirmed as Available for each connector

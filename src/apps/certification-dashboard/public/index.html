@@ -1,0 +1,1804 @@
+<!--
+  ══════════════════════════════════════════════════════════════
+  OCPP Certification Pipeline — Dashboard Frontend
+  ══════════════════════════════════════════════════════════════
+
+  Single-page application (no build step) served by the Express backend.
+  Communicates with the server via:
+    - REST API calls  (configuration, service checks, pipeline control)
+    - SSE streaming   (real-time logs and status updates)
+
+  Architecture:
+    ┌─────────────┐  HTTP/SSE  ┌─────────────────┐
+    │  index.html │◄──────────►│  server.ts      │
+    │  (this file)│            │  (Express + SSE)│
+    └─────────────┘            └─────────────────┘
+
+  Sections:
+    1. Services panel      — CDS / OCTT / Jira connection indicators
+    2. Configuration cards — OCTT URL/token, CDS IP/port, charge profile
+    3. Test selector       — Modal with grouped test cases
+    4. Pipeline controls   — Run/Stop, Check All, Config CDS
+    5. Reboot helpers      — Apply/restore extended timeouts
+    6. Log stream          — Real-time filtered console output
+    7. Results table       — Pass/fail/inconc/error breakdown + actions
+  ══════════════════════════════════════════════════════════════
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCPP Certification Pipeline</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  if(localStorage.getItem('theme')==='light')document.documentElement.classList.add('light-theme');
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --text-bright: #f0f6fc;
+    --accent: #009999;
+    --accent2: #00cccc;
+    --accent-dim: #006666;
+    --danger: #f85149;
+    --warn: #d29922;
+    --info: #58a6ff;
+    --pass: #3fb950;
+    --fail: #f85149;
+    --inconc: #d29922;
+    --error: #bc8cff;
+    --font: 'SF Mono','Fira Code','Cascadia Code','Consolas',monospace;
+    --ui: 'Inter','Segoe UI',system-ui,sans-serif;
+  }
+  :root.light-theme {
+    --bg: #f6f8fa;
+    --surface: #ffffff;
+    --border: #d0d7de;
+    --text: #24292f;
+    --text-dim: #57606a;
+    --text-bright: #0969da;
+    --accent: #008080;
+    --accent2: #00a3a3;
+    --accent-dim: #004d4d;
+    --danger: #cf222e;
+    --warn: #9a6700;
+    --info: #0969da;
+    --pass: #1a7f37;
+    --fail: #cf222e;
+    --inconc: #9a6700;
+    --error: #8250df;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--ui);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  header{background:var(--surface);border-bottom:2px solid var(--accent);padding:8px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px}
+  .siemens-logo{height:22px;width:auto;flex-shrink:0}
+  .siemens-logo text{font-family:'Inter',Arial,Helvetica,sans-serif;font-weight:700;font-size:18px}
+  header .brand{display:flex;align-items:center;gap:10px}
+  header h1{font-size:13px;font-weight:600;color:var(--text-bright)}
+  header h1 span{color:var(--accent2)}
+  .hdr-right{display:flex;align-items:center;gap:14px;font-size:10px;color:var(--text-dim);font-family:var(--font)}
+  .hdr-right > span{display:inline-flex;align-items:center}
+  .hdr-right .dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px;flex-shrink:0}
+  .dot.on{background:var(--pass);box-shadow:0 0 6px var(--pass)}.dot.off{background:var(--text-dim)}.dot.err{background:var(--danger)}
+  .wrap{display:flex;flex:1;overflow:hidden}
+  aside{width:320px;min-width:280px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;gap:10px;padding:12px;overflow-y:auto;flex-shrink:0}
+  .stitle{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);margin-bottom:4px}
+  .card{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px}
+  label.f{display:block;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.6px;margin:6px 0 3px}
+  select,input[type=text],input[type=password],input[type=number]{width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--font);font-size:11px;outline:none}
+  select:focus,input:focus{border-color:var(--accent)}
+  .btn-row{display:flex;gap:6px}
+  button{flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-family:var(--ui);font-size:11px;font-weight:600;cursor:pointer;color:var(--text);background:var(--surface);transition:.15s}
+  button:hover{border-color:var(--accent)}button:disabled{opacity:.35;cursor:not-allowed}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.primary:hover{background:var(--accent2)}
+  button.danger{background:color-mix(in srgb,var(--danger) 15%,var(--surface));border-color:var(--danger);color:var(--danger)}
+  button.sm{padding:4px 8px;font-size:9px;flex:none}
+  button.sm.primary{padding:4px 8px;font-size:9px;flex:none;background:var(--accent);border-color:var(--accent);color:#fff}
+  button.sm.primary:hover{background:var(--accent2)}
+  .svc{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;margin-bottom:4px}
+  .svc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--text-dim)}
+  .svc-dot.connected{background:var(--pass);box-shadow:0 0 6px var(--pass)}
+  .svc-dot.running{background:var(--accent2);animation:pulse 1.5s infinite}
+  .svc-dot.error{background:var(--danger);box-shadow:0 0 6px var(--danger)}
+  .svc-dot.disconnected{background:var(--text-dim)}
+  .svc-dot.connecting{background:var(--warn);animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .svc-info{flex:1;min-width:0}.svc-name{font-size:11px;font-weight:600;color:var(--text-bright)}.svc-detail{font-size:9px;color:var(--text-dim);font-family:var(--font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .banner{padding:6px 16px;font-size:11px;font-weight:600;display:none;align-items:center;gap:8px}
+  .banner.active{display:flex}.banner.running{background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent)}.banner.done{background:color-mix(in srgb,var(--pass) 12%,transparent);color:var(--pass)}.banner.error{background:color-mix(in srgb,var(--danger) 12%,transparent);color:var(--danger)}
+  /* CDS Live Charts */
+  .chart-box{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px;flex:1;min-width:180px;display:flex;flex-direction:column;align-items:center}
+  .chart-title{font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+  .chart-value{font-size:18px;font-weight:700;color:var(--text-bright);font-family:var(--font);margin-bottom:4px}
+  .chart-box canvas{width:100%;height:80px}
+  .battery-loader{width:22px;height:12px;border:1.5px solid currentColor;border-radius:3px;position:relative;display:block;padding:1px;flex-shrink:0}
+  .battery-body{width:100%;height:100%;overflow:hidden;border-radius:1px}
+  .battery-level{height:100%;width:0%;background:currentColor;animation:battery-charge 2.5s infinite ease-in-out}
+  .battery-cap{width:2px;height:6px;background:currentColor;position:absolute;top:1.5px;right:-3.5px;border-radius:0 1px 1px 0}
+  @keyframes battery-charge{
+    0%{width:0%;background-color:var(--danger)}
+    20%{background-color:var(--danger)}
+    40%{background-color:var(--warn)}
+    80%{background-color:var(--pass)}
+    100%{width:100%;background-color:var(--pass)}
+  }
+  .logs{flex:1;overflow-y:auto;padding:8px 12px;font-family:var(--font);font-size:10px;line-height:1.5;background:var(--bg);border-bottom:1px solid var(--border)}
+  .log-entry{display:flex;gap:6px;padding:1px 0}
+  .log-time{color:var(--text-dim);flex-shrink:0}
+  .log-lvl{flex-shrink:0;width:40px;text-align:right;font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+  .log-lvl.info{color:var(--info)}.log-lvl.warn{color:var(--warn)}.log-lvl.error{color:var(--danger)}.log-lvl.success{color:var(--pass)}
+  .log-svc{color:var(--accent2);flex-shrink:0;font-size:9px}
+  .log-msg{color:var(--text);word-break:break-all}
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+  .tab-btn{padding:8px 20px;font-size:10px;font-weight:600;border:none;background:transparent;color:var(--text-dim);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;font-family:var(--ui)}
+  .tab-btn:hover{color:var(--text-bright);background:color-mix(in srgb,var(--accent) 5%,transparent)}
+  .tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent2)}
+  #view-history{display:none;flex-direction:column;flex:1;overflow:hidden}
+  #view-current{display:flex;flex-direction:column;flex:1;overflow:hidden}
+  #view-history .logs{flex:none;max-height:30vh}
+  .history-table-wrap{overflow-y:auto;flex:1}
+  .history-table-wrap table{font-size:10px}
+  .history-table-wrap td{cursor:pointer}
+  .history-table-wrap tr.selected td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+  .history-table-wrap tr:hover td{background:color-mix(in srgb,var(--accent) 6%,transparent)}
+  #history-details{display:none;flex-direction:column;gap:8px;padding:12px;border-top:1px solid var(--border);background:var(--surface);max-height:50vh;overflow-y:auto}
+  #history-details.visible{display:flex}
+  .charts-row{display:flex;gap:12px;flex-wrap:wrap}
+  .chart-container{flex:1;min-width:200px;height:200px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px;position:relative}
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;color:var(--text-dim);font-size:11px;gap:8px}
+  .results{background:var(--surface);max-height:45vh;overflow-y:auto;border-top:1px solid var(--border);flex-shrink:0}
+  .res-summary{display:flex;gap:12px;padding:8px 16px;border-bottom:1px solid var(--border);font-size:10px;align-items:center;flex-wrap:wrap}
+  .res-summary .stat{display:flex;align-items:center;gap:4px}.res-summary .val{font-weight:700;font-size:14px;font-family:var(--font)}
+  .res-summary .pass .val{color:var(--pass)}.res-summary .fail .val{color:var(--fail)}.res-summary .inconc .val{color:var(--inconc)}.res-summary .err .val{color:var(--error)}
+  .pbar{flex:1;height:4px;background:var(--bg);border-radius:2px;overflow:hidden;display:flex;min-width:80px}
+  .pbar div{height:100%;transition:width .3s}
+  table{width:100%;border-collapse:collapse;font-size:10px}
+  th{text-align:left;padding:6px 12px;color:var(--text-dim);font-weight:500;font-size:9px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1}
+  td{padding:4px 12px;border-bottom:1px solid color-mix(in srgb,var(--border) 50%,transparent);font-family:var(--font)}
+  tr:hover td{background:color-mix(in srgb,var(--accent) 4%,transparent)}
+  .vb{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+  .vb.pass{background:color-mix(in srgb,var(--pass) 18%,transparent);color:var(--pass)}.vb.fail{background:color-mix(in srgb,var(--fail) 18%,transparent);color:var(--fail)}.vb.inconc{background:color-mix(in srgb,var(--inconc) 18%,transparent);color:var(--inconc)}.vb.error{background:color-mix(in srgb,var(--error) 18%,transparent);color:var(--error)}
+  .modal-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:100;justify-content:center;align-items:center}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;width:min(750px,95vw);max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .modal-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .modal-head span:first-child{font-size:13px;font-weight:700;color:var(--text-bright)}
+  .modal-head span:last-child{font-size:10px;color:var(--accent2);font-family:var(--font)}
+  .modal-tools{padding:10px 18px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap}
+  .modal-body{flex:1;overflow-y:auto;padding:14px 18px}
+  .suite-hdr{display:flex;align-items:center;gap:8px;padding:7px 0;cursor:pointer;border-bottom:1px solid var(--border)}
+  .suite-hdr:hover{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+  .suite-arrow{color:var(--accent2);font-size:9px;width:12px;text-align:center;flex-shrink:0}
+  .suite-name{font-weight:700;font-size:10px;color:var(--accent2);text-transform:uppercase;letter-spacing:.6px}
+  .suite-count{font-size:9px;color:var(--text-dim);font-family:var(--font);margin-left:auto}
+  .suite-tests{display:block;padding:4px 0 4px 20px}
+  .tc-row{display:flex;align-items:center;gap:8px;padding:2px 0;font-family:var(--font);font-size:10px;cursor:pointer}
+  .tc-row:hover{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+  .tc-row input{accent-color:var(--accent2);width:13px;height:13px;flex-shrink:0;margin:0}
+  .tc-num{color:var(--text-dim);width:22px;flex-shrink:0;text-align:right}
+  .tc-name{color:var(--text)}
+  @media(max-width:900px){.wrap{flex-direction:column}aside{width:100%;max-height:40vh;border-right:none;border-bottom:1px solid var(--border)}}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HEADER
+     Shows dashboard title, service status dots, and live clock.
+     ══════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="brand">
+    <svg class="siemens-logo" viewBox="0 0 100 24" fill="none">
+      <text x="0" y="18" fill="var(--accent2)" font-size="20" font-weight="800" letter-spacing="1">SIEMENS</text>
+    </svg>
+    <h1><span>&#9889;</span> OCPP Certification Pipeline <span style="font-weight:300;color:var(--text-dim)">v0.2</span></h1>
+  </div>
+  <div class="hdr-right">
+    <button id="btn-theme-toggle" onclick="toggleTheme()" class="sm" style="margin-right:8px;padding:3px 8px;font-size:10px;display:inline-flex;align-items:center;gap:4px;" title="Toggle Light/Dark theme">
+      <span id="theme-icon">☀️</span> <span id="theme-text">Light</span>
+    </button>
+    <span><span class="dot off" id="h-dot-cds"></span>CDS</span>
+    <span><span class="dot off" id="h-dot-relay"></span>Relay</span>
+    <span><span class="dot off" id="h-dot-octt"></span>OCTT</span>
+    <span><span class="dot off" id="h-dot-jira"></span>Jira</span>
+    <span style="color:var(--accent2)" id="h-time">--:--:--</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ══════════════════════════════════════════════════════════════
+     SIDEBAR
+     Contains configuration panels, service indicators, and
+     pipeline control buttons.
+     ══════════════════════════════════════════════════════════════ -->
+<aside>
+
+  <!-- Service status indicators -->
+  <div><div class="stitle">Services</div>
+    <div class="svc"><div class="svc-dot" id="ind-cds"></div><div class="svc-info"><div class="svc-name">CDS</div><div class="svc-detail" id="detail-cds">Keysight SL1040A</div></div></div>
+    <div class="svc"><div class="svc-dot" id="ind-relay"></div><div class="svc-info"><div class="svc-name">Relay</div><div class="svc-detail" id="detail-relay">CDS connection pool</div></div></div>
+    <div class="svc"><div class="svc-dot" id="ind-octt"></div><div class="svc-info"><div class="svc-name">OCTT</div><div class="svc-detail" id="detail-octt">Compliance Testing Tool</div></div></div>
+    <div class="svc"><div class="svc-dot" id="ind-jira"></div><div class="svc-info"><div class="svc-name">Jira</div><div class="svc-detail" id="detail-jira">Issue Tracking</div></div></div>
+  </div>
+
+  <!-- OCTT configuration -->
+  <div><div class="stitle">OCTT</div><div class="card">
+    <label class="f">API URL</label><input type="text" id="inp-octt-url" placeholder="https://<instance>.octt.openchargealliance.org">
+    <label class="f">Token</label><input type="password" id="inp-octt-token" placeholder="OCTT API token">
+    <label class="f">Configuration</label><input type="text" id="inp-config" value="AUT_SID_SAT">
+    <label class="f">OCPP</label><select id="sel-ver"><option value="ocpp1.6" selected>1.6</option><option value="ocpp2.0.1">2.0.1</option></select>
+    <div style="margin-top:6px;display:flex;gap:4px"><button onclick="checkOcttConfig()" class="sm" style="flex:1">Verify Config</button><button onclick="saveConfig()" class="sm primary" style="flex:1">&#128190; Save</button></div>
+    <div id="octt-cfg-r" style="margin-top:4px;font-size:9px;font-family:var(--font);color:var(--text-dim);display:none"></div>
+  </div></div>
+
+  <!-- CDS configuration -->
+  <div><div class="stitle">CDS</div><div class="card">
+    <label class="f">IP</label><input type="text" id="inp-cds" placeholder="192.168.100.10">
+    <label class="f">Port</label><input type="number" id="inp-cds-port" placeholder="51001">
+    <label class="f">Sink</label><input type="number" id="inp-sink" value="1">
+    <label class="f">Profile</label><select id="sel-profile"><option value="CCS_900V_300A">CCS 900V/300A/50kW ISO15118</option><option value="CCS_500V_125A">CCS 500V/125A/25kW</option><option value="CCS_1000V_400A">CCS 1000V/400A/150kW</option><option value="CCS_DIN_500V_125A">DIN70121 500V/125A/50kW</option></select>
+    <button onclick="openCdsCharts()" style="width:100%;margin-top:8px;border-color:var(--accent);color:var(--accent)">&#128200; Live Charts</button>
+  </div></div>
+
+  <!-- Test case selector -->
+  <div><div class="stitle">Tests</div><div class="card">
+    <button onclick="openModal()" style="width:100%;margin-bottom:4px">&#9745; Select Test Cases</button>
+    <div style="font-size:9px;color:var(--accent2);font-family:var(--font);text-align:center" id="tc-sum">0 / 113</div>
+  </div></div>
+
+  <!-- Pipeline controls -->
+  <div><div class="stitle">Pipeline</div><div class="card">
+    <div class="btn-row"><button class="primary" id="btn-run" onclick="runPlaywright()">&#9654; Run Selected</button><button class="danger" id="btn-stop" onclick="stopPlaywright()" disabled>&#9632; Stop</button></div>
+    <div style="margin-top:6px" class="btn-row"><button onclick="checkServices()">&#8635; Check All</button><button onclick="configureCds()">&#9881; Config CDS</button></div>
+  </div></div>
+
+  <!-- Reboot test helpers -->
+  <div><div class="stitle">Reboot Tests</div><div class="card">
+    <div style="font-size:9px;color:var(--text-dim);margin-bottom:6px">Auto-adjust timeouts for reboot tests</div>
+    <div class="btn-row"><button onclick="prepareReboot()" style="border-color:var(--warn);color:var(--warn)">&#9888; Prep Reboot</button><button onclick="restoreDefaults()">&#8634; Restore</button></div>
+    <div id="reboot-status" style="margin-top:4px;font-size:9px;font-family:var(--font);color:var(--text-dim);display:none"></div>
+  </div></div>
+
+  <!-- Info / relay status -->
+  <div style="margin-top:auto"><div class="stitle">Info</div><div class="card" style="font-size:9px;color:var(--text-dim);font-family:var(--font)">
+    OCTT calls <code style="color:var(--accent2)">/api/sut</code> for plugin/plugout.<br>
+    EV API URL: <code style="color:var(--accent2)">http://&lt;host&gt;:3101/api/sut</code><br>
+    <span style="display:flex;align-items:center;gap:6px;margin-top:6px"><span class="dot off" id="relay-dot"></span> Relay: <span id="relay-status" style="color:var(--text-bright)">Stopped</span></span>
+  </div></div>
+</aside>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MAIN CONTENT AREA
+     Banner (pipeline state), tabs, log stream, results table, history.
+     ══════════════════════════════════════════════════════════════ -->
+<main>
+  <!-- Pipeline status banner (hidden when idle) -->
+  <div class="banner" id="banner">
+    <div class="battery-loader" id="spinner">
+      <div class="battery-body">
+        <div class="battery-level"></div>
+      </div>
+      <div class="battery-cap"></div>
+    </div>
+    <span id="banner-msg">Idle</span>
+  </div>
+
+  <!-- Tab navigation -->
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-current" onclick="switchTab('current')">&#9654; Current Run</button>
+    <button class="tab-btn" id="tab-history" onclick="switchTab('history')">&#128196; Run History</button>
+  </div>
+
+  <!-- View: Current Run -->
+  <div id="view-current">
+    <div class="logs" id="logs"></div>
+    <div class="results">
+      <div class="res-summary">
+        <span style="font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim)">Results</span>
+        <div class="pbar"><div class="pb-p" id="pb-p" style="width:0%;background:var(--pass)"></div><div class="pb-f" id="pb-f" style="width:0%;background:var(--fail)"></div><div class="pb-i" id="pb-i" style="width:0%;background:var(--inconc)"></div><div class="pb-e" id="pb-e" style="width:0%;background:var(--error)"></div></div>
+        <div class="stat pass"><span style="width:7px;height:7px;background:var(--pass);border-radius:2px;display:inline-block"></span> <span class="val" id="r-p">0</span> PASS</div>
+        <div class="stat fail"><span style="width:7px;height:7px;background:var(--fail);border-radius:2px;display:inline-block"></span> <span class="val" id="r-f">0</span> FAIL</div>
+        <div class="stat inconc"><span style="width:7px;height:7px;background:var(--inconc);border-radius:2px;display:inline-block"></span> <span class="val" id="r-i">0</span> INCONC</div>
+        <div class="stat err"><span style="width:7px;height:7px;background:var(--error);border-radius:2px;display:inline-block"></span> <span class="val" id="r-e">0</span> ERROR</div>
+        <span style="font-weight:700;font-size:12px;color:var(--text-bright);margin-left:6px" id="r-rate">—</span>
+      </div>
+      <table><thead><tr><th>#</th><th>Test Case</th><th>Verdict</th><th>Duration</th><th style="text-align:right">Actions</th></tr></thead><tbody id="rtbody"><tr><td colspan="5" style="color:var(--text-dim);text-align:center;padding:16px">No results yet</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- View: Run History -->
+  <div id="view-history">
+    <div class="history-table-wrap">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border)">
+        <span style="font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim)">Past Runs</span>
+        <button class="sm" onclick="fetchHistory()" style="margin-left:auto;border-color:var(--accent);color:var(--accent)">&#8635; Refresh</button>
+        <button class="sm" onclick="clearHistory()" style="border-color:var(--danger);color:var(--danger)">&#128465; Clear</button>
+      </div>
+      <table><thead><tr><th>Date</th><th>Config</th><th>Total</th><th>PASS</th><th>FAIL</th><th>INCONC</th><th>Rate</th><th style="text-align:right">Details</th></tr></thead><tbody id="htbody"><tr><td colspan="8" style="color:var(--text-dim);text-align:center;padding:16px">No past runs</td></tr></tbody></table>
+    </div>
+    <div id="history-details">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:10px;font-weight:700;color:var(--text-bright)" id="hd-title">Run Details</span>
+        <button class="sm" onclick="closeRunDetails()" style="flex:none">&#10005; Close</button>
+      </div>
+      <div class="charts-row">
+        <div class="chart-container"><canvas id="chart-pie"></canvas></div>
+        <div class="chart-container"><canvas id="chart-bar"></canvas></div>
+      </div>
+      <div style="overflow-y:auto;max-height:200px" id="hd-table-wrap"></div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL: Jira Upload
+     Form for attaching a failed test report to a Jira issue.
+     ══════════════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="jira-modal-bg">
+<div class="modal" style="width:min(500px,90vw)">
+  <div class="modal-head"><span>Upload to Jira</span><span id="jira-upload-tc" style="color:var(--text-dim)"></span></div>
+  <div style="padding:18px">
+    <label class="f">Test Plan</label><input type="text" id="inp-testplan" placeholder="e.g. OCTT-CCS-2026-Q2">
+    <label class="f">Test Execution</label><input type="text" id="inp-testexec" placeholder="e.g. AUT_SID_SAT execution #1">
+    <label class="f">OCPP Version</label><select id="inp-ocpp-ver"><option value="1.6">1.6</option><option value="2.0.1">2.0.1</option></select>
+    <label class="f">Charger Number</label><input type="text" id="inp-charger" placeholder="e.g. EVSE-001">
+    <label class="f">Comment (optional)</label><input type="text" id="inp-jira-comment" placeholder="Additional notes...">
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closeJiraModal()" style="flex:none;padding:8px 16px">Cancel</button>
+      <button class="primary" onclick="uploadToJira()" id="btn-jira-upload" style="flex:none;padding:8px 16px">Upload</button>
+    </div>
+    <div id="jira-upload-status" style="margin-top:8px;font-size:10px;font-family:var(--font);display:none"></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL: Test Case Selector
+     Displays all test cases grouped by suite with checkboxes.
+     ══════════════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="modal-bg">
+<div class="modal">
+  <div class="modal-head"><span>Select Test Cases</span><span id="m-count">0 / 113</span></div>
+  <div class="modal-tools">
+    <button class="sm" onclick="selAll()">Select All</button>
+    <button class="sm" onclick="selNone()">Select None</button>
+    <button class="sm" onclick="selMaint()">Maintenance</button>
+    <button class="sm" onclick="selReboot()">Reboot</button>
+    <button class="sm" onclick="selCore()">Core Only</button>
+    <button class="sm" onclick="selNoCds()" style="border-color:var(--accent2);color:var(--accent2)" title="Select only tests that work without the Keysight CDS EV simulator">&#128268; No CDS</button>
+    <div style="flex:1"></div>
+    <button class="sm primary" onclick="closeModal()">Done</button>
+  </div>
+  <div class="modal-body" id="m-body"></div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL: CDS Live Charts
+     Real-time voltage, current, SoC, and CP state visualization.
+     Polls /api/cds/measurements every 2 seconds while open.
+     ══════════════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="charts-modal-bg" style="z-index:101">
+<div class="modal" style="width:min(900px,95vw);max-height:90vh">
+  <div class="modal-head"><span>&#128200; CDS Live Measurements</span><span id="charts-status" style="color:var(--text-dim)">Connecting...</span></div>
+  <div class="modal-tools">
+    <button class="sm" onclick="toggleCharts()" id="btn-charts-toggle">&#9208; Pause</button>
+    <button class="sm" onclick="clearCharts()">&#128465; Clear</button>
+    <div style="flex:1"></div>
+    <button class="sm primary" onclick="closeCdsCharts()">Close</button>
+  </div>
+  <div class="modal-body" style="padding:12px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between">
+      <div class="chart-box"><div class="chart-title">Voltage (V)</div><div class="chart-value" id="val-voltage">--</div><canvas id="chart-voltage" width="200" height="80"></canvas></div>
+      <div class="chart-box"><div class="chart-title">Current (A)</div><div class="chart-value" id="val-current">--</div><canvas id="chart-current" width="200" height="80"></canvas></div>
+      <div class="chart-box"><div class="chart-title">SoC (%)</div><div class="chart-value" id="val-soc">--</div><canvas id="chart-soc" width="200" height="80"></canvas></div>
+      <div class="chart-box"><div class="chart-title">CP State</div><div class="chart-value" id="val-cp">--</div><canvas id="chart-cp" width="200" height="80"></canvas></div>
+    </div>
+    <div style="font-size:9px;color:var(--text-dim);font-family:var(--font);padding:4px 0">
+      Status: <span id="charts-cds-status" style="color:var(--text-bright)">--</span> &middot;
+      Points: <span id="charts-points">0</span> &middot;
+      Interval: 2s
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL: Jira Upload (Auto-shows after pipeline completion)
+     Prompts for SUT details and uploads the full test execution
+     results to Jira as a Task with attached JSON report.
+     
+     SUT and Firmware dropdowns are populated from Jira custom fields
+     to ensure consistency with existing project data.
+     ══════════════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="jira-upload-modal-bg" style="z-index:102">
+<div class="modal" style="width:min(600px,95vw)">
+  <div class="modal-head"><span>&#128227; Upload Results to Jira</span><span id="jira-upload-status" style="color:var(--text-dim)">Ready</span></div>
+  <div class="modal-body" style="padding:16px;display:flex;flex-direction:column;gap:10px">
+    <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">Select the test execution details below. Values are fetched from Jira custom fields. All test results will be uploaded as a Jira issue with an attached JSON report.</div>
+    <label class="f">SUT (System Under Test) *</label>
+    <select id="sel-jira-sut" style="width:100%">
+      <option value="">Loading SUTs from Jira...</option>
+    </select>
+    <label class="f">Firmware Version *</label>
+    <select id="sel-jira-fw" style="width:100%">
+      <option value="">Loading firmware versions...</option>
+    </select>
+    <label class="f">Test Plan</label>
+    <select id="sel-jira-plan" style="width:100%">
+      <option value="">Loading test plans...</option>
+    </select>
+    <label class="f">Environment</label>
+    <select id="sel-jira-env" style="width:100%">
+      <option value="Lab" selected>Lab</option>
+      <option value="Production">Production</option>
+      <option value="Staging">Staging</option>
+    </select>
+    <div id="jira-upload-error" style="font-size:9px;color:var(--danger);display:none;margin-top:4px"></div>
+    <div id="jira-upload-summary" style="font-size:9px;color:var(--text-dim);font-family:var(--font);margin-top:4px;padding:8px;background:var(--bg);border-radius:4px;border:1px solid var(--border)">
+      Waiting for test results...
+    </div>
+  </div>
+  <div class="modal-tools" style="border-top:1px solid var(--border);padding:10px 18px">
+    <button class="sm" onclick="closeJiraUploadModal()">Cancel</button>
+    <div style="flex:1"></div>
+    <button class="sm primary" id="btn-jira-upload" onclick="uploadExecutionToJira()">&#128227; Upload to Jira</button>
+  </div>
+</div>
+</div>
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL: CDS Connection Fix (Auto-shows when CDS check fails)
+     Allows user to update CDS IP/port/sink/profile and retry
+     without leaving the test execution flow.
+     ══════════════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="cds-fix-modal-bg" style="z-index:103">
+<div class="modal" style="width:min(500px,95vw)">
+  <div class="modal-head">
+    <span>&#9888; CDS Connection Failed</span>
+    <span id="cds-fix-status" style="color:var(--danger);font-size:10px">Unreachable</span>
+  </div>
+  <div class="modal-body" style="padding:16px;display:flex;flex-direction:column;gap:8px">
+    <div style="font-size:10px;color:var(--text-dim);margin-bottom:2px">
+      <span id="cds-fix-count" style="color:var(--warn);font-weight:bold">0</span> selected tests require the CDS (EV simulator).
+      Update the settings below and retry, or skip CDS tests.
+    </div>
+    <div id="cds-fix-error" style="font-size:9px;color:var(--danger);padding:8px;background:rgba(255,60,60,0.08);border-radius:4px;border:1px solid rgba(255,60,60,0.2);font-family:var(--font);word-break:break-all"></div>
+    <div style="display:flex;gap:8px">
+      <div style="flex:3"><label class="f">IP Address</label><input type="text" id="cds-fix-ip" style="width:100%" placeholder="192.168.100.10"></div>
+      <div style="flex:1"><label class="f">Sink</label><input type="number" id="cds-fix-sink" style="width:100%" placeholder="12"></div>
+    </div>
+    <label class="f">Charge Profile</label>
+    <select id="cds-fix-profile" style="width:100%">
+      <option value="CCS_900V_300A">CCS 900V/300A/50kW ISO15118</option>
+      <option value="CCS_500V_125A">CCS 500V/125A/25kW</option>
+      <option value="CCS_1000V_400A">CCS 1000V/400A/150kW</option>
+      <option value="CCS_DIN_500V_125A">DIN70121 500V/125A/50kW</option>
+    </select>
+    <div id="cds-fix-result" style="font-size:9px;color:var(--text-dim);display:none;margin-top:2px"></div>
+  </div>
+  <div class="modal-tools" style="border-top:1px solid var(--border);padding:10px 18px">
+    <button class="sm" onclick="closeCdsFixModal('cancel')">Cancel</button>
+    <button class="sm" onclick="closeCdsFixModal('skip')" style="border-color:var(--warn);color:var(--warn)" title="Run only tests that don't need CDS">&#9654; Skip CDS Tests</button>
+    <div style="flex:1"></div>
+    <button class="sm primary" id="btn-cds-fix-retry" onclick="retryCdsCheck()">&#128260; Retry Connection</button>
+  </div>
+</div>
+</div>
+
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// SECTION: Global State & Constants
+// ══════════════════════════════════════════════════════════════
+
+/** Base API path (empty because the dashboard is served from the same origin) */
+const API='';
+
+/** Shorthand for document.getElementById */
+const $=id=>document.getElementById(id);
+
+/**
+ * Toggles the color theme between Light and Dark mode.
+ * Persists the selection to localStorage.
+ */
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light-theme');
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  updateThemeUI(isLight);
+}
+
+/**
+ * Updates the theme toggle button text and icon.
+ * @param isLight - true if light theme is active
+ */
+function updateThemeUI(isLight) {
+  const icon = $('theme-icon');
+  const text = $('theme-text');
+  if (icon && text) {
+    icon.textContent = isLight ? '🌙' : '☀️';
+    text.textContent = isLight ? 'Dark' : 'Light';
+  }
+}
+
+/**
+ * Initializes the theme based on localStorage.
+ */
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  const isLight = savedTheme === 'light';
+  if (isLight) {
+    document.documentElement.classList.add('light-theme');
+  } else {
+    document.documentElement.classList.remove('light-theme');
+  }
+  updateThemeUI(isLight);
+}
+
+// Run theme initialization immediately
+initTheme();
+
+/** Active EventSource connection for SSE streaming */
+let es;
+
+/** Test suite catalog loaded from /api/testcases */
+let testSuites={};
+
+/** Test case descriptions loaded from /api/testcases/details */
+let tcDescriptions={};
+
+/** Global counter for sequential test case numbering in the modal */
+let tcIdx=0;
+
+/** CDS fix modal — resolve callback and selected tests backup */
+let _cdsFixResolve=null;
+let _cdsFixSelected=[];
+
+/**
+ * Keywords used to infer whether a test case modifies the CDS charging state.
+ * If a description contains any of these, the UI shows a warning icon.
+ */
+const chargingKeywords = ['charging', 'plugin', 'plug in', 'transaction', 'start session', 'stop transaction', 'unlock', 'reset', 'fault', 'reservation', 'meter', 'smart charging', 'composite schedule', 'stacking', 'offline', 'connection loss'];
+
+/**
+ * Determines whether a test case likely needs a CDS reset between runs.
+ * @param tc - Test case ID
+ * @returns true if the description contains charging-related keywords
+ */
+function needsCdsReset(tc) {
+    const desc = (tcDescriptions[tc] || '').toLowerCase();
+    return chargingKeywords.some(kw => desc.includes(kw));
+}
+
+// ══════════════════════════════════════════════════════════════
+// SECTION: SSE (Server-Sent Events)
+// Maintains a persistent connection to /api/events for real-time
+// logs, service status changes, and pipeline progress updates.
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Opens (or reopens) the SSE connection. Automatically reconnects
+ * after 3 seconds if the connection drops.
+ */
+function connectSSE(){
+  if(es)es.close();
+  es=new EventSource(API+'/api/events');
+  // Log events → append to the log panel
+  es.addEventListener('log',e=>addLog(JSON.parse(e.data)));
+  // Status events → update service indicators
+  // Backend sends flat: { service:"octt", status:"connected", info:"..." }
+  es.addEventListener('status',e=>{const s=JSON.parse(e.data);if(s.service){updSvc(s.service,{status:s.status,info:s.info})}else{if(s.cds)updSvc('cds',s.cds);if(s.octt)updSvc('octt',s.octt);if(s.jira)updSvc('jira',s.jira)}});
+  // Pipeline events → update banner, results, and button states
+  es.addEventListener('pipeline',e=>{
+    const p=JSON.parse(e.data);
+    updBanner(p);
+    if(p.results)renderResults(p.results);
+    if(p.state==='done'||p.state==='error'||p.state==='cancelled'){
+      fetchResults();
+      updBtns(false);
+      // Auto-show Jira upload modal 2 seconds after completion
+      if(p.results&&p.results.length>0){
+        setTimeout(()=>openJiraUploadModal(p.results),2000);
+      }
+    }
+  });
+  es.onerror=()=>setTimeout(connectSSE,3000);
+}
+
+/**
+ * Updates a service indicator dot and detail text.
+ * @param key    - Service key (cds, octt, jira)
+ * @param status - Status object { status, info }
+ */
+function updSvc(key,status){
+  $('ind-'+key).className='svc-dot '+(status.status||'');
+  $('detail-'+key).textContent=status.info;
+  const dot=$('h-dot-'+key);
+  dot.className='dot '+(status.status==='connected'||status.status==='running'?'on':status.status==='error'?'err':'off');
+}
+
+/**
+ * Updates the pipeline status banner at the top of the main area.
+ * @param pipeline - Pipeline state object { state, message, results? }
+ */
+function updBanner(pipeline){
+  const banner=$('banner'), msg=$('banner-msg'), spinner=$('spinner');
+  banner.classList.add('active');
+  banner.className='banner active '+(pipeline.state==='starting'||pipeline.state==='preparing'||pipeline.state==='testing'||pipeline.state==='cleaning'||pipeline.state==='running'?'running':pipeline.state==='done'?'done':'error');
+  msg.textContent=pipeline.message||pipeline.state;
+  spinner.style.display=(pipeline.state==='starting'||pipeline.state==='preparing'||pipeline.state==='testing'||pipeline.state==='running'||pipeline.state==='cleaning')?'block':'none';
+  if(pipeline.state==='done'||pipeline.state==='error')setTimeout(()=>banner.classList.remove('active'),10000);
+}
+
+/**
+ * Toggles the Run/Stop buttons based on pipeline activity.
+ * @param running - true if a pipeline is currently active
+ */
+function updBtns(running){
+  $('btn-run').disabled=running;
+  $('btn-stop').disabled=!running;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SECTION: Log Rendering
+// ══════════════════════════════════════════════════════════════
+
+/** Number of log entries currently in the DOM (capped at 500) */
+let logCount=0;
+
+/**
+ * Appends a log entry to the log panel. Removes oldest entries
+ * when the limit is exceeded to prevent memory growth.
+ * @param entry - Log entry { timestamp, level, message, service }
+ */
+function addLog(entry){
+  const panel=$('logs');
+  const row=document.createElement('div');
+  row.className='log-entry';
+  const time=new Date(entry.timestamp).toLocaleTimeString('en-GB',{hour12:false});
+  row.innerHTML=`<span class="log-time">${time}</span><span class="log-lvl ${entry.level}">${entry.level}</span><span class="log-svc">[${entry.service}]</span><span class="log-msg">${entry.message}</span>`;
+  panel.appendChild(row);
+  logCount++;
+  if(logCount>500){panel.removeChild(panel.firstChild);logCount--}
+  panel.scrollTop=panel.scrollHeight;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SECTION: Service Checks & Configuration
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Checks all three external services (CDS, OCTT, Jira) in parallel.
+ * Updates service indicators via SSE when responses arrive.
+ */
+async function checkServices(){
+  addLog({timestamp:new Date().toISOString(),level:'info',message:'Checking services...',service:'ui'});
+  try{await fetch(API+'/api/cds/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip:$('inp-cds').value,port:parseInt($('inp-cds-port').value)})})}catch(e){}
+  try{await fetch(API+'/api/relay/check',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})}catch(e){}
+  try{await fetch(API+'/api/octt/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({baseUrl:$('inp-octt-url').value,token:$('inp-octt-token').value})})}catch(e){}
+  try{await fetch(API+'/api/jira/check',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})}catch(e){}
+}
+
+/**
+ * Verifies the OCTT configuration name exists and reports session status.
+ */
+async function checkOcttConfig(){
+  const el=$('octt-cfg-r');el.style.display='block';el.style.color='var(--text-dim)';el.textContent='Checking...';
+  try{
+    const r=await fetch(API+'/api/octt/check-config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({configurationName:$('inp-config').value,baseUrl:$('inp-octt-url').value,token:$('inp-octt-token').value})});
+    const j=await r.json();
+    if(!j.ok){el.style.color='var(--danger)';el.textContent=j.error;return}
+    el.style.color=j.exists?'var(--pass)':'var(--danger)';
+    el.innerHTML=`Config: ${j.exists?'&#10003; exists':'&#10007; NOT FOUND'} | Tests: ${j.testcasesCount} | Session: ${j.sessionStatus}`;
+    addLog({timestamp:new Date().toISOString(),level:j.exists?'success':'warn',message:`Config "${$('inp-config').value}": ${j.exists?j.testcasesCount+' tests, session: '+j.sessionStatus:'NOT FOUND'}`,service:'ui'});
+  }catch(e){el.style.color='var(--danger)';el.textContent=e.message}
+}
+
+/**
+ * Applies the selected charge profile to the CDS hardware.
+ */
+async function configureCds(){
+  try{
+    const r=await fetch(API+'/api/cds/configure',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile:$('sel-profile').value,ip:$('inp-cds').value,port:parseInt($('inp-cds-port').value)})});
+    const j=await r.json();
+    addLog({timestamp:new Date().toISOString(),level:j.ok?'success':'error',message:'CDS: '+(j.ok?j.profile:j.error),service:'ui'});
+  }catch(e){addLog({timestamp:new Date().toISOString(),level:'error',message:'CDS error: '+e.message,service:'ui'})}
+}
+
+// ══════════════════════════════════════════════════════════════
+// SECTION: CDS Fix Modal
+// Shows when CDS is unreachable during pre-flight. Allows the
+// user to update IP/port/sink/profile and retry or skip.
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Attempts a CDS check; if it fails, opens the fix modal and
+ * returns a Promise that resolves to 'ok', 'skip', or 'cancel'.
+ */
+async function checkCdsWithRetry(ip,port,cdsTestCount,selected){
+  try{
+    const r=await fetch(API+'/api/cds/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip,port})});
+    const j=await r.json();
+    if(j.ok){
+      addLog({timestamp:new Date().toISOString(),level:'success',message:'CDS OK: '+(j.flags||[]).join(', '),service:'ui'});
+      return 'ok';
+    }
+    // CDS failed — show fix modal
+    return openCdsFixModal(j.error||'No response',cdsTestCount);
+  }catch(e){
+    return openCdsFixModal(e.message||'Network error',cdsTestCount);
+  }
+}
+
+/**
+ * Opens the CDS fix modal pre-filled with current sidebar values.
+ * Returns a Promise that resolves when the user picks an action.
+ */
+function openCdsFixModal(errorMsg,cdsTestCount){
+  $('cds-fix-ip').value=$('inp-cds').value;
+  $('cds-fix-sink').value=$('inp-sink').value;
+  $('cds-fix-profile').value=$('sel-profile').value;
+  $('cds-fix-error').textContent=errorMsg;
+  $('cds-fix-count').textContent=cdsTestCount;
+  $('cds-fix-status').textContent='Unreachable';
+  $('cds-fix-status').style.color='var(--danger)';
+  $('cds-fix-result').style.display='none';
+  $('btn-cds-fix-retry').disabled=false;
+  $('cds-fix-modal-bg').style.display='flex';
+  return new Promise(resolve=>{_cdsFixResolve=resolve});
+}
+
+/**
+ * Closes the CDS fix modal with the given action.
+ * @param action - 'cancel', 'skip', or 'ok'
+ */
+function closeCdsFixModal(action){
+  $('cds-fix-modal-bg').style.display='none';
+  if(_cdsFixResolve){_cdsFixResolve(action);_cdsFixResolve=null}
+}
+
+/**
+ * Retries the CDS connection with the values from the fix modal.
+ * On success, syncs values back to the sidebar and closes the modal.
+ */
+async function retryCdsCheck(){
+  const ip=$('cds-fix-ip').value.trim();
+  const port=parseInt($('inp-cds-port').value)||51001;
+  const el=$('cds-fix-result');
+  el.style.display='block';
+  el.style.color='var(--text-dim)';
+  el.textContent='Connecting to '+ip+':'+port+'...';
+  $('cds-fix-status').textContent='Connecting...';
+  $('cds-fix-status').style.color='var(--text-dim)';
+  $('btn-cds-fix-retry').disabled=true;
+  try{
+    const r=await fetch(API+'/api/cds/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip,port})});
+    const j=await r.json();
+    if(j.ok){
+      el.style.color='var(--pass)';
+      el.textContent='Connected! Status: '+(j.flags||[]).join(', ');
+      $('cds-fix-status').textContent='Connected';
+      $('cds-fix-status').style.color='var(--pass)';
+      // Sync values back to sidebar
+      $('inp-cds').value=ip;
+      $('inp-cds-port').value=port;
+      $('inp-sink').value=$('cds-fix-sink').value;
+      $('sel-profile').value=$('cds-fix-profile').value;
+      addLog({timestamp:new Date().toISOString(),level:'success',message:`CDS reconnected at ${ip}:${port}`,service:'ui'});
+      // Auto-close after a brief pause
+      setTimeout(()=>closeCdsFixModal('ok'),800);
+    }else{
+      el.style.color='var(--danger)';
+      el.textContent='Still unreachable: '+(j.error||'No response');
+      $('cds-fix-status').textContent='Failed';
+      $('cds-fix-status').style.color='var(--danger)';
+      $('cds-fix-error').textContent=j.error||'No response';
+      $('btn-cds-fix-retry').disabled=false;
+    }
+  }catch(e){
+    el.style.color='var(--danger)';
+    el.textContent='Error: '+e.message;
+    $('cds-fix-status').textContent='Error';
+    $('cds-fix-status').style.color='var(--danger)';
+    $('btn-cds-fix-retry').disabled=false;
+  }
+}
+
+
+// SECTION: Pipeline Control (Playwright)
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Determines whether a test case requires the CDS (EV simulator).
+ * Charging, reservation, and connector-related tests need physical
+ * state changes (plugin, charging, unplug) that only the CDS can provide.
+ * Pure protocol tests (DataTransfer, Security, Firmware, etc.) do not.
+ *
+ * @param testId - Test case identifier (e.g. "TC_062_CS")
+ * @returns true if the CDS is required for this test
+ */
+function needsCds(testId){
+  const chargingTests=/^TC_(003|004|005|007|010|011|012|017|018|026|027|028|030|031|036|037|038|039|046|047|048|049|050|051|052|053|056|057|058|059|060|066|067|068|069|070|071|072|082)_/;
+  return chargingTests.test(testId);
+}
+
+/**
+ * Starts the Playwright test runner with the selected test cases.
+ * Performs a pre-flight check on CDS (only if needed) and OCTT.
+ * Clears previous logs and resets the results table.
+ */
+async function runPlaywright(){
+  const selected=getSelected();
+  if(selected.length===0){addLog({timestamp:new Date().toISOString(),level:'warn',message:'No tests selected!',service:'ui'});return}
+
+  // Determine if any selected test requires CDS
+  const cdsRequired=selected.some(needsCds);
+  const cdsOnlyCount=selected.filter(needsCds).length;
+  const noCdsCount=selected.length-cdsOnlyCount;
+
+  // ── Pre-flight: CDS (only if needed) ──
+  if(cdsRequired){
+    addLog({timestamp:new Date().toISOString(),level:'info',message:`Pre-flight: checking CDS (${cdsOnlyCount} tests need it)...`,service:'ui'});
+    const cdsOk=await checkCdsWithRetry($('inp-cds').value,parseInt($('inp-cds-port').value),cdsOnlyCount,selected);
+    if(cdsOk==='cancel')return;
+    if(cdsOk==='skip'){
+      // Remove CDS tests from selection and continue
+      const nonCds=selected.filter(t=>!needsCds(t));
+      if(nonCds.length===0){addLog({timestamp:new Date().toISOString(),level:'warn',message:'All selected tests require CDS — nothing to run.',service:'ui'});return}
+      addLog({timestamp:new Date().toISOString(),level:'warn',message:`Skipping ${cdsOnlyCount} CDS tests. Running ${nonCds.length} remaining.`,service:'ui'});
+      selected.length=0;selected.push(...nonCds);
+    }
+  }else{
+    addLog({timestamp:new Date().toISOString(),level:'info',message:`Pre-flight: skipping CDS check (${noCdsCount}/${selected.length} tests do not need CDS)`,service:'ui'});
+  }
+
+  // ── Pre-flight: OCTT (always required) ──
+  addLog({timestamp:new Date().toISOString(),level:'info',message:'Pre-flight: checking OCTT config...',service:'ui'});
+  try{
+    const octtCheck=await fetch(API+'/api/octt/check-config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({configurationName:$('inp-config').value})});
+    const octtStatus=await octtCheck.json();
+    if(!octtStatus.ok||!octtStatus.exists){
+      addLog({timestamp:new Date().toISOString(),level:'error',message:'OCTT config "'+$('inp-config').value+'" not found or unreachable.',service:'ui'});
+      $('banner').classList.add('active','error');
+      $('banner-msg').textContent='OCTT config missing — check settings';
+      return;
+    }
+    addLog({timestamp:new Date().toISOString(),level:'success',message:'OCTT OK: config exists ('+octtStatus.configurations.length+' total)',service:'ui'});
+  }catch(e){
+    addLog({timestamp:new Date().toISOString(),level:'error',message:'OCTT check failed: '+e.message,service:'ui'});
+    return;
+  }
+
+  // Reset current results immediately
+  try{await fetch(API+'/api/results/reset',{method:'POST'})}catch(e){}
+  resetResults();
+  updBtns(true);
+  $('banner').classList.add('active','running');
+  $('banner-msg').textContent=`Running ${selected.length} tests...`;
+  $('spinner').style.display='block';
+  $('rtbody').innerHTML='<tr><td colspan="5" style="color:var(--text-dim);text-align:center;padding:16px">Running...</td></tr>';
+  $('logs').innerHTML='';logCount=0;
+  try{
+    await fetch(API+'/api/pipeline/run-playwright',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({testcaseNames:selected,configurationName:$('inp-config').value})});
+  }catch(e){
+    addLog({timestamp:new Date().toISOString(),level:'error',message:'Start failed: '+e.message,service:'ui'});
+    updBtns(false);
+  }
+}
+
+/** Sends a stop signal to the running Playwright process. */
+async function stopPlaywright(){
+  try{await fetch(API+'/api/pipeline/stop-playwright',{method:'POST'})}catch(e){}
+}
+
+/** Fetches the full results object from the server. */
+async function fetchResults(){
+  try{
+    const r=await fetch(API+'/api/results');
+    const j=await r.json();
+    renderResultsTable(j);
+  }catch(e){}
+}
+
+// ══════════════════════════════════════════════════════════════
+// SECTION: Results Rendering
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Resets all current run statistics to initial empty state.
+ * Called immediately when a new run starts.
+ */
+function resetResults(){
+  $('r-p').textContent='0';$('r-f').textContent='0';$('r-i').textContent='0';$('r-e').textContent='0';
+  $('pb-p').style.width='0%';$('pb-f').style.width='0%';$('pb-i').style.width='0%';$('pb-e').style.width='0%';
+  $('r-rate').textContent='—';
+  $('rtbody').innerHTML='<tr><td colspan="5" style="color:var(--text-dim);text-align:center;padding:16px">No results yet</td></tr>';
+}
+
+/**
+ * Updates the summary statistics and progress bar from an array
+ * of result objects.
+ * @param results - Array of { testCase, verdict, duration }
+ */
+function renderResults(results){
+  if(!results.length)return;
+  const passed=results.filter(r=>r.verdict==='pass').length;
+  const failed=results.filter(r=>r.verdict==='fail').length;
+  const inconc=results.filter(r=>r.verdict==='inconc').length;
+  const errors=results.filter(r=>r.verdict==='error').length;
+  const total=results.length;
+  $('r-p').textContent=passed;
+  $('r-f').textContent=failed;
+  $('r-i').textContent=inconc;
+  $('r-e').textContent=errors;
+  $('pb-p').style.width=total?(passed/total*100)+'%':'0%';
+  $('pb-f').style.width=total?(failed/total*100)+'%':'0%';
+  $('pb-i').style.width=total?(inconc/total*100)+'%':'0%';
+  $('pb-e').style.width=total?(errors/total*100)+'%':'0%';
+  $('r-rate').textContent=total?Math.round(passed/total*100)+'%':'—';
+}
+
+/**
+ * Renders the full results table including action buttons
+ * (view log, download report, upload to Jira for failures).
+ * @param data - Server results object { results[], total, passed, failed, ... }
+ */
+function renderResultsTable(data){
+  renderResults(data.results);
+  const tbody=$('rtbody');
+  if(!data.results.length){tbody.innerHTML='<tr><td colspan="5" style="color:var(--text-dim);text-align:center;padding:16px">No results</td></tr>';return}
+  tbody.innerHTML=data.results.map((result,index)=>{
+    const verdict=result.verdict.toLowerCase();
+    const isFailure=verdict==='fail'||verdict==='inconc'||verdict==='error';
+    const logBtn=`<button class="sm" onclick="viewLog('${result.testCase}')" title="View Log">Log</button>`;
+    const dlBtn=`<button class="sm" onclick="downloadLog('${result.testCase}')" title="Download Report">DL</button>`;
+    const jiraBtn=isFailure?`<button class="sm" onclick="openJiraModal('${result.testCase}','${verdict}')" title="Upload to Jira" style="border-color:var(--accent2);color:var(--accent2)">Jira</button>`:'';
+    const defectBtn=isFailure?`<button class="sm" onclick="createDefect('${result.testCase}','${verdict}')" title="Create Defect in Jira" style="border-color:var(--danger);color:var(--danger)">&#128295; Defect</button>`:'';
+    return `<tr><td style="color:var(--text-dim)">${index+1}</td><td style="color:var(--text-bright)">${result.testCase}</td><td><span class="vb ${verdict}">${result.verdict}</span></td><td style="color:var(--text-dim)">${result.duration||0}s</td><td style="text-align:right;white-space:nowrap">${logBtn} ${dlBtn} ${jiraBtn} ${defectBtn}</td></tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// SECTION: Report Actions (View, Download, Jira)
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Opens a test case's CSV report in a new popup window.
+ * @param testCaseId - Test case identifier
+ */
+function viewLog(testCaseId){
+  addLog({timestamp:new Date().toISOString(),level:'info',message:`Loading log for ${testCaseId}...`,service:'ui'});
+  fetch(API+'/api/reports/view-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({testcaseName:testCaseId})}).then(r=>r.json()).then(j=>{
+    if(j.ok){
+      const isLight = document.documentElement.classList.contains('light-theme');
+      const bg = isLight ? '#f6f8fa' : '#0a0e14';
+      const fg = isLight ? '#24292f' : '#c0ccd8';
+      const border = isLight ? '#d0d7de' : '#1e2733';
+      const thBg = isLight ? '#eaeef2' : '#131820';
+      const thFg = isLight ? '#57606a' : '#5c6778';
+      const w=window.open('','_blank','width=900,height=600');
+      w.document.write(`<html><head><title>Log: ${testCaseId}</title><style>body{font-family:monospace;font-size:12px;background:${bg};color:${fg};padding:20px;white-space:pre-wrap}table{border-collapse:collapse;width:100%}td,th{border:1px solid ${border};padding:4px 8px;text-align:left}th{background:${thBg};color:${thFg}}</style></head><body><h2>${testCaseId}</h2><pre>${j.content}</pre></body></html>`);
+      w.document.close();
+      addLog({timestamp:new Date().toISOString(),level:'success',message:`Log opened for ${testCaseId}`,service:'ui'});
+    } else {
+      addLog({timestamp:new Date().toISOString(),level:'error',message:`Log failed: ${j.error}`,service:'ui'});
+    }
+  }).catch(e=>addLog({timestamp:new Date().toISOString(),level:'error',message:`Log error: ${e.message}`,service:'ui'}));
+}
+
+/**
+ * Downloads a test case report as a file.
+ * @param testCaseId - Test case identifier
+ */
+function downloadLog(testCaseId){
+  addLog({timestamp:new Date().toISOString(),level:'info',message:`Downloading report for ${testCaseId}...`,service:'ui'});
+  fetch(API+'/api/reports/download',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({testcaseName:testCaseId,format:'CSV'})}).then(r=>r.json()).then(j=>{
+    if(j.ok){
+      addLog({timestamp:new Date().toISOString(),level:'success',message:`Report saved: ${j.filename} (${j.size} bytes)`,service:'ui'});
+      const a=document.createElement('a');a.href=`${API}/reports/${j.filename}`;a.download=j.filename;a.click();
+    }else{
+      addLog({timestamp:new Date().toISOString(),level:'error',message:`Download failed: ${j.error}`,service:'ui'});
+    }
+  }).catch(e=>addLog({timestamp:new Date().toISOString(),level:'error',message:`Download error: ${e.message}`,service:'ui'}));
+}
+
+/** ID of the test case currently being uploaded to Jira */
+let jiraUploadTc='';
+
+/**
+ * Opens the Jira upload modal pre-filled with the given test case.
+ * @param testCaseId - Test case identifier
+ * @param verdict    - Test verdict string
+ */
+function openJiraModal(testCaseId,verdict){
+  jiraUploadTc=testCaseId;
+  $('jira-upload-tc').textContent=testCaseId;
+  $('jira-upload-status').style.display='none';
+  $('jira-modal-bg').style.display='flex';
+}
+
+/** Closes the Jira upload modal. */
+function closeJiraModal(){$('jira-modal-bg').style.display='none'}
+
+/**
+ * Submits the Jira upload form. Creates or comments on a Jira issue.
+ */
+async function uploadToJira(){
+  const el=$('jira-upload-status');
+  el.style.display='block';
+  el.style.color='var(--text-dim)';
+  el.textContent='Uploading...';
+  $('btn-jira-upload').disabled=true;
+  try{
+    const r=await fetch(API+'/api/jira/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      testcase:jiraUploadTc,
+      testplan:$('inp-testplan').value,
+      testexecution:$('inp-testexec').value,
+      ocppVersion:$('inp-ocpp-ver').value,
+      chargerNumber:$('inp-charger').value,
+      comment:$('inp-jira-comment').value
+    })});
+    const j=await r.json();
+    el.style.color=j.ok?'var(--pass)':'var(--danger)';
+    el.textContent=j.ok?`Uploaded to ${j.issueKey}: ${j.message}`:`Error: ${j.error}`;
+    addLog({timestamp:new Date().toISOString(),level:j.ok?'success':'error',message:j.ok?`Jira upload: ${j.issueKey}`:`Jira upload failed: ${j.error}`,service:'ui'});
+  }catch(e){
+    el.style.color='var(--danger)';
+    el.textContent=`Error: ${e.message}`;
+  }
+  $('btn-jira-upload').disabled=false;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SECTION: Test Case Selector Modal
+// ══════════════════════════════════════════════════════════════
+
+function openModal(){$('modal-bg').style.display='flex'}
+function closeModal(){$('modal-bg').style.display='none'}
+
+/**
+ * Fetches the test suite catalog and descriptions from the server,
+ * then renders the modal content.
+ */
+function loadTC(){
+  Promise.all([
+    fetch(API+'/api/testcases').then(r=>r.json()),
+    fetch(API+'/api/testcases/details').then(r=>r.json())
+  ]).then(([suites,descs])=>{testSuites=suites;tcDescriptions=descs;renderModal()}).catch(()=>{})
+}
+
+/**
+ * Renders the test case selector modal with grouped suites,
+ * checkboxes, and warning icons for charging-related tests.
+ */
+function renderModal(){
+  const body=$('m-body');
+  let html='';
+  tcIdx=0;
+  for(const[suite,tests]of Object.entries(testSuites)){
+    html+=`<div style="margin-bottom:14px">`;
+    html+=`<div class="suite-hdr" onclick="togSuite(this)"><span class="suite-arrow">&#9660;</span><span class="suite-name">${suite}</span><span class="suite-count">${tests.length}</span><button class="sm" onclick="event.stopPropagation();togSuiteAll('${suite}')" style="padding:2px 8px">Toggle</button></div>`;
+    html+=`<div class="suite-tests">`;
+    for(const tc of tests){
+      tcIdx++;
+      const desc = tcDescriptions[tc] || '';
+      const needsReset = needsCdsReset(tc);
+      const resetIcon = needsReset ? '<span style="color:var(--warn);font-size:8px;margin-left:4px" title="Needs CDS reset">&#9888;</span>' : '';
+      html+=`<label class="tc-row"><input type="checkbox" class="tc-check" value="${tc}" data-needs-reset="${needsReset}" checked><span class="tc-num">${String(tcIdx).padStart(3,'0')}</span><span class="tc-name">${tc}${resetIcon}</span><span style="color:var(--text-dim);font-size:9px;margin-left:6px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${desc}</span></label>`;
+    }
+    html+=`</div></div>`;
+  }
+  body.innerHTML=html;
+  updCount();
+}
+
+/** Toggles the visibility of a suite's test case list. */
+function togSuite(el){
+  const testsContainer=el.nextElementSibling;
+  const arrow=el.querySelector('.suite-arrow');
+  const isOpen=testsContainer.style.display!=='none';
+  testsContainer.style.display=isOpen?'none':'block';
+  arrow.innerHTML=isOpen?'&#9654;':'&#9660;';
+}
+
+/** Toggles all checkboxes within a specific suite. */
+function togSuiteAll(suiteName){
+  for(const div of document.querySelectorAll('#m-body > div')){
+    const nameEl=div.querySelector('.suite-name');
+    if(nameEl&&nameEl.textContent===suiteName){
+      const checkboxes=div.querySelectorAll('.tc-check');
+      const allChecked=Array.from(checkboxes).every(x=>x.checked);
+      checkboxes.forEach(x=>x.checked=!allChecked);
+      break;
+    }
+  }
+  updCount();
+}
+
+function selAll(){document.querySelectorAll('.tc-check').forEach(c=>c.checked=true);updCount()}
+function selNone(){document.querySelectorAll('.tc-check').forEach(c=>c.checked=false);updCount()}
+function selMaint(){document.querySelectorAll('.tc-check').forEach(c=>{c.checked=c.value.startsWith('tc_bi_')});updCount()}
+function selReboot(){
+  const rebootTests=['TC_001_CS','TC_002_CS','TC_013_CS','TC_014_CS','TC_015_CS','TC_016_CS','TC_032_1_CS','TC_032_2_CS','TC_034_CS'];
+  document.querySelectorAll('.tc-check').forEach(c=>{c.checked=rebootTests.includes(c.value)});
+  updCount();
+}
+
+/**
+ * Selects only tests that do NOT require the Keysight CDS EV simulator.
+ * Charging, session, reservation, and connector-state tests are excluded.
+ * Everything else (config, data transfer, security, firmware, etc.) is selected.
+ */
+function selNoCds(){
+  document.querySelectorAll('.tc-check').forEach(c=>{
+    c.checked = !needsCds(c.value);
+  });
+  updCount();
+}
+function selCore(){
+  const coreSuites=['Authorization','DataTransfer','FirmwareManagement','LocalAuthList','MeterValues','Provisioning','RemoteControl','RemoteTrigger','Reservation','Transactions'];
+  document.querySelectorAll('#m-body > div').forEach(div=>{
+    const nameEl=div.querySelector('.suite-name');
+    if(nameEl&&coreSuites.includes(nameEl.textContent)){
+      div.querySelectorAll('.tc-check').forEach(c=>c.checked=true);
+    }else{
+      div.querySelectorAll('.tc-check').forEach(c=>c.checked=false);
+    }
+  });
+  updCount();
+}
+
+/** Updates the selected/total counters in the modal and sidebar. */
+function updCount(){
+  const total=document.querySelectorAll('.tc-check').length;
+  const selected=document.querySelectorAll('.tc-check:checked').length;
+  $('m-count').textContent=`${selected} / ${total}`;
+  $('tc-sum').textContent=`${selected} / ${total}`;
+}
+
+document.addEventListener('change',e=>{if(e.target.classList.contains('tc-check'))updCount()});
+
+/**
+ * Returns the list of currently selected test case IDs.
+ * @returns Array of test case strings
+ */
+function getSelected(){
+  return Array.from(document.querySelectorAll('.tc-check:checked')).map(c=>c.value);
+}
+
+// ══════════════════════════════════════════════════════════════
+// SECTION: Initialization & Reboot Helpers
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Initializes the dashboard on page load:
+ *   - Starts the live clock
+ *   - Connects SSE
+ *   - Loads test case catalog
+ *   - Loads saved config from server
+ *   - Checks relay agent and service status
+ */
+async function init(){
+  setInterval(()=>$('h-time').textContent=new Date().toLocaleTimeString('en-GB',{hour12:false}),1000);
+  connectSSE();
+  loadTC();
+  try{
+    const r=await fetch(API+'/api/config');
+    const j=await r.json();
+    if(j.octtBaseUrl)$('inp-octt-url').value=j.octtBaseUrl;
+    if(j.octtToken)$('inp-octt-token').value=j.octtToken;
+    if(j.cdsIp)$('inp-cds').value=j.cdsIp;
+    if(j.cdsPort)$('inp-cds-port').value=j.cdsPort;
+    if(j.octtOcppVersion)$('sel-ver').value=j.octtOcppVersion;
+    addLog({timestamp:new Date().toISOString(),level:'info',message:'Config loaded from server',service:'ui'});
+  }catch{}
+  checkRelayStatus();
+  checkServices();
+}
+
+/**
+ * Fetches the relay agent status and updates the indicator dot.
+ */
+async function checkRelayStatus(){
+  try{
+    const r=await fetch(API+'/api/relay/status',{method:'POST'});
+    const j=await r.json();
+    const dot=$('relay-dot');
+    const txt=$('relay-status');
+    if(j.running){dot.className='dot on';txt.textContent='Running';txt.style.color='var(--pass)'}
+    else{dot.className='dot off';txt.textContent='Stopped';txt.style.color='var(--text-dim)'}
+  }catch{}
+}
+
+/**
+ * Saves the current form values to dashboard-config.json via the server.
+ * Validates the URL and token before submitting.
+ */
+async function saveConfig(){
+  const url=$('inp-octt-url').value.trim();
+  const token=$('inp-octt-token').value.trim();
+  const cfg={
+    octtBaseUrl:url,
+    octtToken:token,
+    octtOcppVersion:$('sel-ver').value,
+    cdsIp:$('inp-cds').value.trim(),
+    cdsPort:parseInt($('inp-cds-port').value)||51001,
+  };
+
+  // Client-side validation before sending to server
+  const el=$('octt-cfg-r');
+  el.style.display='block';
+  if(!url){el.style.color='var(--danger)';el.textContent='Error: API URL is required';return}
+  if(!url.match(/^https?:\/\/.+/)){el.style.color='var(--danger)';el.textContent='Error: URL must start with http:// or https://';return}
+  if(!token){el.style.color='var(--danger)';el.textContent='Error: Token is required';return}
+  if(token.includes('http')||token.includes('octt.openchargealliance.org')){el.style.color='var(--danger)';el.textContent='Error: Token contains URL — paste only the token!';return}
+  if(token.length<20){el.style.color='var(--warn)';el.textContent='Warning: Token looks too short';}
+
+  try{
+    const r=await fetch(API+'/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
+    const j=await r.json();
+    if(j.ok){
+      addLog({timestamp:new Date().toISOString(),level:'success',message:'Config saved to dashboard-config.json',service:'ui'});
+      el.style.color='var(--pass)';
+      el.textContent='Saved! Checking services...';
+      setTimeout(()=>el.style.display='none',3000);
+      setTimeout(checkRelayStatus,1500);
+      setTimeout(checkServices,2000);
+    }else{
+      el.style.color='var(--danger)';
+      el.textContent='Save failed: '+j.error;
+      addLog({timestamp:new Date().toISOString(),level:'error',message:'Save failed: '+j.error,service:'ui'});
+    }
+  }catch(e){
+    el.style.color='var(--danger)';
+    el.textContent='Save error: '+e.message;
+    addLog({timestamp:new Date().toISOString(),level:'error',message:'Save error: '+e.message,service:'ui'});
+  }
+}
+
+/**
+ * Applies extended reboot timeouts (600s/650s) to the OCTT configuration.
+ * Needed before running cold-boot or reset test cases.
+ */
+async function prepareReboot(){
+  const el=$('reboot-status');
+  el.style.display='block';
+  el.style.color='var(--warn)';
+  el.textContent='Applying reboot timeouts (600/650)...';
+  try{
+    const r=await fetch(API+'/api/octt/prepare-reboot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({configurationName:$('inp-config').value})});
+    const j=await r.json();
+    if(j.ok){
+      el.style.color='var(--pass)';
+      el.textContent='Reboot timeouts applied!';
+      addLog({timestamp:new Date().toISOString(),level:'success',message:'Reboot timeouts applied',service:'ui'});
+    }else{
+      el.style.color='var(--danger)';
+      el.textContent='Error: '+j.error;
+      addLog({timestamp:new Date().toISOString(),level:'error',message:'Reboot prep failed: '+j.error,service:'ui'});
+    }
+  }catch(e){
+    el.style.color='var(--danger)';
+    el.textContent='Error: '+e.message;
+    addLog({timestamp:new Date().toISOString(),level:'error',message:'Reboot prep error: '+e.message,service:'ui'});
+  }
+}
+
+/**
+ * Restores default OCTT timeouts (70s/450s) after reboot tests.
+ */
+async function restoreDefaults(){
+  const el=$('reboot-status');
+  el.style.display='block';
+  el.style.color='var(--warn)';
+  el.textContent='Restoring default timeouts (70/450)...';
+  try{
+    const r=await fetch(API+'/api/octt/restore-defaults',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({configurationName:$('inp-config').value})});
+    const j=await r.json();
+    if(j.ok){
+      el.style.color='var(--pass)';
+      el.textContent='Default timeouts restored!';
+      addLog({timestamp:new Date().toISOString(),level:'success',message:'Default timeouts restored',service:'ui'});
+    }else{
+      el.style.color='var(--danger)';
+      el.textContent='Error: '+j.error;
+      addLog({timestamp:new Date().toISOString(),level:'error',message:'Restore failed: '+j.error,service:'ui'});
+    }
+  }catch(e){
+    el.style.color='var(--danger)';
+    el.textContent='Error: '+e.message;
+    addLog({timestamp:new Date().toISOString(),level:'error',message:'Restore error: '+e.message,service:'ui'});
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// SECTION: CDS Live Charts
+// Real-time visualization of CDS measurements (voltage, current,
+// SoC, CP state) using HTML5 Canvas. Polls every 2 seconds.
+// ══════════════════════════════════════════════════════════════
+
+/** Max number of historical data points per chart */
+const CHART_MAX_POINTS=60;
+
+/** Chart data buffers: { voltage:[], current:[], soc:[], cp:[] } */
+const chartData={voltage:[],current:[],soc:[],cp:[]};
+
+/** Interval handle for the measurement polling loop */
+let chartsInterval=null;
+
+/** Whether polling is currently paused */
+let chartsPaused=false;
+
+/**
+ * Opens the CDS live charts modal and starts polling.
+ */
+function openCdsCharts(){
+  $('charts-modal-bg').style.display='flex';
+  chartsPaused=false;
+  $('btn-charts-toggle').innerHTML='&#9208; Pause';
+  $('charts-status').textContent='Polling...';
+  $('charts-status').style.color='var(--accent)';
+  pollMeasurements();
+  chartsInterval=setInterval(pollMeasurements,2000);
+}
+
+/**
+ * Closes the CDS live charts modal and stops polling.
+ */
+function closeCdsCharts(){
+  $('charts-modal-bg').style.display='none';
+  if(chartsInterval){clearInterval(chartsInterval);chartsInterval=null}
+}
+
+/**
+ * Toggles polling pause/resume.
+ */
+function toggleCharts(){
+  chartsPaused=!chartsPaused;
+  $('btn-charts-toggle').innerHTML=chartsPaused?'&#9654; Resume':'&#9208; Pause';
+  $('charts-status').textContent=chartsPaused?'Paused':'Polling...';
+  $('charts-status').style.color=chartsPaused?'var(--warn)':'var(--accent)';
+}
+
+/**
+ * Clears all chart data buffers.
+ */
+function clearCharts(){
+  chartData.voltage=[];chartData.current=[];chartData.soc=[];chartData.cp=[];
+  ['voltage','current','soc','cp'].forEach(k=>drawChart(k,chartData[k]));
+  $('charts-points').textContent='0';
+}
+
+/**
+ * Fetches current measurements from the CDS and updates displays.
+ */
+async function pollMeasurements(){
+  if(chartsPaused)return;
+  try{
+    const r=await fetch(API+'/api/cds/measurements');
+    const j=await r.json();
+    if(!j.ok){
+      $('charts-status').textContent='CDS error: '+j.error;
+      $('charts-status').style.color='var(--danger)';
+      $('charts-cds-status').textContent='Error';
+      return;
+    }
+    // Update numeric displays
+    $('val-voltage').textContent=j.voltage!==null?j.voltage.toFixed(1)+' V':'--';
+    $('val-current').textContent=j.current!==null?j.current.toFixed(1)+' A':'--';
+    $('val-soc').textContent=j.soc!==null?j.soc.toFixed(1)+' %':'--';
+    const cpLabels={1:'A1',2:'A2',3:'B1',4:'B2',5:'C1',6:'C2',7:'D1',8:'D2',9:'E',10:'F',11:'Error'};
+    $('val-cp').textContent=j.cpStateRaw!==null?(cpLabels[Math.round(j.cpStateRaw)]||'State '+Math.round(j.cpStateRaw)):'--';
+    $('charts-cds-status').textContent=(j.statusFlags||[]).join(', ')||'Idle';
+    $('charts-status').textContent='Live';
+    $('charts-status').style.color='var(--pass)';
+    // Push to buffers
+    if(j.voltage!==null)chartData.voltage.push(j.voltage);
+    if(j.current!==null)chartData.current.push(j.current);
+    if(j.soc!==null)chartData.soc.push(j.soc);
+    if(j.cpStateRaw!==null)chartData.cp.push(j.cpStateRaw);
+    // Trim buffers
+    Object.keys(chartData).forEach(k=>{if(chartData[k].length>CHART_MAX_POINTS)chartData[k].shift()});
+    // Draw
+    ['voltage','current','soc','cp'].forEach(k=>drawChart(k,chartData[k]));
+    $('charts-points').textContent=String(chartData.voltage.length);
+  }catch(e){
+    $('charts-status').textContent='Network error';
+    $('charts-status').style.color='var(--danger)';
+  }
+}
+
+/**
+ * Draws a sparkline chart on a canvas element.
+ * @param key   - Chart key (voltage, current, soc, cp)
+ * @param data  - Array of numeric values
+ */
+function drawChart(key,data){
+  const canvas=$(`chart-${key}`);
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  if(data.length<2)return;
+  const min=Math.min(...data),max=Math.max(...data);
+  const range=max-min||1;
+  const colors={voltage:'#39bae6',current:'#aad94c',soc:'#ffb454',cp:'#d957ff'};
+  ctx.strokeStyle=colors[key]||'#39bae6';
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  data.forEach((v,i)=>{
+    const x=(i/(data.length-1))*w;
+    const y=h-((v-min)/range)*h;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  // Fill area under line
+  ctx.lineTo(w,h);
+  ctx.lineTo(0,h);
+  ctx.closePath();
+  ctx.fillStyle=(colors[key]||'#39bae6')+'18';
+  ctx.fill();
+}
+
+// ══════════════════════════════════════════════════════════════
+// SECTION: Jira Upload Modal
+// Appears automatically after pipeline completion to upload
+// the full test execution results to Jira.
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Opens the Jira upload modal, fetches metadata from Jira,
+ * and populates the dropdowns with SUTs, firmwares, and test plans.
+ * @param results - Array of test results from the completed run
+ */
+async function openJiraUploadModal(results){
+  const modal=$('jira-upload-modal-bg');
+  modal.style.display='flex';
+  
+  // Show loading state
+  $('jira-upload-status').textContent='Loading Jira metadata...';
+  $('jira-upload-status').style.color='var(--warn)';
+  
+  // Calculate summary
+  const passed=results.filter(r=>r.verdict==='pass').length;
+  const failed=results.filter(r=>r.verdict==='fail').length;
+  const inconc=results.filter(r=>r.verdict==='inconc').length;
+  const errors=results.filter(r=>r.verdict==='error').length;
+  const total=results.length;
+  const passRate=total?Math.round(passed/total*100):0;
+  
+  $('jira-upload-summary').innerHTML=[
+    `<b>Execution Summary</b>`,
+    `Total: ${total} | Pass: ${passed} | Fail: ${failed} | Inconc: ${inconc} | Error: ${errors}`,
+    `Pass Rate: ${passRate}%`,
+    ``,
+    `<b>Non-passing tests:</b>`,
+    ...results.filter(r=>r.verdict!=='pass').map(r=>`  - ${r.testCase}: ${r.verdict} (${r.duration}s)`),
+    ...(results.filter(r=>r.verdict!=='pass').length===0?['  All tests passed!']:[])
+  ].join('<br>');
+  
+  // Fetch metadata from Jira
+  try{
+    const r=await fetch(API+'/api/jira/metadata');
+    const j=await r.json();
+    if(j.ok&&j.metadata){
+      populateJiraSelect('sel-jira-sut',j.metadata.suts,'Select SUT...',true);
+      populateJiraSelect('sel-jira-fw',j.metadata.firmwares,'Select Firmware...',true);
+      populateJiraSelect('sel-jira-plan',j.metadata.testPlans,'Select Test Plan...',false);
+      $('jira-upload-status').textContent=`${total} tests | ${passRate}% pass`;
+      $('jira-upload-status').style.color=passRate>=80?'var(--pass)':passRate>=50?'var(--warn)':'var(--danger)';
+      $('jira-upload-error').style.display='none';
+    }else{
+      throw new Error(j.error||'Failed to load metadata');
+    }
+  }catch(e){
+    console.error('Failed to load Jira metadata:',e);
+    $('jira-upload-status').textContent='Jira metadata unavailable';
+    $('jira-upload-status').style.color='var(--danger)';
+    $('jira-upload-error').textContent='Warning: Could not load SUT/Firmware from Jira. You can still upload but values must match existing Jira fields exactly.';
+    $('jira-upload-error').style.display='block';
+    // Allow manual entry as fallback
+    populateJiraSelect('sel-jira-sut',[],'Enter SUT manually...',true);
+    populateJiraSelect('sel-jira-fw',[],'Enter Firmware manually...',true);
+    populateJiraSelect('sel-jira-plan',[],'Enter Test Plan manually...',false);
+  }
+}
+
+/**
+ * Populates a <select> element with options from Jira metadata.
+ * If no values exist, falls back to an editable text input.
+ */
+function populateJiraSelect(id,values,placeholder,required){
+  const sel=$(id);
+  sel.innerHTML='';
+  
+  // Default empty option
+  const emptyOpt=document.createElement('option');
+  emptyOpt.value='';
+  emptyOpt.textContent=required?placeholder+' *':placeholder;
+  if(required)emptyOpt.disabled=true;
+  sel.appendChild(emptyOpt);
+  
+  if(values&&values.length>0){
+    values.forEach(v=>{
+      const opt=document.createElement('option');
+      opt.value=v;
+      opt.textContent=v;
+      sel.appendChild(opt);
+    });
+    sel.disabled=false;
+  }else{
+    // Fallback: allow free text entry by swapping select for input
+    sel.innerHTML='<option value="">No values found in Jira</option>';
+    sel.disabled=true;
+    // Show a text input below as fallback
+    const fallbackId=id+'-fallback';
+    let fallback=$(fallbackId);
+    if(!fallback){
+      fallback=document.createElement('input');
+      fallback.id=fallbackId;
+      fallback.type='text';
+      fallback.placeholder=placeholder;
+      fallback.style='width:100%;margin-top:4px;';
+      sel.parentNode.insertBefore(fallback,sel.nextSibling);
+    }
+  }
+}
+
+/**
+ * Closes the Jira upload modal.
+ */
+function closeJiraUploadModal(){
+  $('jira-upload-modal-bg').style.display='none';
+}
+
+/**
+ * Uploads the completed test execution to Jira.
+ * Creates a Task with full results table + attached JSON.
+ */
+async function uploadExecutionToJira(){
+  // Get values from selects (or fallback inputs if Jira metadata was unavailable)
+  let sut=$('sel-jira-sut').value.trim();
+  let fw=$('sel-jira-fw').value.trim();
+  let plan=$('sel-jira-plan').value.trim();
+  let env=$('sel-jira-env').value.trim();
+  
+  // Fallback to text inputs if selects are empty/disabled
+  if(!sut){sut=($('sel-jira-sut-fallback')||{}).value||''}
+  if(!fw){fw=($('sel-jira-fw-fallback')||{}).value||''}
+  if(!plan){plan=($('sel-jira-plan-fallback')||{}).value||''}
+
+  // Validate required fields
+  const missing=[];
+  if(!sut)missing.push('SUT');
+  if(!fw)missing.push('Firmware Version');
+  if(missing.length>0){
+    alert('Required fields missing: '+missing.join(', '));
+    return;
+  }
+
+  const btn=$('btn-jira-upload');
+  btn.disabled=true;
+  btn.textContent='Uploading...';
+
+  try{
+    const r=await fetch(API+'/api/jira/upload-execution',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({sut,firmwareVersion:fw,testPlan:plan,environment:env})
+    });
+    const j=await r.json();
+    if(j.ok){
+      $('jira-upload-status').textContent='Uploaded!';
+      $('jira-upload-status').style.color='var(--pass)';
+      $('jira-upload-summary').innerHTML=[
+        `<b>Upload successful!</b>`,
+        `Issue: <a href="${j.url}" target="_blank" style="color:var(--accent)">${j.issueKey}</a>`,
+        `Total: ${j.summary.total} | Pass: ${j.summary.passed} | Fail: ${j.summary.failed}`,
+        `Pass Rate: ${j.summary.passRate}%`
+      ].join('<br>');
+      btn.textContent='Uploaded!';
+      btn.style.borderColor='var(--pass)';
+      btn.style.color='var(--pass)';
+      addLog({timestamp:new Date().toISOString(),level:'success',message:`Jira upload: ${j.issueKey} (${j.url})`,service:'ui'});
+    }else{
+      throw new Error(j.error||'Unknown error');
+    }
+  }catch(e){
+    $('jira-upload-status').textContent='Upload failed';
+    $('jira-upload-status').style.color='var(--danger)';
+    btn.disabled=false;
+    btn.textContent='Retry Upload';
+    addLog({timestamp:new Date().toISOString(),level:'error',message:'Jira upload failed: '+e.message,service:'ui'});
+    alert('Upload failed: '+e.message);
+  }
+}
+
+// ── Tab Switching ──
+
+/** Switch between Current Run and Run History tabs */
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  $(`tab-${tab}`).classList.add('active');
+  $('view-current').style.display=tab==='current'?'flex':'none';
+  $('view-history').style.display=tab==='history'?'flex':'none';
+  if(tab==='history')fetchHistory();
+}
+
+function closeRunDetails(){
+  $('history-details').classList.remove('visible');
+}
+
+// ── Run History ──
+
+async function fetchHistory(){
+  try{
+    const r=await fetch(API+'/api/results/history');
+    const data=await r.json();
+    renderHistoryTable(Array.isArray(data)?data:data.history||[]);
+  }catch(e){
+    $('htbody').innerHTML=`<tr><td colspan="8" style="color:var(--text-dim);text-align:center;padding:16px">Error loading history: ${e.message}</td></tr>`;
+  }
+}
+
+function renderHistoryTable(history){
+  if(!history||!history.length){
+    $('htbody').innerHTML='<tr><td colspan="8" style="color:var(--text-dim);text-align:center;padding:16px">No past runs</td></tr>';
+    return;
+  }
+  $('htbody').innerHTML=history.map((h,i)=>{
+    const d=new Date(h.timestamp);
+    const dateStr=d.toLocaleDateString()+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const rateColor=h.passRate>=80?'var(--pass)':h.passRate>=50?'var(--warn)':'var(--fail)';
+    return `<tr onclick="showRunDetails('${h.id}')">
+      <td style="color:var(--text-dim)">${dateStr}</td>
+      <td style="color:var(--text-bright)">${h.configName||'—'}</td>
+      <td>${h.total}</td>
+      <td style="color:var(--pass)">${h.pass}</td>
+      <td style="color:var(--fail)">${h.fail}</td>
+      <td style="color:var(--inconc)">${h.inconc}</td>
+      <td style="color:${rateColor};font-weight:700">${h.passRate}%</td>
+      <td style="text-align:right;color:var(--accent)">&#9654; View</td>
+    </tr>`;
+  }).join('');
+}
+
+function showRunDetails(id){
+  // Fetch history and find the matching entry
+  fetch(API+'/api/results/history').then(r=>r.json()).then(data=>{
+    const entries=Array.isArray(data)?data:data.history||[];
+    const entry=entries.find((h)=>h.id===id);
+    if(!entry)return;
+    $('history-details').classList.add('visible');
+    const d=new Date(entry.timestamp);
+    $('hd-title').textContent=`Run — ${d.toLocaleDateString()} ${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} (${entry.configName||'—'})`;
+
+    // Render individual results table
+    const tbody=entry.results&&entry.results.length
+      ? entry.results.map((r)=>`<tr><td style="color:var(--text-bright)">${r.testCase}</td><td><span class="vb ${r.verdict}">${r.verdict}</span></td><td style="color:var(--text-dim)">${r.duration||0}s</td></tr>`).join('')
+      : '<tr><td colspan="3" style="color:var(--text-dim);text-align:center;padding:12px">No detail results</td></tr>';
+    $('hd-table-wrap').innerHTML=`<table><thead><tr><th>Test Case</th><th>Verdict</th><th>Duration</th></tr></thead><tbody>${tbody}</tbody></table>`;
+
+    // Render charts
+    renderCharts(entry);
+  }).catch(()=>{});
+}
+
+// ── Charts ──
+
+let pieChart=null;
+let barChart=null;
+
+function destroyCharts(){
+  if(pieChart){pieChart.destroy();pieChart=null;}
+  if(barChart){barChart.destroy();barChart=null;}
+}
+
+function renderCharts(entry){
+  destroyCharts();
+
+  const style=getComputedStyle(document.body);
+  const passColor=style.getPropertyValue('--pass').trim();
+  const failColor=style.getPropertyValue('--fail').trim();
+  const inconcColor=style.getPropertyValue('--inconc').trim();
+  const errorColor=style.getPropertyValue('--error').trim();
+  const textColor=style.getPropertyValue('--text').trim();
+  const accentColor=style.getPropertyValue('--accent').trim();
+
+  // Pie chart
+  const pieCtx=document.getElementById('chart-pie')?.getContext('2d');
+  if(pieCtx){
+    pieChart=new Chart(pieCtx,{
+      type:'pie',
+      data:{
+        labels:['PASS','FAIL','INCONC','ERROR'],
+        datasets:[{
+          data:[entry.pass,entry.fail,entry.inconc,entry.error],
+          backgroundColor:[passColor,failColor,inconcColor,errorColor],
+          borderWidth:1,
+          borderColor:style.getPropertyValue('--bg').trim(),
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{position:'bottom',labels:{color:textColor,boxWidth:10,padding:8,font:{size:9}}},
+          tooltip:{enabled:true}
+        }
+      }
+    });
+  }
+
+  // Bar chart — top 15 tests by duration (or all if fewer)
+  const sorted=entry.results?[...entry.results].sort((a,b)=>b.duration-a.duration).slice(0,15):[];
+  if(sorted.length){
+    const barCtx=document.getElementById('chart-bar')?.getContext('2d');
+    if(barCtx){
+      barChart=new Chart(barCtx,{
+        type:'bar',
+        data:{
+          labels:sorted.map((r)=>r.testCase),
+          datasets:[{
+            label:'Duration (s)',
+            data:sorted.map((r)=>r.duration),
+            backgroundColor:sorted.map((r)=>r.verdict==='pass'?passColor:r.verdict==='fail'?failColor:r.verdict==='inconc'?inconcColor:errorColor),
+            borderWidth:0,
+            borderRadius:3,
+          }]
+        },
+        options:{
+          indexAxis:'y',
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{
+            legend:{display:false},
+            tooltip:{callbacks:{label:(ctx)=>`${ctx.parsed.x}s: ${sorted[ctx.dataIndex].testCase}`}}
+          },
+          scales:{
+            x:{grid:{color:'color-mix(in srgb,var(--border) 30%,transparent)'},ticks:{color:textColor,font:{size:9}}},
+            y:{grid:{display:false},ticks:{color:textColor,font:{size:8}}}
+          }
+        }
+      });
+    }
+  }
+}
+
+// ── Create Jira Defect ──
+
+async function createDefect(testCase,verdict){
+  if(!confirm(`Create a Jira defect for ${testCase} (${verdict})?`))return;
+  try{
+    const r=await fetch(API+'/api/jira/create-defect',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({testCase,verdict})
+    });
+    const j=await r.json();
+    if(j.ok){
+      addLog({timestamp:new Date().toISOString(),level:'success',message:`Defect created: ${j.issueKey} (${j.url})`,service:'ui'});
+      alert(j.existing ? `Existing defect found: ${j.issueKey}\n${j.url}` : `Defect created: ${j.issueKey}\n${j.url}`);
+    }else{
+      throw new Error(j.error||'Unknown error');
+    }
+  }catch(e){
+    addLog({timestamp:new Date().toISOString(),level:'error',message:`Defect creation failed: ${e.message}`,service:'ui'});
+    alert('Failed to create defect: '+e.message);
+  }
+}
+
+// Start the dashboard
+init();
+</script>
+</body>
+</html>

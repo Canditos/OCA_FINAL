@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends RemoteStartTransaction with TxProfile included,CSMS → SUT,"RemoteStartTransaction(connectorId, idTag, chargingProfile={purpose=TxProfile, stackLevel=1, ...})",Remote start with charging profile
+2,SUT authorizes and starts transaction with the provided profile,SUT → CSMS,Authorize + StartTransaction,Transaction started with TxProfile
+3,CSMS requests composite schedule to verify profile applied,CSMS → SUT,"GetCompositeSchedule(connectorId=1, duration=3600)",Get composite schedule
+4,SUT returns composite schedule reflecting the TxProfile,SUT → CSMS,"GetCompositeSchedule.Response(Accepted, schedule=[...])",Composite schedule matches TxProfile from remote start

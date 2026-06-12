@@ -1,0 +1,792 @@
+Test Key,Test Repository Path,Test Name,Test Type,Test Description,Test Labels
+,OCPP-1.6/MAINTENANCE,[OCPP 1.6] tc_bi_restore_configuration — Restore all configuration keys to their default values,Manual,"Restore all configuration keys to their default values.
+
+Suite: MAINTENANCE
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification maintenance no-cds
+,OCPP-1.6/MAINTENANCE,[OCPP 1.6] tc_bi_stop_transactions — Stop all active transactions before proceeding,Manual,"Stop all active transactions before proceeding.
+
+Suite: MAINTENANCE
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification maintenance no-cds
+,OCPP-1.6/MAINTENANCE,[OCPP 1.6] tc_bi_clear_cache — Clear the local authorization cache,Manual,"Clear the local authorization cache.
+
+Suite: MAINTENANCE
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification maintenance no-cds
+,OCPP-1.6/MAINTENANCE,[OCPP 1.6] tc_bi_clear_local_auth_list — Clear the local authorization list,Manual,"Clear the local authorization list.
+
+Suite: MAINTENANCE
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification maintenance no-cds
+,OCPP-1.6/MAINTENANCE,[OCPP 1.6] tc_bi_restore_availability — Restore all connectors to Available state,Manual,"Restore all connectors to Available state.
+
+Suite: MAINTENANCE
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification maintenance no-cds
+,OCPP-1.6/MAINTENANCE,[OCPP 1.6] tc_bi_reset_hard — Perform a hard reset of the charge point,Manual,"Perform a hard reset of the charge point.
+
+Suite: MAINTENANCE
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification maintenance no-cds
+,OCPP-1.6/Authorization,[OCPP 1.6] TC_023_4_CS — Start local Charging Session - Authorize invalid,Manual,"Start local Charging Session - Authorize invalid.
+
+Suite: Authorization
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification authorization no-cds
+,OCPP-1.6/Authorization,[OCPP 1.6] TC_023_5_CS — Start remote Charging Session - Authorize invalid,Manual,"Start remote Charging Session - Authorize invalid.
+
+Suite: Authorization
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification authorization no-cds
+,OCPP-1.6/Authorization,[OCPP 1.6] TC_024_CS — Start Charging Session - Lock Failure,Manual,"Start Charging Session - Lock Failure.
+
+Suite: Authorization
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification authorization no-cds
+,OCPP-1.6/Authorization,[OCPP 1.6] TC_061_1_CS — Clear Authorization Data in Authorization Cache - Local,Manual,"Clear Authorization Data in Authorization Cache - Local.
+
+Suite: Authorization
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification authorization no-cds
+,OCPP-1.6/Authorization,[OCPP 1.6] TC_061_2_CS — Clear Authorization Data in Authorization Cache - Remote,Manual,"Clear Authorization Data in Authorization Cache - Remote.
+
+Suite: Authorization
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification authorization no-cds
+,OCPP-1.6/DataTransfer,[OCPP 1.6] TC_062_CS — Data Transfer to a Charge Point,Manual,"Data Transfer to a Charge Point.
+
+Suite: DataTransfer
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification datatransfer no-cds
+,OCPP-1.6/FirmwareManagement,[OCPP 1.6] TC_044_1_CS — Firmware Update - Download and Install,Manual,"Firmware Update - Download and Install.
+
+Suite: FirmwareManagement
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification firmwaremanagement no-cds
+,OCPP-1.6/FirmwareManagement,[OCPP 1.6] TC_044_2_CS — Firmware Update - Download Failed,Manual,"Firmware Update - Download Failed.
+
+Suite: FirmwareManagement
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification firmwaremanagement no-cds
+,OCPP-1.6/FirmwareManagement,[OCPP 1.6] TC_044_3_CS — Firmware Update - Installation Failed,Manual,"Firmware Update - Installation Failed.
+
+Suite: FirmwareManagement
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification firmwaremanagement no-cds
+,OCPP-1.6/FirmwareManagement,[OCPP 1.6] TC_045_1_CS — Get Diagnostics,Manual,"Get Diagnostics.
+
+Suite: FirmwareManagement
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification firmwaremanagement no-cds
+,OCPP-1.6/FirmwareManagement,[OCPP 1.6] TC_045_2_CS — Get Diagnostics - Upload Failed,Manual,"Get Diagnostics - Upload Failed.
+
+Suite: FirmwareManagement
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification firmwaremanagement no-cds
+,OCPP-1.6/LocalAuthList,[OCPP 1.6] TC_008_1_CS — Regular Start Charging Session - Id in Local Authorization List,Manual,"Regular Start Charging Session - Id in Local Authorization List.
+
+Suite: LocalAuthList
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification localauthlist no-cds
+,OCPP-1.6/LocalAuthList,[OCPP 1.6] TC_008_2_CS — Remote Start Charging Session - Id in Local Authorization List,Manual,"Remote Start Charging Session - Id in Local Authorization List.
+
+Suite: LocalAuthList
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification localauthlist no-cds
+,OCPP-1.6/LocalAuthList,[OCPP 1.6] TC_042_1_CS — Get Local List Version (not supported),Manual,"Get Local List Version (not supported).
+
+Suite: LocalAuthList
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification localauthlist no-cds
+,OCPP-1.6/LocalAuthList,[OCPP 1.6] TC_042_2_CS — Get Local List Version (empty),Manual,"Get Local List Version (empty).
+
+Suite: LocalAuthList
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification localauthlist no-cds
+,OCPP-1.6/LocalAuthList,[OCPP 1.6] TC_043_1_CS — Send Local Authorization List - NotSupported,Manual,"Send Local Authorization List - NotSupported.
+
+Suite: LocalAuthList
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification localauthlist no-cds
+,OCPP-1.6/LocalAuthList,[OCPP 1.6] TC_043_2_CS — Send Local Authorization List - VersionMismatch,Manual,"Send Local Authorization List - VersionMismatch.
+
+Suite: LocalAuthList
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification localauthlist no-cds
+,OCPP-1.6/LocalAuthList,[OCPP 1.6] TC_043_3_CS — Send Local Authorization List - Failed,Manual,"Send Local Authorization List - Failed.
+
+Suite: LocalAuthList
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification localauthlist no-cds
+,OCPP-1.6/LocalAuthList,[OCPP 1.6] TC_043_CS — Send Local Authorization List,Manual,"Send Local Authorization List.
+
+Suite: LocalAuthList
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification localauthlist no-cds
+,OCPP-1.6/MeterValues,[OCPP 1.6] TC_070_CS — Sampled Meter Values,Manual,"Sampled Meter Values.
+
+Suite: MeterValues
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification metervalues needs-cds
+,OCPP-1.6/MeterValues,[OCPP 1.6] TC_071_CS — Clock-aligned Meter Values,Manual,"Clock-aligned Meter Values.
+
+Suite: MeterValues
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification metervalues needs-cds
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_001_CS — Cold Boot Charge Point,Manual,"Cold Boot Charge Point.
+
+Suite: Provisioning
+No CDS required — protocol-only test. Reboot test — extended timeouts (600s/650s) required.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds reboot
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_002_CS — Cold Boot Charge Point - Pending,Manual,"Cold Boot Charge Point - Pending.
+
+Suite: Provisioning
+No CDS required — protocol-only test. Reboot test — extended timeouts (600s/650s) required.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds reboot
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_013_CS — Hard Reset Without transaction,Manual,"Hard Reset Without transaction.
+
+Suite: Provisioning
+No CDS required — protocol-only test. Reboot test — extended timeouts (600s/650s) required.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds reboot
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_014_CS — Soft Reset Without Transaction,Manual,"Soft Reset Without Transaction.
+
+Suite: Provisioning
+No CDS required — protocol-only test. Reboot test — extended timeouts (600s/650s) required.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds reboot
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_015_CS — Hard Reset With Transaction,Manual,"Hard Reset With Transaction.
+
+Suite: Provisioning
+No CDS required — protocol-only test. Reboot test — extended timeouts (600s/650s) required.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds reboot
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_016_CS — Soft Reset With Transaction,Manual,"Soft Reset With Transaction.
+
+Suite: Provisioning
+No CDS required — protocol-only test. Reboot test — extended timeouts (600s/650s) required.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds reboot
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_019_CS — Retrieve configuration,Manual,"Retrieve configuration.
+
+Suite: Provisioning
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_021_CS — Change/set Configuration,Manual,"Change/set Configuration.
+
+Suite: Provisioning
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_032_1_CS — Power failure boot charging point - stop transactions before going down,Manual,"Power failure boot charging point - stop transactions before going down.
+
+Suite: Provisioning
+No CDS required — protocol-only test. Reboot test — extended timeouts (600s/650s) required.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds reboot
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_032_2_CS — Power failure boot charging point - stop transactions,Manual,"Power failure boot charging point - stop transactions.
+
+Suite: Provisioning
+No CDS required — protocol-only test. Reboot test — extended timeouts (600s/650s) required.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds reboot
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_034_CS — Power Failure with Unavailable Status,Manual,"Power Failure with Unavailable Status.
+
+Suite: Provisioning
+No CDS required — protocol-only test. Reboot test — extended timeouts (600s/650s) required.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds reboot
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_040_1_CS — Configuration key - NotSupported,Manual,"Configuration key - NotSupported.
+
+Suite: Provisioning
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_040_2_CS — Configuration key - Invalid value,Manual,"Configuration key - Invalid value.
+
+Suite: Provisioning
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds
+,OCPP-1.6/Provisioning,[OCPP 1.6] TC_041_CS — Fault Behavior,Manual,"Fault Behavior.
+
+Suite: Provisioning
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification provisioning no-cds
+,OCPP-1.6/RemoteControl,[OCPP 1.6] TC_010_CS — Remote Start Charging Session - Cable Plugged in First,Manual,"Remote Start Charging Session - Cable Plugged in First.
+
+Suite: RemoteControl
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotecontrol needs-cds
+,OCPP-1.6/RemoteControl,[OCPP 1.6] TC_011_1_CS — Remote Start Charging Session - Remote Start First,Manual,"Remote Start Charging Session - Remote Start First.
+
+Suite: RemoteControl
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotecontrol needs-cds
+,OCPP-1.6/RemoteControl,[OCPP 1.6] TC_011_2_CS — Remote Start Charging Session - Time Out,Manual,"Remote Start Charging Session - Time Out.
+
+Suite: RemoteControl
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotecontrol needs-cds
+,OCPP-1.6/RemoteControl,[OCPP 1.6] TC_012_CS — Remote Stop Charging Session,Manual,"Remote Stop Charging Session.
+
+Suite: RemoteControl
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotecontrol needs-cds
+,OCPP-1.6/RemoteControl,[OCPP 1.6] TC_017_1_CS — Unlock connector - no charging session (Not fixed cable),Manual,"Unlock connector - no charging session (Not fixed cable).
+
+Suite: RemoteControl
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotecontrol needs-cds
+,OCPP-1.6/RemoteControl,[OCPP 1.6] TC_017_2_CS — Unlock connector - no charging session (Fixed cable),Manual,"Unlock connector - no charging session (Fixed cable).
+
+Suite: RemoteControl
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotecontrol needs-cds
+,OCPP-1.6/RemoteControl,[OCPP 1.6] TC_018_1_CS — Unlock Connector - With Charging Session (Not fixed cable),Manual,"Unlock Connector - With Charging Session (Not fixed cable).
+
+Suite: RemoteControl
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotecontrol needs-cds
+,OCPP-1.6/RemoteControl,[OCPP 1.6] TC_018_2_CS — Unlock Connector - With Charging Session (Fixed cable),Manual,"Unlock Connector - With Charging Session (Fixed cable).
+
+Suite: RemoteControl
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotecontrol needs-cds
+,OCPP-1.6/RemoteControl,[OCPP 1.6] TC_026_CS — Remote Start Charging Session - Rejected,Manual,"Remote Start Charging Session - Rejected.
+
+Suite: RemoteControl
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotecontrol needs-cds
+,OCPP-1.6/RemoteControl,[OCPP 1.6] TC_027_CS — Remote start transaction - connector id shall not be 0,Manual,"Remote start transaction - connector id shall not be 0.
+
+Suite: RemoteControl
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotecontrol needs-cds
+,OCPP-1.6/RemoteControl,[OCPP 1.6] TC_028_CS — Remote Stop Transaction - Rejected,Manual,"Remote Stop Transaction - Rejected.
+
+Suite: RemoteControl
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotecontrol needs-cds
+,OCPP-1.6/RemoteControl,[OCPP 1.6] TC_030_CS — Unlock Connector - Unlock Failure,Manual,"Unlock Connector - Unlock Failure.
+
+Suite: RemoteControl
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotecontrol needs-cds
+,OCPP-1.6/RemoteControl,[OCPP 1.6] TC_031_CS — Unlock Connector - Unknown Connector,Manual,"Unlock Connector - Unknown Connector.
+
+Suite: RemoteControl
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotecontrol needs-cds
+,OCPP-1.6/RemoteTrigger,[OCPP 1.6] TC_054_CS — Trigger Message,Manual,"Trigger Message.
+
+Suite: RemoteTrigger
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotetrigger no-cds
+,OCPP-1.6/RemoteTrigger,[OCPP 1.6] TC_055_CS — Trigger Message - Rejected,Manual,"Trigger Message - Rejected.
+
+Suite: RemoteTrigger
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification remotetrigger no-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_046_1_CS — Reservation of a Connector - Local start transaction,Manual,"Reservation of a Connector - Local start transaction.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_046_2_CS — Reservation of a Connector - Remote start transaction,Manual,"Reservation of a Connector - Remote start transaction.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_047_CS — Reservation of a Connector - Expire,Manual,"Reservation of a Connector - Expire.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_048_1_CS — Reservation of a Connector - Faulted,Manual,"Reservation of a Connector - Faulted.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_048_2_CS — Reservation of a Connector - Occupied,Manual,"Reservation of a Connector - Occupied.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_048_3_CS — Reservation of a Connector - Unavailable,Manual,"Reservation of a Connector - Unavailable.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_048_4_CS — Reservation of a Connector - Rejected,Manual,"Reservation of a Connector - Rejected.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_049_CS — Reservation of a Charge Point - Transaction,Manual,"Reservation of a Charge Point - Transaction.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_050_1_CS — Reservation of a Charge Point - Faulted,Manual,"Reservation of a Charge Point - Faulted.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_050_2_CS — Reservation of a Charge Point - Occupied,Manual,"Reservation of a Charge Point - Occupied.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_050_3_CS — Reservation of a Charge Point - Unavailable,Manual,"Reservation of a Charge Point - Unavailable.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_050_4_CS — Reservation of a Charge Point - Rejected,Manual,"Reservation of a Charge Point - Rejected.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_051_CS — Cancel Reservation,Manual,"Cancel Reservation.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_052_CS — Cancel Reservation - Rejected,Manual,"Cancel Reservation - Rejected.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_053_1_CS — Use a reserved Connector with parentIdTag - Local,Manual,"Use a reserved Connector with parentIdTag - Local.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Reservation,[OCPP 1.6] TC_053_2_CS — Use a reserved Connector with parentIdTag - Remote,Manual,"Use a reserved Connector with parentIdTag - Remote.
+
+Suite: Reservation
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification reservation needs-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_073_CS — Update Charge Point Password for HTTP Basic Authentication,Manual,"Update Charge Point Password for HTTP Basic Authentication.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_074_CS — Update Charge Point Certificate by request of Central System,Manual,"Update Charge Point Certificate by request of Central System.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_075_1_CS — Install a certificate on the Charge Point - ManufacturerRootCertificate,Manual,"Install a certificate on the Charge Point - ManufacturerRootCertificate.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_075_2_CS — Install a certificate on the Charge Point - CentralSystemRootCertificate,Manual,"Install a certificate on the Charge Point - CentralSystemRootCertificate.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_076_CS — Delete a specific certificate from the Charge Point,Manual,"Delete a specific certificate from the Charge Point.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_077_CS — Invalid ChargePointCertificate Security Event,Manual,"Invalid ChargePointCertificate Security Event.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_078_CS — Invalid CentralSystemCertificate Security Event,Manual,"Invalid CentralSystemCertificate Security Event.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_079_CS — Get Security Log,Manual,"Get Security Log.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_080_CS — Secure Firmware Update,Manual,"Secure Firmware Update.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_081_CS — Secure Firmware Update - Invalid Signature,Manual,"Secure Firmware Update - Invalid Signature.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_083_CS — Upgrade security profile,Manual,"Upgrade security profile.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_084_CS — Downgrade security profile - Rejected,Manual,"Downgrade security profile - Rejected.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_085_CS — Basic Authentication - Valid username/password combination,Manual,"Basic Authentication - Valid username/password combination.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_086_CS — TLS - server-side certificate - Valid certificate,Manual,"TLS - server-side certificate - Valid certificate.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/Security,[OCPP 1.6] TC_087_CS — TLS - Client-side certificate - valid certificate,Manual,"TLS - Client-side certificate - valid certificate.
+
+Suite: Security
+No CDS required — protocol-only test.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification security no-cds
+,OCPP-1.6/SmartCharging,[OCPP 1.6] TC_056_CS — Central Smart Charging - TxDefaultProfile,Manual,"Central Smart Charging - TxDefaultProfile.
+
+Suite: SmartCharging
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification smartcharging needs-cds
+,OCPP-1.6/SmartCharging,[OCPP 1.6] TC_057_CS — Central Smart Charging - TxProfile,Manual,"Central Smart Charging - TxProfile.
+
+Suite: SmartCharging
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification smartcharging needs-cds
+,OCPP-1.6/SmartCharging,[OCPP 1.6] TC_058_1_CS — Central Smart Charging - No ongoing transaction,Manual,"Central Smart Charging - No ongoing transaction.
+
+Suite: SmartCharging
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification smartcharging needs-cds
+,OCPP-1.6/SmartCharging,[OCPP 1.6] TC_058_2_CS — Central Smart Charging - Wrong transactionId,Manual,"Central Smart Charging - Wrong transactionId.
+
+Suite: SmartCharging
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification smartcharging needs-cds
+,OCPP-1.6/SmartCharging,[OCPP 1.6] TC_059_CS — Remote Start Transaction with Charging Profile,Manual,"Remote Start Transaction with Charging Profile.
+
+Suite: SmartCharging
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification smartcharging needs-cds
+,OCPP-1.6/SmartCharging,[OCPP 1.6] TC_060_CS — Remote Start Transaction with Charging Profile - Rejected,Manual,"Remote Start Transaction with Charging Profile - Rejected.
+
+Suite: SmartCharging
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification smartcharging needs-cds
+,OCPP-1.6/SmartCharging,[OCPP 1.6] TC_066_CS — Get Composite Schedule,Manual,"Get Composite Schedule.
+
+Suite: SmartCharging
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification smartcharging needs-cds
+,OCPP-1.6/SmartCharging,[OCPP 1.6] TC_067_CS — Clear Charging Profile,Manual,"Clear Charging Profile.
+
+Suite: SmartCharging
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification smartcharging needs-cds
+,OCPP-1.6/SmartCharging,[OCPP 1.6] TC_072_CS — Stacking Charging Profiles,Manual,"Stacking Charging Profiles.
+
+Suite: SmartCharging
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification smartcharging needs-cds
+,OCPP-1.6/SmartCharging,[OCPP 1.6] TC_082_CS — Central Smart Charging - TxDefaultProfile - with ongoing transaction,Manual,"Central Smart Charging - TxDefaultProfile - with ongoing transaction.
+
+Suite: SmartCharging
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification smartcharging needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_003_CS — Regular Charging Session - Plugin First,Manual,"Regular Charging Session - Plugin First.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_004_1_CS — Regular Charging Session - Identification First,Manual,"Regular Charging Session - Identification First.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_004_2_CS — Regular Charging Session - Identification First - ConnectionTimeOut,Manual,"Regular Charging Session - Identification First - ConnectionTimeOut.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_005_1_CS — EV Side Disconnected - StopTransactionOnEVSideDisconnect=true - UnlockConnector=true,Manual,"EV Side Disconnected - StopTransactionOnEVSideDisconnect=true - UnlockConnector=true.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_005_2_CS — EV Side Disconnected - StopTransactionOnEVSideDisconnect=true - UnlockConnector=false,Manual,"EV Side Disconnected - StopTransactionOnEVSideDisconnect=true - UnlockConnector=false.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_005_3_CS — EV Side Disconnected - StopTransactionOnEVSideDisconnect=false - UnlockConnector=false,Manual,"EV Side Disconnected - StopTransactionOnEVSideDisconnect=false - UnlockConnector=false.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_007_1_CS — Regular Start Charging Session - Cached Id,Manual,"Regular Start Charging Session - Cached Id.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_007_2_CS — Remote Start Charging Session - Cached Id,Manual,"Remote Start Charging Session - Cached Id.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_036_CS — Connection Loss During Transaction,Manual,"Connection Loss During Transaction.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_037_1_CS — Offline Start Transaction - Valid IdTag,Manual,"Offline Start Transaction - Valid IdTag.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_037_2_CS — Offline Start Transaction - Invalid IdTag - StopTransactionOnInvalidId=false,Manual,"Offline Start Transaction - Invalid IdTag - StopTransactionOnInvalidId=false.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_037_3_CS — Offline Start Transaction - Invalid IdTag - StopTransactionOnInvalidId=true,Manual,"Offline Start Transaction - Invalid IdTag - StopTransactionOnInvalidId=true.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_038_CS — Offline Stop Transaction,Manual,"Offline Stop Transaction.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_039_CS — Offline Transaction,Manual,"Offline Transaction.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_068_CS — Stop transaction - IdTag in StopTransaction matches IdTag in StartTransaction,Manual,"Stop transaction - IdTag in StopTransaction matches IdTag in StartTransaction.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds
+,OCPP-1.6/Transactions,[OCPP 1.6] TC_069_CS — Stop transaction - ParentIdTag in StopTransaction matches ParentIdTag in StartTransaction,Manual,"Stop transaction - ParentIdTag in StopTransaction matches ParentIdTag in StartTransaction.
+
+Suite: Transactions
+Requires CDS EV simulator.
+
+OCPP Version: 1.6
+Role: Charging Station (CS)",ocpp1.6 certification transactions needs-cds

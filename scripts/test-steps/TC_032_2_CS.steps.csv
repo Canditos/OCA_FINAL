@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a charging session (transaction active),Pre-condition,StartTransaction,Transaction active
+2,Simulate sudden power failure WITHOUT backup power,SUT (power),— sudden power loss —,SUT loses power immediately
+3,SUT goes off without sending StopTransaction,SUT (power off),— SUT off —,SUT shuts down abruptly
+4,Power restored: SUT boots and reconnects,SUT → CSMS,BootNotification,SUT reboots after power restoration
+5,SUT sends StopTransaction for the interrupted transaction (from non-volatile memory),SUT → CSMS,"StopTransaction(transactionId, reason=PowerLoss, meterStop)",Transaction stopped after reboot with reason PowerLoss

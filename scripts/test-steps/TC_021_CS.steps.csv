@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ChangeConfiguration to set a writable key,CSMS → SUT,"ChangeConfiguration(key=MeterValueSampleInterval, value=300)",Configuration change request sent
+2,SUT accepts the configuration change,SUT → CSMS,ChangeConfiguration.Response(status=Accepted),Configuration change accepted
+3,Verify the new value by reading it back,CSMS → SUT,GetConfiguration(key=MeterValueSampleInterval),Request to verify change
+4,SUT returns the updated value,SUT → CSMS,GetConfiguration.Response(configurationKey=[{value=300}]),Changed value confirmed: MeterValueSampleInterval=300

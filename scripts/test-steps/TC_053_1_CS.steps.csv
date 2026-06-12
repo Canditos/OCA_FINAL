@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ReserveNow with parentIdTag specified,CSMS → SUT,"ReserveNow(connectorId, reservationId=1, idTag=parent, ...)",Reservation with parentIdTag
+2,SUT accepts,SUT → CSMS,ReserveNow.Response(Accepted),Reserved for parentIdTag
+3,EV driver presents a child IdTag (parentId matches reservation),EV,-,Child IdTag presented
+4,SUT authorizes child IdTag (parentId matches reservation),SUT → CSMS,Authorize(childIdTag) + StartTransaction(...),Transaction started using parentIdTag reservation

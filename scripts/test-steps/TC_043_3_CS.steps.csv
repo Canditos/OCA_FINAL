@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends SendLocalList but SUT fails to store it,CSMS → SUT,"SendLocalList(listVersion=1, updateType=Full, ...)",SendLocalList request
+2,"SUT returns Failed (e.g. out of memory, internal error)",SUT → CSMS,SendLocalList.Response(status=Failed),Local list storage failed

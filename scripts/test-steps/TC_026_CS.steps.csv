@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a charging session (connector already occupied),Pre-condition,StartTransaction,Connector occupied with active transaction
+2,CSMS sends RemoteStartTransaction to the same (already occupied) connector,CSMS → SUT,"RemoteStartTransaction(connectorId, idTag)",Remote start request on occupied connector
+3,SUT rejects the remote start because connector is occupied,SUT → CSMS,RemoteStartTransaction.Response(status=Rejected),Remote start rejected (connector occupied)

@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a charging session (transaction active),Pre-condition,StartTransaction,Transaction active
+2,CSMS sends SetChargingProfile with TxDefaultProfile while transaction is ongoing,CSMS → SUT,"SetChargingProfile(chargingProfile={purpose=TxDefaultProfile, stackLevel=1, ...})",TxDefaultProfile set during active transaction
+3,SUT applies the profile to the ongoing transaction,SUT → CSMS,SetChargingProfile.Response(Accepted),Profile accepted and applied to ongoing transaction
+4,Verify composite schedule reflects the new profile,CSMS → SUT,"GetCompositeSchedule(connectorId=1, duration=3600)",Composite schedule includes TxDefaultProfile applied during transaction

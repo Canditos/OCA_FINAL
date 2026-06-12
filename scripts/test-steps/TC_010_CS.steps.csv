@@ -1,0 +1,9 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Check configuration: AuthorizeRemoteTxRequests,CSMS → SUT,GetConfiguration(key=AuthorizeRemoteTxRequests),Configuration value retrieved
+2,EV driver plugs cable into the connector,EV,-,Cable plugged in
+3,SUT reports Preparing status,SUT → CSMS,"StatusNotification(connectorId, Preparing)",Status set to Preparing
+4,CSMS sends RemoteStartTransaction,CSMS → SUT,"RemoteStartTransaction(connectorId, idTag)",Remote start request sent
+5,SUT authorizes the IdTag,SUT → CSMS,Authorize(idTag),Authorize sent if AuthorizeRemoteTxRequests=true
+6,CSMS authorizes,CSMS → SUT,Authorize(Accepted),IdTag authorized
+7,SUT locks connector and starts transaction,SUT → CSMS,"StartTransaction(connectorId, idTag, meterStart)",Transaction started
+8,CSMS accepts,CSMS → SUT,"StartTransaction(Accepted, transactionId)",Transaction active

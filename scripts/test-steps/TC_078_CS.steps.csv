@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,SUT connects to CSMS but detects an invalid server certificate,SUT,— TLS handshake with invalid server cert —,SUT detects invalid CSMS certificate
+2,SUT sends SecurityEventNotification,SUT → CSMS,"SecurityEventNotification(type=InvalidCentralSystemCertificate, ...)",Security event for invalid CSMS cert

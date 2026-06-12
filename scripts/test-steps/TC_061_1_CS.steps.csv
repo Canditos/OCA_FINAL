@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Populate the authorization cache with an authorized IdTag,Pre-condition,Authorize(accepted),IdTag cached
+2,CSMS sends ClearCache request,CSMS → SUT,ClearCache,ClearCache request sent
+3,SUT clears its authorization cache,SUT → CSMS,ClearCache.Response(status=Accepted),Cache cleared
+4,EV driver presents the previously cached IdTag (local start),EV,-,Previously cached IdTag presented
+5,"SUT does NOT find IdTag in cache, sends Authorize to CSMS",SUT → CSMS,Authorize(idTag),Authorize sent because cache was cleared
+6,CSMS authorizes,CSMS → SUT,Authorize(Accepted),Authorized via CSMS (not cache)

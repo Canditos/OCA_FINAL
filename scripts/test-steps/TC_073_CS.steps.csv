@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ChangeConfiguration to update AuthorizationKey,CSMS → SUT,"ChangeConfiguration(key=AuthorizationKey, value=newPassword)",Authorization key change request sent
+2,SUT accepts the new password,SUT → CSMS,ChangeConfiguration.Response(status=Accepted),Password accepted
+3,CSMS disconnects SUT,Network,— disconnect —,SUT disconnected
+4,SUT reconnects using HTTP Basic Authentication with the new password,SUT → CSMS,BootNotification (with new Authorization header),SUT reconnects successfully with new password

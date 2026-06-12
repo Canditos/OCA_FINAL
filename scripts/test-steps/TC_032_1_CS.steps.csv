@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a charging session (transaction active),Pre-condition,StartTransaction,Transaction active
+2,Simulate power failure with backup power available,SUT (power),— power loss —,"SUT detects impending power loss, backup power active"
+3,SUT stops transaction before going down (backup power allows orderly shutdown),SUT → CSMS,"StopTransaction(transactionId, reason=PowerLoss, meterStop)",Transaction stopped with reason PowerLoss before shutdown
+4,SUT powers off,SUT (power off),— SUT off —,SUT shuts down
+5,Power restored: SUT boots and reconnects,SUT → CSMS,BootNotification,SUT reboots after power restoration

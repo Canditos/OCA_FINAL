@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,SUT establishes TLS-secured WebSocket with client certificate authentication,SUT → CSMS,— TLS handshake with client cert —,TLS connection with client certificate established
+2,CSMS verifies the SUT client certificate,CSMS,— client cert verification —,Client certificate verified by CSMS
+3,SUT sends BootNotification over the mutually-authenticated TLS connection,SUT → CSMS,BootNotification (over mTLS),BootNotification sent over mTLS
+4,CSMS accepts boot,CSMS → SUT,BootNotification(Accepted) (over mTLS),SUT registered successfully over mTLS

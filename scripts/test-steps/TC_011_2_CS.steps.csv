@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends RemoteStartTransaction,CSMS → SUT,"RemoteStartTransaction(connectorId, idTag)",Remote start sent
+2,EV driver does NOT plug the cable within the connection timeout,EV (timeout),— wait for ConnectionTimeOut —,ConnectionTimeOut expires
+3,SUT aborts the pending start and returns connector to Available,SUT → CSMS,"StatusNotification(connectorId, Available)",Connector returns to Available after timeout

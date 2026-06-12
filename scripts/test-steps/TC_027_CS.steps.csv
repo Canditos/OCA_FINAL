@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends RemoteStartTransaction with connectorId=0 (reserved),CSMS → SUT,"RemoteStartTransaction(connectorId=0, idTag)",Remote start with connectorId=0 sent
+2,SUT responds with Rejected (connectorId=0 is not valid for start),SUT → CSMS,RemoteStartTransaction.Response(status=Rejected),Remote start rejected for connectorId=0

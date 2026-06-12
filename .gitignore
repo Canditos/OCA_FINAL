@@ -1,0 +1,12 @@
+﻿node_modules/
+dist/
+.env
+dashboard-config.json
+logs/
+reports/
+test-results/
+playwright-report/
+.DS_Store
+certification-dashboard.zip
+*.log
+scratch/

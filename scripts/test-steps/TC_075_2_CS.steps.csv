@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends InstallCertificate for CentralSystemRootCertificate,CSMS → SUT,"InstallCertificate(certificateType=CentralSystemRootCertificate, certificate=PEM)",Install CSMS root cert request
+2,SUT installs the certificate,SUT → CSMS,InstallCertificate.Response(status=Accepted),Certificate installed
+3,Verify installation via GetInstalledCertificateIds,CSMS → SUT,GetInstalledCertificateIds(certificateType=CentralSystemRootCertificate),CentralSystem root certificate confirmed installed

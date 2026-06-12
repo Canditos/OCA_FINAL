@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Populate the authorization cache with an authorized IdTag,Pre-condition,Authorize(accepted),IdTag cached
+2,CSMS sends ClearCache,CSMS → SUT,ClearCache,ClearCache sent
+3,SUT clears cache,SUT → CSMS,ClearCache.Response(status=Accepted),Cache cleared
+4,CSMS sends RemoteStartTransaction with the previously cached IdTag,CSMS → SUT,"RemoteStartTransaction(connectorId, idTag)",Remote start with previously cached IdTag
+5,"SUT does NOT find IdTag in cache, sends Authorize",SUT → CSMS,Authorize(idTag),Authorize sent because cache was cleared
+6,CSMS authorizes and transaction proceeds,CSMS → SUT,Authorize(Accepted),Authorized and transaction started

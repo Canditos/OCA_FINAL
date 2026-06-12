@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ExtendedTriggerMessage(SignChargePointCertificate),CSMS → SUT,ExtendedTriggerMessage(requestedMessage=SignChargePointCertificate),Trigger certificate signing
+2,SUT sends SignCertificate with CSR,SUT → CSMS,SignCertificate(certificateRequest=CSR),CSR sent
+3,CSMS sends CertificateSigned with an INVALID certificate,CSMS → SUT,CertificateSigned(certificateChain=invalidCert),Invalid certificate sent
+4,SUT rejects the invalid certificate,SUT → CSMS,CertificateSigned.Response(status=Rejected),Invalid certificate rejected
+5,SUT may send SecurityEventNotification for the certificate failure,SUT → CSMS,"SecurityEventNotification(type=InvalidChargePointCertificate, ...)",Security event notification sent

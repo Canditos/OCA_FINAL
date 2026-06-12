@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Ensure no transaction active and cable is NOT fixed (detachable),Pre-condition,-,"No session, non-fixed cable"
+2,CSMS sends UnlockConnector,CSMS → SUT,UnlockConnector(connectorId),Unlock request sent
+3,SUT unlocks the connector (mechanical lock release),SUT,-,Connector unlocked
+4,SUT responds with Unlocked status,SUT → CSMS,UnlockConnector.Response(status=Unlocked),Unlock successful

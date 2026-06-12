@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ExtendedTriggerMessage to trigger certificate signing,CSMS → SUT,ExtendedTriggerMessage(requestedMessage=SignChargePointCertificate),Trigger certificate signing
+2,SUT sends SignCertificate request,SUT → CSMS,SignCertificate(certificateRequest=CSR),Certificate signing request sent
+3,CSMS sends CertificateSigned with the signed certificate,CSMS → SUT,CertificateSigned(certificateChain=signedCert),Signed certificate sent to SUT
+4,SUT accepts and installs the certificate,SUT → CSMS,CertificateSigned.Response(status=Accepted),Certificate installed successfully

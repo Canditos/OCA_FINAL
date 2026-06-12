@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends a local auth list (version 1) to SUT,CSMS → SUT,"SendLocalList(listVersion=1, updateType=Full, localAuthorizationList=[])",Empty local list sent with version 1
+2,SUT confirms,SUT → CSMS,SendLocalList.Response(Accepted),Local list accepted (empty)
+3,CSMS sends GetLocalListVersion,CSMS → SUT,GetLocalListVersion,Request version
+4,SUT returns version 0 (empty list),SUT → CSMS,GetLocalListVersion.Response(listVersion=0),Local list version 0 (empty)

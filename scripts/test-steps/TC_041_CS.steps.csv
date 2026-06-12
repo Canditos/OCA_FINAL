@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Induce a fault condition on the SUT connector,SUT (hardware),— fault —,Fault condition detected
+2,SUT reports Faulted status,SUT → CSMS,"StatusNotification(connectorId, Faulted, errorCode=...)",Connector status set to Faulted with appropriate error code
+3,Attempt to start a transaction on the faulted connector,EV,-,Attempt to start on faulted connector
+4,SUT refuses to start transaction while connector is Faulted,SUT,-,No transaction started on faulted connector

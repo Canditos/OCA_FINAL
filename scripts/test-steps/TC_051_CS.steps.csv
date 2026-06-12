@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ReserveNow to reserve a connector,CSMS → SUT,"ReserveNow(connectorId, reservationId=1, ...)",Connector reserved
+2,SUT confirms reservation,SUT → CSMS,ReserveNow.Response(Accepted),Reservation active
+3,CSMS sends CancelReservation with the reservationId,CSMS → SUT,CancelReservation(reservationId=1),Cancel reservation request
+4,SUT cancels the reservation,SUT → CSMS,CancelReservation.Response(status=Accepted),Reservation cancelled
+5,SUT returns connector to Available,SUT → CSMS,"StatusNotification(connectorId, Available)",Connector available after cancellation

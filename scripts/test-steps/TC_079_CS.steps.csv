@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends GetLog for SecurityLog,CSMS → SUT,"GetLog(logType=SecurityLog, location=ftp://..., retries=3)",Get security log request
+2,SUT starts uploading security log,SUT → CSMS,LogStatusNotification(status=Uploading),Log upload started
+3,SUT completes log upload,SUT → CSMS,LogStatusNotification(status=Uploaded),Security log uploaded successfully

@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a regular charging session (transaction active),Pre-condition,StartTransaction,Transaction active with known transactionId
+2,CSMS sends RemoteStopTransaction,CSMS → SUT,RemoteStopTransaction(transactionId),Remote stop request sent
+3,SUT stops the energy transfer and unlocks connector,SUT → CSMS,"StopTransaction(transactionId, reason=Remote, meterStop)",Transaction stopped with reason Remote
+4,CSMS confirms,CSMS → SUT,StopTransaction.Response(idTagInfo=Accepted),Stop acknowledged
+5,SUT updates connector status to Available,SUT → CSMS,"StatusNotification(connectorId, Available)",Connector available

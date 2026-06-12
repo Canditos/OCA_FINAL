@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,"Start a charging session (transaction active, online)",Pre-condition,StartTransaction,Transaction active
+2,Simulate network connection loss,Network,— offline —,SUT loses connection
+3,EV driver stops charging (unplug or local stop) while offline,EV,-,Charging stopped locally while offline
+4,SUT stops transaction locally (queues StopTransaction),SUT (offline),— local stop —,StopTransaction queued locally
+5,Restore network connection,Network,— reconnect —,SUT reconnects to CSMS
+6,SUT sends StopTransaction to CSMS,SUT → CSMS,"StopTransaction(transactionId, reason=Local, meterStop)",StopTransaction sent after reconnection with reason Local

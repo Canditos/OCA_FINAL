@@ -1,0 +1,2 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,OCTT built-in: clear the local authorization list on the SUT,CSMS → SUT,"SendLocalList(Full, version=0, empty list)",Local authorization list cleared

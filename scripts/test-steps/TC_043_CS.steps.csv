@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends a Full update of local auth list (version 1),CSMS → SUT,"SendLocalList(listVersion=1, updateType=Full, localAuthorizationList=[idTag1, idTag2])",Full local list sent with version 1
+2,SUT accepts,SUT → CSMS,SendLocalList.Response(Accepted),Full list accepted
+3,"CSMS sends a Differential update (version 2, adds idTag3, removes idTag1)",CSMS → SUT,"SendLocalList(listVersion=2, updateType=Differential, localAuthorizationList=[idTag3])",Differential update sent
+4,SUT accepts differential update,SUT → CSMS,SendLocalList.Response(Accepted),Differential update accepted
+5,Verify version incremented,CSMS → SUT,GetLocalListVersion,Version check
+6,SUT returns version 2,SUT → CSMS,GetLocalListVersion.Response(listVersion=2),Local list version 2

@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a charging session with idTag that has a parentIdTag,Pre-condition,"Authorize(idTag1, parentIdTag) + StartTransaction",Transaction active with parentIdTag linked
+2,EV driver presents a DIFFERENT idTag (idTag2) that shares the same parentIdTag,EV,-,Different idTag with same parentIdTag presented
+3,SUT sends Authorize with idTag2,SUT → CSMS,Authorize(idTag2),Authorize request sent
+4,CSMS authorizes (parentIdTag links to active transaction),CSMS → SUT,"Authorize(Accepted, parentIdTag)",Authorized with parentIdTag
+5,SUT stops the transaction because parentIdTag matches,SUT → CSMS,"StopTransaction(transactionId, idTag2, meterStop)",Transaction stopped using different idTag with same parentIdTag

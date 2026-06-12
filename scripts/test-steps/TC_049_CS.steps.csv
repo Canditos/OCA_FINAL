@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends ReserveNow with connectorId=0 (any available connector),CSMS → SUT,"ReserveNow(connectorId=0, reservationId=1, ...)",Reserve any connector
+2,SUT reserves any available connector,SUT → CSMS,ReserveNow.Response(Accepted),A connector reserved
+3,Start a transaction on the reserved connector,EV,Authorize + StartTransaction,Transaction started on reserved connector

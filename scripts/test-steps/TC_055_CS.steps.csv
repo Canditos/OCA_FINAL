@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends TriggerMessage with invalid connectorId,CSMS → SUT,"TriggerMessage(requestedMessage=MeterValues, connectorId=999)",Trigger with invalid connectorId
+2,SUT rejects with status Rejected,SUT → CSMS,TriggerMessage.Response(status=Rejected),Trigger rejected (invalid connector)

@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends first TxDefaultProfile at stackLevel=1,CSMS → SUT,"SetChargingProfile(chargingProfile={purpose=TxDefaultProfile, stackLevel=1, ...})",First profile set at stackLevel 1
+2,SUT accepts,SUT → CSMS,SetChargingProfile.Response(Accepted),Profile 1 accepted
+3,CSMS sends second TxDefaultProfile at stackLevel=2,CSMS → SUT,"SetChargingProfile(chargingProfile={purpose=TxDefaultProfile, stackLevel=2, ...})",Second profile set at stackLevel 2
+4,SUT accepts,SUT → CSMS,SetChargingProfile.Response(Accepted),Profile 2 accepted
+5,CSMS requests composite schedule,CSMS → SUT,"GetCompositeSchedule(connectorId=1, duration=3600)",Get composite schedule with stacked profiles
+6,SUT returns composite schedule applying both profiles (stackLevel 2 overrides stackLevel 1),SUT → CSMS,"GetCompositeSchedule.Response(Accepted, schedule=[...])",Composite schedule reflects stacking: higher stackLevel takes precedence

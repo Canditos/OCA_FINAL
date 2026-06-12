@@ -1,0 +1,1504 @@
+{
+  "meta": {
+    "ocppVersion": "1.6",
+    "role": "CS",
+    "configuration": "AUT_SID_SAT",
+    "totalTests": 113,
+    "generatedAt": "2026-05-14T21:23:19.274Z"
+  },
+  "suites": [
+    "MAINTENANCE",
+    "Authorization",
+    "DataTransfer",
+    "FirmwareManagement",
+    "LocalAuthList",
+    "MeterValues",
+    "Provisioning",
+    "RemoteControl",
+    "RemoteTrigger",
+    "Reservation",
+    "Security",
+    "SmartCharging",
+    "Transactions"
+  ],
+  "tests": [
+    {
+      "id": "tc_bi_restore_configuration",
+      "suite": "MAINTENANCE",
+      "description": "Restore all configuration keys to their default values",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "maintenance",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "tc_bi_stop_transactions",
+      "suite": "MAINTENANCE",
+      "description": "Stop all active transactions before proceeding",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "maintenance",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "tc_bi_clear_cache",
+      "suite": "MAINTENANCE",
+      "description": "Clear the local authorization cache",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "maintenance",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "tc_bi_clear_local_auth_list",
+      "suite": "MAINTENANCE",
+      "description": "Clear the local authorization list",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "maintenance",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "tc_bi_restore_availability",
+      "suite": "MAINTENANCE",
+      "description": "Restore all connectors to Available state",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "maintenance",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "tc_bi_reset_hard",
+      "suite": "MAINTENANCE",
+      "description": "Perform a hard reset of the charge point",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "maintenance",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_023_4_CS",
+      "suite": "Authorization",
+      "description": "Start local Charging Session - Authorize invalid",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "authorization",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_023_5_CS",
+      "suite": "Authorization",
+      "description": "Start remote Charging Session - Authorize invalid",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "authorization",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_024_CS",
+      "suite": "Authorization",
+      "description": "Start Charging Session - Lock Failure",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "authorization",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_061_1_CS",
+      "suite": "Authorization",
+      "description": "Clear Authorization Data in Authorization Cache - Local",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "authorization",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_061_2_CS",
+      "suite": "Authorization",
+      "description": "Clear Authorization Data in Authorization Cache - Remote",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "authorization",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_062_CS",
+      "suite": "DataTransfer",
+      "description": "Data Transfer to a Charge Point",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "datatransfer",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_044_1_CS",
+      "suite": "FirmwareManagement",
+      "description": "Firmware Update - Download and Install",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "firmwaremanagement",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_044_2_CS",
+      "suite": "FirmwareManagement",
+      "description": "Firmware Update - Download Failed",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "firmwaremanagement",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_044_3_CS",
+      "suite": "FirmwareManagement",
+      "description": "Firmware Update - Installation Failed",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "firmwaremanagement",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_045_1_CS",
+      "suite": "FirmwareManagement",
+      "description": "Get Diagnostics",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "firmwaremanagement",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_045_2_CS",
+      "suite": "FirmwareManagement",
+      "description": "Get Diagnostics - Upload Failed",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "firmwaremanagement",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_008_1_CS",
+      "suite": "LocalAuthList",
+      "description": "Regular Start Charging Session - Id in Local Authorization List",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "localauthlist",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_008_2_CS",
+      "suite": "LocalAuthList",
+      "description": "Remote Start Charging Session - Id in Local Authorization List",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "localauthlist",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_042_1_CS",
+      "suite": "LocalAuthList",
+      "description": "Get Local List Version (not supported)",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "localauthlist",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_042_2_CS",
+      "suite": "LocalAuthList",
+      "description": "Get Local List Version (empty)",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "localauthlist",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_043_1_CS",
+      "suite": "LocalAuthList",
+      "description": "Send Local Authorization List - NotSupported",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "localauthlist",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_043_2_CS",
+      "suite": "LocalAuthList",
+      "description": "Send Local Authorization List - VersionMismatch",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "localauthlist",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_043_3_CS",
+      "suite": "LocalAuthList",
+      "description": "Send Local Authorization List - Failed",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "localauthlist",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_043_CS",
+      "suite": "LocalAuthList",
+      "description": "Send Local Authorization List",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "localauthlist",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_070_CS",
+      "suite": "MeterValues",
+      "description": "Sampled Meter Values",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "metervalues",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_071_CS",
+      "suite": "MeterValues",
+      "description": "Clock-aligned Meter Values",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "metervalues",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_001_CS",
+      "suite": "Provisioning",
+      "description": "Cold Boot Charge Point",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds",
+        "reboot"
+      ],
+      "needsCds": false,
+      "isReboot": true
+    },
+    {
+      "id": "TC_002_CS",
+      "suite": "Provisioning",
+      "description": "Cold Boot Charge Point - Pending",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds",
+        "reboot"
+      ],
+      "needsCds": false,
+      "isReboot": true
+    },
+    {
+      "id": "TC_013_CS",
+      "suite": "Provisioning",
+      "description": "Hard Reset Without transaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds",
+        "reboot"
+      ],
+      "needsCds": false,
+      "isReboot": true
+    },
+    {
+      "id": "TC_014_CS",
+      "suite": "Provisioning",
+      "description": "Soft Reset Without Transaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds",
+        "reboot"
+      ],
+      "needsCds": false,
+      "isReboot": true
+    },
+    {
+      "id": "TC_015_CS",
+      "suite": "Provisioning",
+      "description": "Hard Reset With Transaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds",
+        "reboot"
+      ],
+      "needsCds": false,
+      "isReboot": true
+    },
+    {
+      "id": "TC_016_CS",
+      "suite": "Provisioning",
+      "description": "Soft Reset With Transaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds",
+        "reboot"
+      ],
+      "needsCds": false,
+      "isReboot": true
+    },
+    {
+      "id": "TC_019_CS",
+      "suite": "Provisioning",
+      "description": "Retrieve configuration",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_021_CS",
+      "suite": "Provisioning",
+      "description": "Change/set Configuration",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_032_1_CS",
+      "suite": "Provisioning",
+      "description": "Power failure boot charging point - stop transactions before going down",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds",
+        "reboot"
+      ],
+      "needsCds": false,
+      "isReboot": true
+    },
+    {
+      "id": "TC_032_2_CS",
+      "suite": "Provisioning",
+      "description": "Power failure boot charging point - stop transactions",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds",
+        "reboot"
+      ],
+      "needsCds": false,
+      "isReboot": true
+    },
+    {
+      "id": "TC_034_CS",
+      "suite": "Provisioning",
+      "description": "Power Failure with Unavailable Status",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds",
+        "reboot"
+      ],
+      "needsCds": false,
+      "isReboot": true
+    },
+    {
+      "id": "TC_040_1_CS",
+      "suite": "Provisioning",
+      "description": "Configuration key - NotSupported",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_040_2_CS",
+      "suite": "Provisioning",
+      "description": "Configuration key - Invalid value",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_041_CS",
+      "suite": "Provisioning",
+      "description": "Fault Behavior",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "provisioning",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_010_CS",
+      "suite": "RemoteControl",
+      "description": "Remote Start Charging Session - Cable Plugged in First",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotecontrol",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_011_1_CS",
+      "suite": "RemoteControl",
+      "description": "Remote Start Charging Session - Remote Start First",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotecontrol",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_011_2_CS",
+      "suite": "RemoteControl",
+      "description": "Remote Start Charging Session - Time Out",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotecontrol",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_012_CS",
+      "suite": "RemoteControl",
+      "description": "Remote Stop Charging Session",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotecontrol",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_017_1_CS",
+      "suite": "RemoteControl",
+      "description": "Unlock connector - no charging session (Not fixed cable)",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotecontrol",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_017_2_CS",
+      "suite": "RemoteControl",
+      "description": "Unlock connector - no charging session (Fixed cable)",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotecontrol",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_018_1_CS",
+      "suite": "RemoteControl",
+      "description": "Unlock Connector - With Charging Session (Not fixed cable)",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotecontrol",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_018_2_CS",
+      "suite": "RemoteControl",
+      "description": "Unlock Connector - With Charging Session (Fixed cable)",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotecontrol",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_026_CS",
+      "suite": "RemoteControl",
+      "description": "Remote Start Charging Session - Rejected",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotecontrol",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_027_CS",
+      "suite": "RemoteControl",
+      "description": "Remote start transaction - connector id shall not be 0",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotecontrol",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_028_CS",
+      "suite": "RemoteControl",
+      "description": "Remote Stop Transaction - Rejected",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotecontrol",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_030_CS",
+      "suite": "RemoteControl",
+      "description": "Unlock Connector - Unlock Failure",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotecontrol",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_031_CS",
+      "suite": "RemoteControl",
+      "description": "Unlock Connector - Unknown Connector",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotecontrol",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_054_CS",
+      "suite": "RemoteTrigger",
+      "description": "Trigger Message",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotetrigger",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_055_CS",
+      "suite": "RemoteTrigger",
+      "description": "Trigger Message - Rejected",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "remotetrigger",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_046_1_CS",
+      "suite": "Reservation",
+      "description": "Reservation of a Connector - Local start transaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_046_2_CS",
+      "suite": "Reservation",
+      "description": "Reservation of a Connector - Remote start transaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_047_CS",
+      "suite": "Reservation",
+      "description": "Reservation of a Connector - Expire",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_048_1_CS",
+      "suite": "Reservation",
+      "description": "Reservation of a Connector - Faulted",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_048_2_CS",
+      "suite": "Reservation",
+      "description": "Reservation of a Connector - Occupied",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_048_3_CS",
+      "suite": "Reservation",
+      "description": "Reservation of a Connector - Unavailable",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_048_4_CS",
+      "suite": "Reservation",
+      "description": "Reservation of a Connector - Rejected",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_049_CS",
+      "suite": "Reservation",
+      "description": "Reservation of a Charge Point - Transaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_050_1_CS",
+      "suite": "Reservation",
+      "description": "Reservation of a Charge Point - Faulted",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_050_2_CS",
+      "suite": "Reservation",
+      "description": "Reservation of a Charge Point - Occupied",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_050_3_CS",
+      "suite": "Reservation",
+      "description": "Reservation of a Charge Point - Unavailable",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_050_4_CS",
+      "suite": "Reservation",
+      "description": "Reservation of a Charge Point - Rejected",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_051_CS",
+      "suite": "Reservation",
+      "description": "Cancel Reservation",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_052_CS",
+      "suite": "Reservation",
+      "description": "Cancel Reservation - Rejected",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_053_1_CS",
+      "suite": "Reservation",
+      "description": "Use a reserved Connector with parentIdTag - Local",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_053_2_CS",
+      "suite": "Reservation",
+      "description": "Use a reserved Connector with parentIdTag - Remote",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "reservation",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_073_CS",
+      "suite": "Security",
+      "description": "Update Charge Point Password for HTTP Basic Authentication",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_074_CS",
+      "suite": "Security",
+      "description": "Update Charge Point Certificate by request of Central System",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_075_1_CS",
+      "suite": "Security",
+      "description": "Install a certificate on the Charge Point - ManufacturerRootCertificate",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_075_2_CS",
+      "suite": "Security",
+      "description": "Install a certificate on the Charge Point - CentralSystemRootCertificate",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_076_CS",
+      "suite": "Security",
+      "description": "Delete a specific certificate from the Charge Point",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_077_CS",
+      "suite": "Security",
+      "description": "Invalid ChargePointCertificate Security Event",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_078_CS",
+      "suite": "Security",
+      "description": "Invalid CentralSystemCertificate Security Event",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_079_CS",
+      "suite": "Security",
+      "description": "Get Security Log",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_080_CS",
+      "suite": "Security",
+      "description": "Secure Firmware Update",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_081_CS",
+      "suite": "Security",
+      "description": "Secure Firmware Update - Invalid Signature",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_083_CS",
+      "suite": "Security",
+      "description": "Upgrade security profile",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_084_CS",
+      "suite": "Security",
+      "description": "Downgrade security profile - Rejected",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_085_CS",
+      "suite": "Security",
+      "description": "Basic Authentication - Valid username/password combination",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_086_CS",
+      "suite": "Security",
+      "description": "TLS - server-side certificate - Valid certificate",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_087_CS",
+      "suite": "Security",
+      "description": "TLS - Client-side certificate - valid certificate",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "security",
+        "no-cds"
+      ],
+      "needsCds": false,
+      "isReboot": false
+    },
+    {
+      "id": "TC_056_CS",
+      "suite": "SmartCharging",
+      "description": "Central Smart Charging - TxDefaultProfile",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "smartcharging",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_057_CS",
+      "suite": "SmartCharging",
+      "description": "Central Smart Charging - TxProfile",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "smartcharging",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_058_1_CS",
+      "suite": "SmartCharging",
+      "description": "Central Smart Charging - No ongoing transaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "smartcharging",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_058_2_CS",
+      "suite": "SmartCharging",
+      "description": "Central Smart Charging - Wrong transactionId",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "smartcharging",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_059_CS",
+      "suite": "SmartCharging",
+      "description": "Remote Start Transaction with Charging Profile",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "smartcharging",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_060_CS",
+      "suite": "SmartCharging",
+      "description": "Remote Start Transaction with Charging Profile - Rejected",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "smartcharging",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_066_CS",
+      "suite": "SmartCharging",
+      "description": "Get Composite Schedule",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "smartcharging",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_067_CS",
+      "suite": "SmartCharging",
+      "description": "Clear Charging Profile",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "smartcharging",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_072_CS",
+      "suite": "SmartCharging",
+      "description": "Stacking Charging Profiles",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "smartcharging",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_082_CS",
+      "suite": "SmartCharging",
+      "description": "Central Smart Charging - TxDefaultProfile - with ongoing transaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "smartcharging",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_003_CS",
+      "suite": "Transactions",
+      "description": "Regular Charging Session - Plugin First",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_004_1_CS",
+      "suite": "Transactions",
+      "description": "Regular Charging Session - Identification First",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_004_2_CS",
+      "suite": "Transactions",
+      "description": "Regular Charging Session - Identification First - ConnectionTimeOut",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_005_1_CS",
+      "suite": "Transactions",
+      "description": "EV Side Disconnected - StopTransactionOnEVSideDisconnect=true - UnlockConnector=true",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_005_2_CS",
+      "suite": "Transactions",
+      "description": "EV Side Disconnected - StopTransactionOnEVSideDisconnect=true - UnlockConnector=false",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_005_3_CS",
+      "suite": "Transactions",
+      "description": "EV Side Disconnected - StopTransactionOnEVSideDisconnect=false - UnlockConnector=false",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_007_1_CS",
+      "suite": "Transactions",
+      "description": "Regular Start Charging Session - Cached Id",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_007_2_CS",
+      "suite": "Transactions",
+      "description": "Remote Start Charging Session - Cached Id",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_036_CS",
+      "suite": "Transactions",
+      "description": "Connection Loss During Transaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_037_1_CS",
+      "suite": "Transactions",
+      "description": "Offline Start Transaction - Valid IdTag",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_037_2_CS",
+      "suite": "Transactions",
+      "description": "Offline Start Transaction - Invalid IdTag - StopTransactionOnInvalidId=false",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_037_3_CS",
+      "suite": "Transactions",
+      "description": "Offline Start Transaction - Invalid IdTag - StopTransactionOnInvalidId=true",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_038_CS",
+      "suite": "Transactions",
+      "description": "Offline Stop Transaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_039_CS",
+      "suite": "Transactions",
+      "description": "Offline Transaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_068_CS",
+      "suite": "Transactions",
+      "description": "Stop transaction - IdTag in StopTransaction matches IdTag in StartTransaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    },
+    {
+      "id": "TC_069_CS",
+      "suite": "Transactions",
+      "description": "Stop transaction - ParentIdTag in StopTransaction matches ParentIdTag in StartTransaction",
+      "labels": [
+        "ocpp1.6",
+        "certification",
+        "transactions",
+        "needs-cds"
+      ],
+      "needsCds": true,
+      "isReboot": false
+    }
+  ]
+}

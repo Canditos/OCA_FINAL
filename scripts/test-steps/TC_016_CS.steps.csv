@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a charging session (transaction active),Pre-condition,StartTransaction,Transaction active
+2,CSMS sends Reset(Soft),CSMS → SUT,Reset(Soft),Soft reset sent during transaction
+3,SUT acknowledges,SUT → CSMS,Reset.Response(status=Accepted),Reset accepted
+4,SUT stops the active transaction,SUT → CSMS,"StopTransaction(transactionId, reason=SoftReset, meterStop)",Transaction stopped with reason SoftReset
+5,SUT reboots,SUT (reboot),— SUT reboots —,SUT performs soft reset
+6,SUT reconnects and sends BootNotification,SUT → CSMS,BootNotification,Boot after soft reset

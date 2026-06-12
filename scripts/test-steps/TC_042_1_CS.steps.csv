@@ -1,0 +1,3 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends GetLocalListVersion when SUT does not support local auth lists,CSMS → SUT,GetLocalListVersion,Request for local list version
+2,SUT returns NotSupported or listVersion=-1,SUT → CSMS,GetLocalListVersion.Response(listVersion=-1)  OR  CallError(NotSupported),Local list version not supported

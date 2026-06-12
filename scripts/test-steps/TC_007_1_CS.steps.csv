@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Perform a successful charging session to populate the authorization cache,Pre-condition,Authorize + StartTransaction + StopTransaction,IdTag is now cached on SUT
+2,EV driver presents the same cached IdTag at another connector,EV,-,Cached IdTag presented
+3,SUT uses cached authorization (no Authorize request sent to CSMS),SUT (internal),— cache lookup —,SUT authorizes locally from cache
+4,SUT starts transaction using the cached IdTag,SUT → CSMS,"StartTransaction(connectorId, idTag, meterStart)",StartTransaction sent without prior Authorize
+5,CSMS accepts the transaction,CSMS → SUT,"StartTransaction(Accepted, transactionId)",Transaction started from cached authorization

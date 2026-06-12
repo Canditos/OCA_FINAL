@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,EV driver plugs cable and presents valid IdTag,EV,-,Valid IdTag presented
+2,SUT sends Authorize (valid IdTag),SUT → CSMS,Authorize(validIdTag),Authorize sent
+3,CSMS authorizes,CSMS → SUT,Authorize(Accepted),IdTag authorized
+4,SUT attempts to lock connector but lock mechanism fails,SUT (hardware),-,Connector lock failure
+5,SUT reports lock failure and sets connector to Faulted,SUT → CSMS,"StatusNotification(connectorId, Faulted, errorCode=ConnectorLockFailure)",Connector status set to Faulted with ConnectorLockFailure

@@ -1,0 +1,7 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a charging session with a specific idTag,Pre-condition,Authorize(idTag) + StartTransaction(idTag),Transaction active with given idTag
+2,EV driver presents the SAME idTag to stop the transaction,EV,-,Same idTag presented
+3,SUT sends Authorize with the same idTag,SUT → CSMS,Authorize(idTag),Authorize request sent
+4,CSMS authorizes,CSMS → SUT,Authorize(Accepted),Authorized
+5,SUT stops the transaction because idTag matches,SUT → CSMS,"StopTransaction(transactionId, idTag, meterStop)",Transaction stopped using same idTag
+6,CSMS confirms,CSMS → SUT,StopTransaction.Response(idTagInfo=Accepted),Stop acknowledged

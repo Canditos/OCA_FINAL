@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a transaction,Pre-condition,StartTransaction,Transaction active with transactionId=1
+2,CSMS sends SetChargingProfile with wrong/non-existent transactionId,CSMS → SUT,"SetChargingProfile(chargingProfile={purpose=TxProfile, transactionId=999, ...})",TxProfile with wrong transactionId
+3,SUT rejects because transactionId does not match,SUT → CSMS,SetChargingProfile.Response(status=Rejected),Profile rejected (wrong transactionId)

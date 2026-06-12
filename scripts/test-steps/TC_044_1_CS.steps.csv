@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends UpdateFirmware with download location and install time,CSMS → SUT,"UpdateFirmware(location=ftp://..., retrieveDate=..., retries=3)",Firmware update request sent
+2,SUT starts downloading firmware and reports Downloading status,SUT → CSMS,FirmwareStatusNotification(status=Downloading),Firmware download in progress
+3,SUT completes download and reports Downloaded,SUT → CSMS,FirmwareStatusNotification(status=Downloaded),Firmware download completed
+4,SUT starts installing firmware and reports Installing,SUT → CSMS,FirmwareStatusNotification(status=Installing),Firmware install in progress
+5,"SUT completes installation and may reboot, then reports Installed",SUT → CSMS,FirmwareStatusNotification(status=Installed),Firmware installation completed successfully

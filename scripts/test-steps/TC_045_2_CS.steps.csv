@@ -1,0 +1,4 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,CSMS sends GetDiagnostics with invalid upload location,CSMS → SUT,"GetDiagnostics(location=ftp://invalid-uri, ...)",Get diagnostics with bad URI
+2,SUT attempts to upload but fails,SUT,— upload fails —,Diagnostics upload fails
+3,SUT reports UploadFailed,SUT → CSMS,DiagnosticsStatusNotification(status=UploadFailed),Upload failed reported

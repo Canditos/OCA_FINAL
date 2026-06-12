@@ -1,0 +1,2 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,OCTT built-in: clear the authorization cache on the SUT,CSMS → SUT,ClearCache,Authorization cache cleared

@@ -1,0 +1,6 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Configure StopTransactionOnInvalidId=false,Pre-condition,"ChangeConfiguration(StopTransactionOnInvalidId, false)",StopOnInvalidId set to false
+2,Ensure SUT is offline,Network,— offline —,SUT offline
+3,EV driver presents an invalid/unknown IdTag while offline,EV,-,Invalid IdTag presented offline
+4,SUT starts transaction despite invalid IdTag (StopOnInvalidId=false),SUT (offline),— local start —,Transaction started with invalid IdTag offline
+5,Restore connection and SUT sends StartTransaction,SUT → CSMS,"StartTransaction(connectorId, invalidIdTag, ...)",Transaction started offline with invalid IdTag reported

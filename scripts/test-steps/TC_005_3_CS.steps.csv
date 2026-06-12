@@ -1,0 +1,5 @@
+Step,Action,OCPP Message Direction,OCPP Message / Event,Expected Result
+1,Start a regular charging session (transaction active),Pre-condition,StartTransaction,Transaction active
+2,EV driver disconnects the cable from the EV side,EV,-,Cable disconnected at EV side
+3,SUT detects EV disconnection but does NOT stop transaction,SUT → CSMS,"StatusNotification(connectorId, SuspendedEV)",Transaction continues; status set to SuspendedEV
+4,SUT keeps connector locked (no unlock),SUT,— connector stays locked —,"Connector remains locked, transaction still active"
