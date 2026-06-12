@@ -74,6 +74,41 @@ if (!(Test-Path $ConfigFile)) {
     Log "✅ Config file exists"
 }
 
+# ── 4b. Jira setup check ──
+$needsJira = $false
+if (Test-Path $ConfigFile) {
+    try {
+        $cfg = Get-Content $ConfigFile -Raw | ConvertFrom-Json
+        if ([string]::IsNullOrWhiteSpace($cfg.jiraApiToken) -or $cfg.jiraApiToken -eq "your-jira-api-token") {
+            $needsJira = $true
+        }
+    } catch { $needsJira = $true }
+} else {
+    $needsJira = $true
+}
+
+if ($needsJira) {
+    Write-Host "`n🔧 Jira Cloud not configured." -ForegroundColor Yellow
+    $setupJira = Read-Host "Run Jira setup? (y/N)"
+    if ($setupJira -eq 'y' -or $setupJira -eq 'Y') {
+        $setupScript = Join-Path $ProjectRoot "scripts\setup-jira.ps1"
+        if (Test-Path $setupScript) {
+            & $setupScript
+            Log "📋 Jira configuration saved"
+        } else {
+            Write-Host "⚠️  Setup script not found, using Node.js version..." -ForegroundColor Gray
+            Push-Location $ProjectRoot
+            npx tsx scripts/setup-jira.ts
+            Pop-Location
+            Log "📋 Jira configuration saved"
+        }
+    } else {
+        Write-Host "  Skipping Jira setup. You can configure later via the dashboard or run:" -ForegroundColor Gray
+        Write-Host "  npx tsx scripts/setup-jira.ts" -ForegroundColor Gray
+    }
+    Write-Host ""
+}
+
 # ── 5. Check if already running ──
 $tcp = [System.Net.Sockets.TcpClient]::new()
 try {
