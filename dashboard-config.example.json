@@ -8,5 +8,7 @@
     "jiraBaseUrl": "https://your-domain.atlassian.net",
     "jiraEmail": "your-email@example.com",
     "jiraApiToken": "your-jira-api-token",
-    "jiraProjectKey": "CERT"
+    "jiraProjectKey": "CERT",
+    "xrayClientId": "your-xray-client-id",
+    "xrayClientSecret": "your-xray-client-secret"
 }

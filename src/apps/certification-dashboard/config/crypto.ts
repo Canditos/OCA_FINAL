@@ -10,7 +10,7 @@ import crypto from "crypto";
 import { hostname } from "os";
 
 const ALGORITHM = "aes-256-gcm";
-const SENSITIVE_FIELDS = ["octtToken", "jiraApiToken", "jiraEmail"] as const;
+const SENSITIVE_FIELDS = ["octtToken", "jiraApiToken", "jiraEmail", "xrayClientSecret"] as const;
 
 /**
  * Derives a 32-byte key from ENCRYPTION_KEY env var (cross-machine portable),

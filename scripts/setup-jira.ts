@@ -120,42 +120,69 @@ async function main() {
         selected = projects[idx - 1];
     }
 
-    // ── 5. Save configuration ──
-    const jiraConfig = {
+    // ── 5. Gather all config ──
+    const fullConfig: Record<string, unknown> = {
         jiraBaseUrl: baseUrl,
         jiraEmail: email,
         jiraApiToken: apiToken,
         jiraProjectKey: selected.key,
     };
 
+    // ── 5b. Xray Cloud setup (optional) ──
+    console.log("\n" + "─".repeat(50));
+    console.log("  Xray Test Management (optional)");
+    console.log("─".repeat(50));
+    console.log("\nXray uploads test results to Jira automatically after each run.");
+    console.log("Get credentials at: https://xray.cloud.getxray.app → API Keys\n");
+
+    const setupXray = (await ask(rl, "Setup Xray Cloud? (y/N): ")).trim().toLowerCase();
+    if (setupXray === "y" || setupXray === "yes") {
+        const xid = (await ask(rl, "Xray Client ID: ")).trim();
+        const xsecret = (await ask(rl, "Xray Client Secret: ")).trim();
+        if (xid && xsecret) {
+            console.log("\n⏳ Validating Xray credentials...");
+            try {
+                const authResp = await axios.post(
+                    "https://xray.cloud.getxray.app/api/v2/authenticate",
+                    { client_id: xid, client_secret: xsecret },
+                    { timeout: 10000, headers: { "Content-Type": "application/json" } }
+                );
+                if (authResp.data) {
+                    console.log("✓ Xray Cloud authenticated");
+                }
+            } catch (e: any) {
+                console.log(`⚠ Xray validation failed: ${e.response?.status || e.message} (saving anyway)`);
+            }
+            fullConfig.xrayClientId = xid;
+            fullConfig.xrayClientSecret = xsecret;
+        }
+    } else {
+        console.log("  Skipping Xray. Add later in dashboard-config.json.");
+    }
+
+    // ── 6. Save configuration ──
     if (separate) {
         const outPath = path.join(PROJECT_ROOT, "jira-config.json");
-        fs.writeFileSync(outPath, JSON.stringify(jiraConfig, null, 2) + "\n");
+        fs.writeFileSync(outPath, JSON.stringify(fullConfig, null, 2) + "\n");
         console.log(`\n✓ Saved to ${outPath}`);
     } else {
-        // Merge into existing dashboard-config.json
         let existing: Record<string, unknown> = {};
         if (fs.existsSync(DASHBOARD_CONFIG)) {
-            try {
-                existing = JSON.parse(fs.readFileSync(DASHBOARD_CONFIG, "utf-8"));
-            } catch {
-                // corrupt file, start fresh
-            }
+            try { existing = JSON.parse(fs.readFileSync(DASHBOARD_CONFIG, "utf-8")); } catch {}
         } else if (fs.existsSync(EXAMPLE_CONFIG)) {
-            try {
-                existing = JSON.parse(fs.readFileSync(EXAMPLE_CONFIG, "utf-8"));
-            } catch {
-                // ignore
-            }
+            try { existing = JSON.parse(fs.readFileSync(EXAMPLE_CONFIG, "utf-8")); } catch {}
         }
 
-        const merged = { ...existing, ...jiraConfig };
+        const merged = { ...existing, ...fullConfig };
         fs.writeFileSync(DASHBOARD_CONFIG, JSON.stringify(merged, null, 2) + "\n");
 
         console.log(`\n✓ Saved to ${DASHBOARD_CONFIG}`);
         console.log(`  Jira URL  : ${baseUrl}`);
         console.log(`  User      : ${displayName}`);
         console.log(`  Project   : ${selected.key} — ${selected.name}`);
+        if (fullConfig.xrayClientId) {
+            console.log(`  Xray      : ${fullConfig.xrayClientId} ✓`);
+        }
     }
 
     console.log("");

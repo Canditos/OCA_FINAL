@@ -25,6 +25,8 @@ export interface SavedConfig {
     jiraEmail: string;
     jiraApiToken: string;
     jiraProjectKey: string;
+    xrayClientId: string;
+    xrayClientSecret: string;
 }
 
 const defaultConfig: SavedConfig = {
@@ -39,6 +41,8 @@ const defaultConfig: SavedConfig = {
     jiraEmail: "",
     jiraApiToken: "",
     jiraProjectKey: "CERT",
+    xrayClientId: "",
+    xrayClientSecret: "",
 };
 
 /** Load config from disk or return defaults. Decrypts sensitive fields. */
@@ -82,6 +86,10 @@ export function buildEffectiveConfig(saved: SavedConfig) {
             email: saved.jiraEmail || process.env.JIRA_EMAIL || "",
             apiToken: saved.jiraApiToken || process.env.JIRA_API_TOKEN || "",
             projectKey: saved.jiraProjectKey || process.env.JIRA_PROJECT_KEY || "CERT",
+        },
+        xray: {
+            clientId: saved.xrayClientId || process.env.XRAY_CLIENT_ID || "",
+            clientSecret: saved.xrayClientSecret || process.env.XRAY_CLIENT_SECRET || "",
         },
     };
 }
