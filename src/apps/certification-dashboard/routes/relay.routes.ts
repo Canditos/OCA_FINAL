@@ -45,6 +45,22 @@ function parseCdsId(cdsId: string): { ip: string; port: number } | null {
 // Persistent connection pool to avoid TCP thrashing
 const activeCdsConnections = new Map<string, CdsClient>();
 
+// Mutex lock per CDS instance to prevent concurrent operations
+const cdsLocks = new Map<string, Promise<void>>();
+
+async function withCdsLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
+    const prev = cdsLocks.get(key) ?? Promise.resolve();
+    let release: () => void;
+    const nextLock = new Promise<void>(r => { release = r; });
+    cdsLocks.set(key, nextLock);
+    try {
+        await prev;
+        return await fn();
+    } finally {
+        release!();
+    }
+}
+
 export async function getCds(ip: string, port: number): Promise<CdsClient | null> {
     const key = `${ip}:${port}`;
     let cds = activeCdsConnections.get(key);
@@ -64,50 +80,34 @@ export async function getCds(ip: string, port: number): Promise<CdsClient | null
 
 router.post("/i/:cdsId/stop", async (req, res) => {
     const info = parseCdsId(req.params.cdsId);
-    if (!info) {
-        res.status(400).json({ error: "Invalid CDS ID format" });
-        return;
-    }
-    log("info", `CDS stop relay to ${info.ip}:${info.port}`, "relay");
+    if (!info) { res.status(400).json({ error: "Invalid CDS ID format" }); return; }
+    const key = `${info.ip}:${info.port}`;
+    log("info", `CDS stop relay to ${key}`, "relay");
     const cds = await getCds(info.ip, info.port);
-    if (!cds) {
-        res.status(502).json({ error: "Cannot connect to CDS" });
-        return;
-    }
-    const ok = await cds.stop();
-    // Do NOT disconnect, keep connection alive in the pool
+    if (!cds) { res.status(502).json({ error: "Cannot connect to CDS" }); return; }
+    const ok = await withCdsLock(key, () => cds.stop());
     res.json({ ok });
 });
 
 router.post("/i/:cdsId/reset", async (req, res) => {
     const info = parseCdsId(req.params.cdsId);
-    if (!info) {
-        res.status(400).json({ error: "Invalid CDS ID format" });
-        return;
-    }
-    log("info", `CDS reset relay to ${info.ip}:${info.port}`, "relay");
+    if (!info) { res.status(400).json({ error: "Invalid CDS ID format" }); return; }
+    const key = `${info.ip}:${info.port}`;
+    log("info", `CDS reset relay to ${key}`, "relay");
     const cds = await getCds(info.ip, info.port);
-    if (!cds) {
-        res.status(502).json({ error: "Cannot connect to CDS" });
-        return;
-    }
-    const ok = await cds.reset();
+    if (!cds) { res.status(502).json({ error: "Cannot connect to CDS" }); return; }
+    const ok = await withCdsLock(key, () => cds.reset());
     res.json({ ok });
 });
 
 router.post("/i/:cdsId/start", async (req, res) => {
     const info = parseCdsId(req.params.cdsId);
-    if (!info) {
-        res.status(400).json({ error: "Invalid CDS ID format" });
-        return;
-    }
-    log("info", `CDS start relay to ${info.ip}:${info.port}`, "relay");
+    if (!info) { res.status(400).json({ error: "Invalid CDS ID format" }); return; }
+    const key = `${info.ip}:${info.port}`;
+    log("info", `CDS start relay to ${key}`, "relay");
     const cds = await getCds(info.ip, info.port);
-    if (!cds) {
-        res.status(502).json({ error: "Cannot connect to CDS" });
-        return;
-    }
-    const ok = await cds.start();
+    if (!cds) { res.status(502).json({ error: "Cannot connect to CDS" }); return; }
+    const ok = await withCdsLock(key, () => cds.start());
     res.json({ ok });
 });
 
@@ -115,67 +115,51 @@ router.post("/i/:cdsId/start", async (req, res) => {
 
 router.post("/i/:cdsId/configure-cds", async (req, res) => {
     const info = parseCdsId(req.params.cdsId);
-    if (!info) {
-        res.status(400).json({ error: "Invalid CDS ID format" });
-        return;
-    }
+    if (!info) { res.status(400).json({ error: "Invalid CDS ID format" }); return; }
     const { specification, chargeMode, sinkId, mode } = req.body;
     if (specification == null || chargeMode == null || sinkId == null) {
-        res.status(400).json({ error: "Missing required fields: specification, chargeMode, sinkId" });
-        return;
+        res.status(400).json({ error: "Missing required fields: specification, chargeMode, sinkId" }); return;
     }
+    const key = `${info.ip}:${info.port}`;
     log("info", `CDS configure-cds: spec=${specification} mode=${chargeMode} sink=${sinkId}`, "relay");
     const cds = await getCds(info.ip, info.port);
-    if (!cds) {
-        res.status(502).json({ error: "Cannot connect to CDS" });
-        return;
-    }
-    const ok = await cds.configureCds({ specification, chargeMode, sinkId, mode: mode ?? 2 });
+    if (!cds) { res.status(502).json({ error: "Cannot connect to CDS" }); return; }
+    const ok = await withCdsLock(key, () => cds.configureCds({ specification, chargeMode, sinkId, mode: mode ?? 2 }));
     res.json({ ok });
 });
 
 router.post("/i/:cdsId/configure-ev", async (req, res) => {
     const info = parseCdsId(req.params.cdsId);
-    if (!info) {
-        res.status(400).json({ error: "Invalid CDS ID format" });
-        return;
-    }
+    if (!info) { res.status(400).json({ error: "Invalid CDS ID format" }); return; }
+    const key = `${info.ip}:${info.port}`;
     log("info", `CDS configure-ev: ${JSON.stringify(req.body)}`, "relay");
     const cds = await getCds(info.ip, info.port);
-    if (!cds) {
-        res.status(502).json({ error: "Cannot connect to CDS" });
-        return;
-    }
-    const ok = await cds.configureEv(req.body);
+    if (!cds) { res.status(502).json({ error: "Cannot connect to CDS" }); return; }
+    const ok = await withCdsLock(key, () => cds.configureEv(req.body));
     res.json({ ok });
 });
 
 router.post("/i/:cdsId/validate", async (req, res) => {
     const info = parseCdsId(req.params.cdsId);
-    if (!info) {
-        res.status(400).json({ error: "Invalid CDS ID format" });
-        return;
-    }
+    if (!info) { res.status(400).json({ error: "Invalid CDS ID format" }); return; }
+    const key = `${info.ip}:${info.port}`;
     const cds = await getCds(info.ip, info.port);
-    if (!cds) {
-        res.status(502).json({ error: "Cannot connect to CDS" });
-        return;
-    }
+    if (!cds) { res.status(502).json({ error: "Cannot connect to CDS" }); return; }
     try {
-        const statusPid = await cds.readPid(3);   // Status
-        const errorsPid = await cds.readPid(6);   // Errors
-        const warningsPid = await cds.readPid(4); // Warnings
-        const statusVal = statusPid?.value as number | undefined;
-        const errorsVal = errorsPid?.value as number | undefined;
-        const warningsVal = warningsPid?.value as number | undefined;
-
+        const result = await withCdsLock(key, async () => {
+            const statusPid = await cds.readPid(3);
+            const errorsPid = await cds.readPid(6);
+            const warningsPid = await cds.readPid(4);
+            return { statusPid, errorsPid, warningsPid };
+        });
+        const statusVal = result.statusPid?.value as number | undefined;
+        const errorsVal = result.errorsPid?.value as number | undefined;
+        const warningsVal = result.warningsPid?.value as number | undefined;
         const hasErrors = errorsVal != null && errorsVal !== 0;
-        const hasErrorPending = statusVal != null && (statusVal & 2) !== 0; // ErrorPending = 2
+        const hasErrorPending = statusVal != null && (statusVal & 2) !== 0;
         const healthy = !hasErrors && !hasErrorPending;
-
         res.json({
-            ok: healthy,
-            healthy,
+            ok: healthy, healthy,
             status: statusVal,
             statusDesc: statusVal != null ? cds.getStatusDescription(statusVal) : [],
             errors: errorsVal,
@@ -189,25 +173,17 @@ router.post("/i/:cdsId/validate", async (req, res) => {
 
 router.post("/i/:cdsId/defaults", async (req, res) => {
     const info = parseCdsId(req.params.cdsId);
-    if (!info) {
-        res.status(400).json({ error: "Invalid CDS ID format" });
-        return;
-    }
-    log("info", `CDS restore defaults to ${info.ip}:${info.port}`, "relay");
+    if (!info) { res.status(400).json({ error: "Invalid CDS ID format" }); return; }
+    const key = `${info.ip}:${info.port}`;
+    log("info", `CDS restore defaults to ${key}`, "relay");
     const cds = await getCds(info.ip, info.port);
-    if (!cds) {
-        res.status(502).json({ error: "Cannot connect to CDS" });
-        return;
-    }
-    const ok = await cds.configureEv({
-        EVMaximumVoltageLimit: 500,
-        EVMinimumVoltageLimit: 400,
-        EVMaximumCurrentLimit: 50,
-        EVMinimumCurrentLimit: 0,
+    if (!cds) { res.status(502).json({ error: "Cannot connect to CDS" }); return; }
+    const ok = await withCdsLock(key, () => cds.configureEv({
+        EVMaximumVoltageLimit: 500, EVMinimumVoltageLimit: 400,
+        EVMaximumCurrentLimit: 50, EVMinimumCurrentLimit: 0,
         EVMaximumPowerLimit: 10000,
-        BatteryCapacity: 50000,
-        EVstateOfCharge: 50,
-    });
+        BatteryCapacity: 50000, EVstateOfCharge: 50,
+    }));
     res.json({ ok });
 });
 

@@ -209,6 +209,23 @@ function isRebootTest(testName: string): boolean {
     return getRebootTests().includes(testName);
 }
 
+async function retryOctt<T>(fn: () => Promise<T>, label: string, maxAttempts = 3): Promise<T> {
+    let lastError: any;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            return await fn();
+        } catch (e: any) {
+            lastError = e;
+            if (attempt < maxAttempts) {
+                const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+                broadcastLog("warn", `OCTT ${label} failed (attempt ${attempt}/${maxAttempts}), retrying in ${delay}ms...`, "playwright");
+                await new Promise(r => setTimeout(r, delay));
+            }
+        }
+    }
+    throw lastError;
+}
+
 function buildTimeoutBatches(testcaseNames: string[]): TimeoutBatch[] {
     const batches: TimeoutBatch[] = [];
     for (const testName of testcaseNames) {
@@ -313,7 +330,7 @@ async function executePhase(tests: string[], configName: string, profile: Timeou
     // OCTT does not allow configuration save while a session is active.
     // Always stop any existing session before switching timeout profiles.
     try {
-        await octt.stopSession();
+        await retryOctt(() => octt.stopSession(), "stop session", 2);
         await new Promise(r => setTimeout(r, 1500));
     } catch { /* ignore */ }
 
@@ -330,14 +347,14 @@ async function executePhase(tests: string[], configName: string, profile: Timeou
     }
 
     try {
-        const result = await octt.startSession(configName);
+        const result = await retryOctt(() => octt.startSession(configName), "start session");
         broadcastLog("info", `OCTT session started: ${JSON.stringify(result)}`, "playwright");
 
         for (let i = 0; i < 30; i++) {
             if (aborted) return;
             await new Promise(r => setTimeout(r, 1000));
             try {
-                const status = await octt.getSutStatus();
+                const status = await retryOctt(() => octt.getSutStatus(), "get SUT status", 2);
                 if (status.isConnected) {
                     broadcastLog("info", "SUT connected", "playwright");
                     break;
@@ -346,7 +363,7 @@ async function executePhase(tests: string[], configName: string, profile: Timeou
             } catch { /* ignore */ }
         }
     } catch (e: any) {
-        broadcastLog("error", `OCTT session failed: ${e.message}`, "playwright");
+        broadcastLog("error", `OCTT session failed after retries: ${e.message}`, "playwright");
     }
 
     return new Promise((resolve) => {
@@ -520,7 +537,7 @@ async function finishPipelineRun(configName: string, originalTimeouts: OcttTimeo
 
     try {
         const octt = new OcttClient(effectiveConfig.octt);
-        await octt.stopSession();
+        await retryOctt(() => octt.stopSession(), "stop session (finish)", 2);
     } catch { /* ignore */ }
 
     // Always restore the original timeout profile so non-reboot runs are never contaminated.
