@@ -27,6 +27,7 @@ export interface SavedConfig {
     jiraProjectKey: string;
     xrayClientId: string;
     xrayClientSecret: string;
+    dashboardApiKey: string;
 }
 
 const defaultConfig: SavedConfig = {
@@ -43,6 +44,7 @@ const defaultConfig: SavedConfig = {
     jiraProjectKey: "CERT",
     xrayClientId: "",
     xrayClientSecret: "",
+    dashboardApiKey: "",
 };
 
 /** Load config from disk or return defaults. Decrypts sensitive fields. */
@@ -91,6 +93,7 @@ export function buildEffectiveConfig(saved: SavedConfig) {
             clientId: saved.xrayClientId || process.env.XRAY_CLIENT_ID || "",
             clientSecret: saved.xrayClientSecret || process.env.XRAY_CLIENT_SECRET || "",
         },
+        dashboardApiKey: saved.dashboardApiKey || process.env.DASHBOARD_API_KEY || "",
     };
 }
 

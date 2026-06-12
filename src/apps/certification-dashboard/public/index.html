@@ -429,12 +429,12 @@
 <div class="modal">
   <div class="modal-head"><span>Select Test Cases</span><span id="m-count">0 / 113</span></div>
   <div class="modal-tools">
-    <button class="sm" onclick="selAll()">Select All</button>
-    <button class="sm" onclick="selNone()">Select None</button>
-    <button class="sm" onclick="selMaint()">Maintenance</button>
+    <input type="text" id="tc-search" placeholder="&#128269; Filter tests..." style="flex:1;min-width:120px;padding:4px 8px;font-size:10px" oninput="filterTests()">
+    <button class="sm" onclick="selAll()">All</button>
+    <button class="sm" onclick="selNone()">None</button>
     <button class="sm" onclick="selReboot()">Reboot</button>
-    <button class="sm" onclick="selCore()">Core Only</button>
-    <button class="sm" onclick="selNoCds()" style="border-color:var(--accent2);color:var(--accent2)" title="Select only tests that work without the Keysight CDS EV simulator">&#128268; No CDS</button>
+    <button class="sm" onclick="selCdsOnly()" style="border-color:var(--warn);color:var(--warn)" title="Select only tests requiring CDS">&#9889; CDS</button>
+    <button class="sm" onclick="selNoCds()" style="border-color:var(--accent2);color:var(--accent2)" title="Select only tests that work without CDS">&#128268; No CDS</button>
     <div style="flex:1"></div>
     <button class="sm primary" onclick="closeModal()">Done</button>
   </div>
@@ -609,6 +609,33 @@ initTheme();
 /** Active EventSource connection for SSE streaming */
 let es;
 
+/** Auth: cached API key from sessionStorage, auto-attached to all fetch/SSE */
+let _apiKey = sessionStorage.getItem('dash_key') || '';
+(function(){
+  const _fetch = window.fetch;
+  window.fetch = function(url, opts){
+    if(_apiKey && typeof url==='string' && url.includes('/api/')){
+      opts = opts||{};
+      opts.headers = {...(opts.headers||{}), 'Authorization':'Bearer '+_apiKey};
+    }
+    return _fetch.call(window, url, opts).then(r=>{
+      if(r.status===401){_apiKey='';sessionStorage.removeItem('dash_key');alert('Session expired. Reload and enter the API key.');}
+      return r;
+    });
+  };
+})();
+
+async function initAuth(){
+  try{
+    const r=await fetch(API+'/api/auth/status');
+    const j=await r.json();
+    if(j.required && !_apiKey){
+      _apiKey = prompt('Dashboard authentication is enabled.\nEnter API key:')?.trim()||'';
+      if(_apiKey) sessionStorage.setItem('dash_key',_apiKey);
+    }
+  }catch{}
+}
+
 /** Test suite catalog loaded from /api/testcases */
 let testSuites={};
 
@@ -650,7 +677,7 @@ function needsCdsReset(tc) {
  */
 function connectSSE(){
   if(es)es.close();
-  es=new EventSource(API+'/api/events');
+  es=new EventSource(API+'/api/events'+(_apiKey?'?apiKey='+encodeURIComponent(_apiKey):''));
   // Log events → append to the log panel
   es.addEventListener('log',e=>addLog(JSON.parse(e.data)));
   // Status events → update service indicators
@@ -1234,6 +1261,28 @@ function selNoCds(){
   });
   updCount();
 }
+
+function selCdsOnly(){
+  document.querySelectorAll('.tc-check').forEach(c=>{
+    c.checked = needsCds(c.value);
+  });
+  updCount();
+}
+
+function filterTests(){
+  const q=$('tc-search').value.trim().toLowerCase();
+  document.querySelectorAll('#m-body .tc-row').forEach(row=>{
+    const name=(row.querySelector('.tc-name')?.textContent||'').toLowerCase();
+    const desc=(row.querySelectorAll('span')[2]?.textContent||'').toLowerCase();
+    row.style.display=(!q||name.includes(q)||desc.includes(q))?'':'none';
+  });
+  document.querySelectorAll('#m-body > div').forEach(div=>{
+    const visible=div.querySelectorAll('.tc-row:not([style*="display: none"])').length;
+    const suiteHdr=div.querySelector('.suite-hdr');
+    if(suiteHdr) suiteHdr.style.display=visible>0?'block':'none';
+  });
+}
+
 function selCore(){
   const coreSuites=['Authorization','DataTransfer','FirmwareManagement','LocalAuthList','MeterValues','Provisioning','RemoteControl','RemoteTrigger','Reservation','Transactions'];
   document.querySelectorAll('#m-body > div').forEach(div=>{
@@ -1278,6 +1327,7 @@ function getSelected(){
  *   - Checks relay agent and service status
  */
 async function init(){
+  await initAuth();
   setInterval(()=>$('h-time').textContent=new Date().toLocaleTimeString('en-GB',{hour12:false}),1000);
   connectSSE();
   loadTC();

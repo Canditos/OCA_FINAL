@@ -10,5 +10,6 @@
     "jiraApiToken": "your-jira-api-token",
     "jiraProjectKey": "CERT",
     "xrayClientId": "your-xray-client-id",
-    "xrayClientSecret": "your-xray-client-secret"
+    "xrayClientSecret": "your-xray-client-secret",
+    "dashboardApiKey": ""
 }

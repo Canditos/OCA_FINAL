@@ -27,6 +27,7 @@ import { log } from "./routes/logs.routes.js";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
 import { rateLimiter } from "./middleware/rate-limiter.js";
 import httpLogger from "./middleware/http-logger.js";
+import { authMiddleware } from "./middleware/auth.middleware.js";
 
 // Routes
 import statusRoutes from "./routes/status.routes.js";
@@ -44,6 +45,7 @@ import resultsRoutes from "./routes/results.routes.js";
 import reportsRoutes from "./routes/reports.routes.js";
 import configRoutes from "./routes/config.routes.js";
 import sutRoutes from "./routes/sut.routes.js";
+import authStatusRoutes from "./routes/auth.routes.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -54,6 +56,12 @@ app.use(cors());
 app.use(express.json());
 app.use(httpLogger);
 app.use(rateLimiter);
+
+// ── Auth status (no auth required — tells frontend if auth is enabled) ──
+app.use("/api/auth", authStatusRoutes);
+
+// ── Auth middleware (applied to /api/* routes; static files are public) ──
+app.use("/api", authMiddleware);
 
 // ── API Documentation ──
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
