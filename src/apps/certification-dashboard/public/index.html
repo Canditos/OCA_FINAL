@@ -1787,6 +1787,18 @@ async function fetchHistory(){
   }
 }
 
+async function clearHistory(){
+  if(!confirm('Delete all run history?'))return;
+  try{
+    await fetch(API+'/api/results/history/clear',{method:'POST'});
+    $('htbody').innerHTML='<tr><td colspan="8" style="color:var(--text-dim);text-align:center;padding:16px">No past runs</td></tr>';
+    $('history-details').classList.remove('visible');
+    addLog({timestamp:new Date().toISOString(),level:'info',message:'Run history cleared',service:'ui'});
+  }catch(e){
+    addLog({timestamp:new Date().toISOString(),level:'error',message:'Clear failed: '+e.message,service:'ui'});
+  }
+}
+
 function renderHistoryTable(history){
   if(!history||!history.length){
     $('htbody').innerHTML='<tr><td colspan="8" style="color:var(--text-dim);text-align:center;padding:16px">No past runs</td></tr>';
