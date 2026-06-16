@@ -1,0 +1,10 @@
+{
+  "rebootTests": ["TC_001_CS", "TC_002_CS", "TC_013_CS", "TC_014_CS", "TC_015_CS", "TC_016_CS", "TC_032_1_CS", "TC_032_2_CS", "TC_034_CS"],
+  "chargingTests": [],
+  "cdsResetBeforeCharging": true,
+  "cdsResetTimeoutMs": 15000,
+  "timeouts": {
+    "default": { "maxTimeoutPeriod": 70, "longOperationTimeout": 450, "maxTimeDeviation": 4 },
+    "reboot": { "maxTimeoutPeriod": 600, "longOperationTimeout": 650, "maxTimeDeviation": 4 }
+  }
+}

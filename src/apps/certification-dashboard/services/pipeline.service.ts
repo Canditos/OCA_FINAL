@@ -372,7 +372,9 @@ async function executePhase(tests: string[], configName: string, profile: Timeou
         const args = ["test", "--reporter=list", "--workers=1"];
         const seenInPhase = new Set<string>();
         if (tests.length > 0) {
-            const grep = tests.map(t => `Execute\\s+${escapeRegex(t)}(?:\\b|$)`).join("|");
+            const executeGrep = tests.map(t => `Execute\\s+${escapeRegex(t)}(?:\\b|$)`).join("|");
+            // Include setup tests (0a. 0b. 1.) in the grep filter (without ^ anchor to allow [chromium] prefix)
+            const grep = `(0[a-z]?\\.|1\\.)|${executeGrep}`;
             args.push(`--grep=${grep}`);
             broadcastLog("info", `Requested tests (${tests.length}): ${tests.join(", ")}`, "playwright");
         }

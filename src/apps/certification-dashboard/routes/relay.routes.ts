@@ -9,8 +9,10 @@ import { setService } from "../services/service-state.service.js";
 
 const router = Router();
 
+import { isSutRelayRunning } from "../services/sut-relay.service.js";
+
 router.post("/status", (_req, res) => {
-    res.json({ running: false });
+    res.json({ running: isSutRelayRunning() });
 });
 
 router.post("/check", async (_req, res) => {
@@ -37,9 +39,9 @@ router.post("/check", async (_req, res) => {
  * cdsId format: cds-{ip}-{port}  (e.g. cds-192-168-100-10-51001)
  */
 function parseCdsId(cdsId: string): { ip: string; port: number } | null {
-    const match = cdsId.match(/^cds-([\d.]+)-(\d+)$/);
+    const match = cdsId.match(/^cds-([\d.-]+)-(\d+)$/);
     if (!match) return null;
-    return { ip: match[1], port: parseInt(match[2], 10) };
+    return { ip: match[1].replace(/-/g, "."), port: parseInt(match[2], 10) };
 }
 
 // Persistent connection pool to avoid TCP thrashing

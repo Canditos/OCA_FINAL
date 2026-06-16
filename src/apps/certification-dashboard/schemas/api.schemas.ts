@@ -66,4 +66,6 @@ export const configSaveSchema = z.object({
     jiraEmail: z.string().max(300).optional(),
     jiraApiToken: z.string().max(500).optional(),
     jiraProjectKey: z.string().max(50).optional(),
+    xrayClientId: z.string().max(200).optional(),
+    xrayClientSecret: z.string().max(500).optional(),
 }).strict();

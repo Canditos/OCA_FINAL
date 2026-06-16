@@ -109,7 +109,7 @@ export class JiraClient {
      * @param maxResults - Page size (default: 50)
      */
     async search(jql: string, fields = ["summary", "status", "priority", "labels", "assignee", "created", "updated"], maxResults = 50): Promise<JiraSearchResult> {
-        const response = await this.axios.post("/search", {
+        const response = await this.axios.post("/search/jql", {
             jql,
             fields,
             maxResults,

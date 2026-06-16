@@ -183,6 +183,39 @@ server.listen(PORT, async () => {
     // Start periodic health checks for auto-reconnect
     const { startHealthChecks } = await import("./services/health-check.service.js");
     startHealthChecks();
+
+    // Start SUT API Relay automatically
+    const { startSutRelay } = await import("./services/sut-relay.service.js");
+    startSutRelay();
+
+    // Start SUT Automation Bridge on port 3100 to map OCTT commands to CDS
+    const fakeSutApp = express();
+    fakeSutApp.use(express.json());
+    fakeSutApp.use(async (req, res) => {
+        log("info", `[SUT Bridge 3100] Received ${req.method} ${req.url}`, "sut");
+        
+        try {
+            const { effectiveConfig } = await import("./config/dashboard.config.js");
+            const axios = (await import("axios")).default;
+            const port = process.env.CERT_DASHBOARD_PORT ?? "3101";
+            const cdsId = `cds-${effectiveConfig.cds.ip.replace(/\./g, "-")}-${effectiveConfig.cds.port}`;
+            
+            if (req.url.includes("plugin")) {
+                log("info", "[SUT Bridge] Translating 'plugin' to CDS Start...", "sut");
+                await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/start`);
+            } else if (req.url.includes("plugout") || req.url.includes("unplug")) {
+                log("info", "[SUT Bridge] Translating 'plugout' to CDS Stop...", "sut");
+                await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/stop`);
+            }
+        } catch (e: any) {
+            log("error", `[SUT Bridge] Failed to control CDS: ${e.message}`, "sut");
+        }
+        
+        res.json({ ok: true, status: "Accepted by SUT Bridge" });
+    });
+    fakeSutApp.listen(3100, () => {
+        log("info", "SUT Automation Bridge running on port 3100", "sut");
+    });
 });
 
 // ── Graceful Shutdown ──

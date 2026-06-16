@@ -203,7 +203,7 @@ export class CdsClient {
                         const response = this.parseSinglePidResponse(data);
                         if (response.pid === pid) {
                             clearTimeout(timer);
-                            subscription.unsubscribe();
+                            subscription?.unsubscribe();
                             resolve(response.parafault === 0);
                         }
                     } catch {
@@ -326,7 +326,7 @@ export class CdsClient {
                     const response = this.parseSinglePidResponse(data);
                     if (response.pid === pid) {
                         clearTimeout(timer);
-                        subscription.unsubscribe();
+                        subscription?.unsubscribe();
                         resolve(response);
                     }
                 });
