@@ -194,6 +194,13 @@ router.use(async (req, res) => {
         } else if (req.url.includes("plugout") || req.url.includes("unplug")) {
             log("info", "[SUT Bridge] Translating 'plugout' to CDS Stop...", "sut");
             await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/stop`);
+        } else if (req.url.includes("authorize") || req.url.includes("rfid") || req.url.includes("pin")) {
+            log("info", "[SUT Bridge] Triggering automatic Keypad Authentication...", "sut");
+            const { authenticateViaKeypad } = await import("../services/sut-automation.service.js");
+            // Run asynchronously so we don't block the HTTP response
+            authenticateViaKeypad().catch(err => {
+                 log("error", `[SUT Bridge] Keypad automation failed: ${err.message}`, "sut");
+            });
         }
     } catch (e: any) {
         log("error", `[SUT Bridge] Failed to control CDS: ${e.message}`, "sut");

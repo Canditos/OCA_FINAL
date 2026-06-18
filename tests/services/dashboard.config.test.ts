@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const testConfigPath = path.resolve(__dirname, "../../dashboard-config.test.json");
+process.env.DASHBOARD_CONFIG_PATH = testConfigPath;
 
 describe("Dashboard Config", () => {
     let loadConfig: any;

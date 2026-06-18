@@ -3,15 +3,94 @@
 // ══════════════════════════════════════════════════════════════
 
 import { Router } from "express";
+import fs from "fs";
+import path from "path";
 import { JiraClient } from "../../../connectors/jira/index.js";
+import { OcttClient } from "../../../connectors/octt/index.js";
 import { log } from "./logs.routes.js";
 import { setService } from "../services/service-state.service.js";
 import { effectiveConfig } from "../config/dashboard.config.js";
-import { annotateLatestRun, getLastResults } from "../services/pipeline.service.js";
+import { annotateLatestRun, getLastResults, getRunHistory } from "../services/pipeline.service.js";
 import { validate } from "../middleware/validate.js";
 import { jiraUploadSchema } from "../schemas/api.schemas.js";
 
 const router = Router();
+
+export function getLocalTestPlans(): string[] {
+    const plans = new Set<string>();
+    const planPath = path.resolve(process.cwd(), "scripts/output/test-plans/test-plan.json");
+
+    try {
+        const raw = fs.readFileSync(planPath, "utf-8");
+        const plan = JSON.parse(raw);
+        const configuration = typeof plan?.meta?.configuration === "string" ? plan.meta.configuration.trim() : "";
+        const ocppVersion = typeof plan?.meta?.ocppVersion === "string" ? plan.meta.ocppVersion.trim() : "";
+        const role = typeof plan?.meta?.role === "string" ? plan.meta.role.trim() : "";
+
+        if (configuration) plans.add(configuration);
+        if (ocppVersion && role && configuration) {
+            plans.add(`OCPP ${ocppVersion} ${role} - ${configuration}`);
+        }
+    } catch {
+        // Local test plan artifacts are optional; Jira metadata remains the primary source.
+    }
+
+    return Array.from(plans).sort();
+}
+
+export function buildXrayStepResults(steps: Array<{ id?: string }>, status: string): any[] | undefined {
+    if (!steps || steps.length === 0) return undefined;
+    return steps.map((step, idx) => {
+        const comment = `Step ${idx + 1} automatically marked as ${status} by the test runner.`;
+        return {
+            id: step.id,
+            stepId: step.id,
+            status,
+            actualResult: comment,
+            comment,
+        };
+    });
+}
+
+export function parseXrayUrl(urlStr: string | undefined): { testExecutionKey?: string; testKey?: string; testPlanId?: string } | null {
+    if (!urlStr) return null;
+    const trimmed = urlStr.trim();
+    if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+        return null;
+    }
+    try {
+        const url = new URL(trimmed);
+        const result: { testExecutionKey?: string; testKey?: string; testPlanId?: string } = {};
+
+        // Parse search params
+        const searchParams = url.searchParams;
+        const testExecutionKey = searchParams.get("testExecutionKey") || searchParams.get("ac.testExecutionKey");
+        const testKey = searchParams.get("testKey") || searchParams.get("ac.testKey");
+        const testPlanId = searchParams.get("testPlanId") || searchParams.get("ac.testPlanId") || searchParams.get("testPlanKey") || searchParams.get("ac.testPlanKey");
+
+        if (testExecutionKey) result.testExecutionKey = testExecutionKey;
+        if (testKey) result.testKey = testKey;
+        if (testPlanId) result.testPlanId = testPlanId;
+
+        // Parse hash params
+        let hash = url.hash;
+        if (hash) {
+            hash = hash.replace(/^#!?\/?[!?]?/, "");
+            const hashParams = new URLSearchParams(hash);
+            const hTestExecutionKey = hashParams.get("testExecutionKey") || hashParams.get("ac.testExecutionKey");
+            const hTestKey = hashParams.get("testKey") || hashParams.get("ac.testKey");
+            const hTestPlanId = hashParams.get("testPlanId") || hashParams.get("ac.testPlanId") || hashParams.get("testPlanKey") || hashParams.get("ac.testPlanKey");
+
+            if (hTestExecutionKey) result.testExecutionKey = hTestExecutionKey;
+            if (hTestKey) result.testKey = hTestKey;
+            if (hTestPlanId) result.testPlanId = hTestPlanId;
+        }
+
+        return result;
+    } catch {
+        return null;
+    }
+}
 
 router.post("/check", async (_req, res) => {
     try {
@@ -28,59 +107,253 @@ router.post("/check", async (_req, res) => {
 router.get("/metadata", async (_req, res) => {
     try {
         const client = new JiraClient(effectiveConfig.jira);
-        const metadata = await client.getExecutionMetadata();
-        res.json({ ok: true, metadata });
+        
+        let suts: string[] = [];
+        let firmwares: string[] = [];
+        let testPlans: string[] = [];
+
+        try {
+            // Fetch metadata from Xray Cloud project settings
+            if (effectiveConfig.xray?.clientId && effectiveConfig.xray?.clientSecret) {
+                const xrayFields = await client.getXrayCustomFieldsSpec(
+                    effectiveConfig.xray.clientId,
+                    effectiveConfig.xray.clientSecret,
+                    effectiveConfig.jira.projectKey
+                );
+                
+                const fwField = xrayFields.find((f: any) => f.name === "FW Version");
+                const dutField = xrayFields.find((f: any) => f.name === "DUT");
+
+                if (fwField && fwField.values) {
+                    firmwares = fwField.values.filter((v: string) => v !== "no run (SKIPPED or BLOCKED)");
+                }
+                if (dutField && dutField.values) {
+                    suts = dutField.values.filter((v: string) => v !== "no run (SKIPPED or BLOCKED)");
+                }
+            }
+        } catch (err: any) {
+            log("warn", `Could not load custom fields from Xray settings: ${err.message}`, "jira");
+        }
+
+        // Fetch remaining metadata (like test plans) from historical executions in Jira
+        const historical = await client.getExecutionMetadata();
+        
+        // If Xray fields query failed or returned nothing, fall back to historical values
+        if (suts.length === 0) suts = historical.suts;
+        if (firmwares.length === 0) firmwares = historical.firmwares;
+        testPlans = Array.from(new Set([...historical.testPlans, ...getLocalTestPlans()])).sort();
+
+        res.json({
+            ok: true,
+            metadata: {
+                suts,
+                firmwares,
+                testPlans
+            }
+        });
+    } catch (e: any) {
+        res.status(500).json({ ok: false, error: e.message });
+    }
+});
+
+router.get("/test-executions", async (req, res) => {
+    const testPlan = String(req.query.testPlan || "").trim();
+    if (!testPlan) {
+        return res.status(400).json({ ok: false, error: "testPlan is required" });
+    }
+
+    try {
+        const client = new JiraClient(effectiveConfig.jira);
+        let executions: Array<{ key: string; summary?: string }> = [];
+
+        try {
+            if (effectiveConfig.xray?.clientId && effectiveConfig.xray?.clientSecret) {
+                const testPlanKey = await client.findTestPlanKey(testPlan);
+                if (testPlanKey) {
+                    const issueDetails = await client.getIssue(testPlanKey);
+                    const token = await client.authenticateXray(effectiveConfig.xray.clientId, effectiveConfig.xray.clientSecret);
+                    executions = await client.getXrayTestPlanExecutions(issueDetails.id, token);
+                }
+            }
+        } catch (err: any) {
+            log("warn", `Could not load Xray executions for Test Plan ${testPlan}: ${err.message}`, "jira");
+        }
+
+        if (executions.length === 0) {
+            executions = await client.searchTestExecutions(testPlan);
+        }
+
+        res.json({
+            ok: true,
+            testPlan,
+            executions: executions
+                .filter((item, idx, arr) => item.key && arr.findIndex(other => other.key === item.key) === idx)
+                .sort((a, b) => a.key.localeCompare(b.key)),
+        });
     } catch (e: any) {
         res.status(500).json({ ok: false, error: e.message });
     }
 });
 
 router.post("/upload-execution", validate(jiraUploadSchema), async (req, res) => {
-    const { sut, firmwareVersion, testPlan, environment } = req.body;
+    const { sut, firmwareVersion, testPlan, environment, runId, testExecutionKey, ocppBackend } = req.body;
 
     try {
         const client = new JiraClient(effectiveConfig.jira);
-        const results = getLastResults();
-        const passed = results.filter(r => r.verdict === "pass").length;
-        const failed = results.filter(r => r.verdict === "fail").length;
-        const total = results.length;
-        const passRate = total > 0 ? Math.round((passed / total) * 100) : 0;
+        const octt = new OcttClient(effectiveConfig.octt);
 
-        const summary = `[OCPP 1.6] Test Execution — ${sut} | FW ${firmwareVersion} | ${passRate}% pass`;
-        const description = [
-            `h2. Test Execution Summary`,
-            `| *SUT* | ${sut} |`,
-            `| *Firmware* | ${firmwareVersion} |`,
-            `| *Pass Rate* | ${passRate}% |`,
-            `| *Total* | ${total} |`,
-            ``,
-            `h2. Results`,
-            `| *Test* | *Verdict* | *Duration* |`,
-            ...results.map(r => `| ${r.testCase} | ${r.verdict} | ${r.duration}s |`),
-        ].join("\n");
+        let finalTestExecutionKey = testExecutionKey;
+        let finalTestPlan = testPlan;
 
-        const issue = await client.createIssue({
-            summary,
-            description,
-            issueType: "Task",
-            priority: failed > 0 ? "High" : "Medium",
-            labels: ["ocpp", "certification", "test-execution"],
-        });
+        if (testExecutionKey && (testExecutionKey.startsWith("http://") || testExecutionKey.startsWith("https://"))) {
+            const parsed = parseXrayUrl(testExecutionKey);
+            if (parsed) {
+                finalTestExecutionKey = parsed.testExecutionKey;
+                if (parsed.testPlanId) {
+                    finalTestPlan = parsed.testPlanId;
+                }
+            }
+        }
 
+        if (!finalTestExecutionKey) {
+            throw new Error("Test Execution Key is required.");
+        }
+
+        // 1. Get results and configuration name
+        const history = getRunHistory();
+        const entry = runId ? history.find(h => h.id === runId) : history[0];
+        const results = entry ? entry.results || [] : getLastResults();
+        const configurationName = entry?.configName || "AUT_SID_SAT";
+
+        if (results.length === 0) {
+            throw new Error("No test results found to upload.");
+        }
+
+        // 2. Resolve Custom Field IDs
+        const fieldIds = await client.getFieldIds(["FW Version", "DUT", "OCPP backend"]);
+
+        // 3. Authenticate with Xray Cloud
+        if (!effectiveConfig.xray?.clientId || !effectiveConfig.xray?.clientSecret) {
+            throw new Error("Xray Client ID and Secret are not configured in the Dashboard settings.");
+        }
+        const token = await client.authenticateXray(effectiveConfig.xray.clientId, effectiveConfig.xray.clientSecret);
+
+        // 4. Process each test result and download evidence in parallel
+        log("info", `Resolving Jira keys, steps, and downloading evidence for ${results.length} tests...`, "jira");
+        const testsArray = await Promise.all(results.map(async (r) => {
+            const testKey = await client.findTestKey(r.testCase);
+            if (!testKey) {
+                log("warn", `Could not find Jira Test Key for ${r.testCase}, skipping from Xray payload`, "jira");
+                return null;
+            }
+
+            const xrayStatus = r.verdict === "pass" ? "PASSED" : "FAILED";
+
+            // Fetch steps from Xray to map them to the same status
+            let xraySteps: any[] | undefined = undefined;
+            try {
+                const issueDetails = await client.getIssue(testKey);
+                if (issueDetails && issueDetails.id) {
+                    const steps = await client.getXrayTestSteps(issueDetails.id, token);
+                    if (steps && steps.length > 0) {
+                        xraySteps = buildXrayStepResults(steps, xrayStatus);
+                    }
+                }
+            } catch (stepErr: any) {
+                log("warn", `Could not retrieve test steps for ${testKey}: ${stepErr.message}`, "jira");
+            }
+
+            let zipBuffer: Buffer | null = null;
+            try {
+                const reports = await octt.getReportsFiltered({
+                    testcase_name: [r.testCase],
+                    configuration_name: [configurationName]
+                });
+                if (reports.data && reports.data.length > 0) {
+                    const latestReport = reports.data[0];
+                    const logfileName = path.basename(latestReport.logfile);
+                    const configName = latestReport.configuration;
+                    zipBuffer = await octt.downloadReports({
+                        format: "ZIP",
+                        configuration_name: configName,
+                        logfile_name: logfileName
+                    });
+                }
+            } catch (err: any) {
+                log("warn", `Could not download OCTT zip for ${r.testCase} evidence: ${err.message}`, "jira");
+            }
+
+            const customFields = [];
+            const fwFieldId = fieldIds["FW Version"] || "68f2fbd3a6fdbe3e4e952f0b";
+            const dutFieldId = fieldIds["DUT"] || "68f2fbd3a6fdbe3e4e952f0e";
+            const ocppFieldId = fieldIds["OCPP backend"] || "68f2fbd3a6fdbe3e4e952f13";
+
+            if (firmwareVersion) customFields.push({ id: fwFieldId, value: firmwareVersion });
+            if (sut) customFields.push({ id: dutFieldId, value: sut });
+            if (ocppBackend) customFields.push({ id: ocppFieldId, value: ocppBackend });
+
+            const testEntry: any = {
+                testKey,
+                status: xrayStatus,
+                steps: xraySteps,
+                customFields: customFields.length > 0 ? customFields : undefined
+            };
+
+            return { testEntry, zipBuffer, testCase: r.testCase };
+        }));
+
+        const filteredTests = testsArray.filter(Boolean);
+        if (filteredTests.length === 0) {
+            throw new Error("None of the test cases in the execution could be matched to Xray Test keys in Jira.");
+        }
+
+        // 5. Build Xray Payload
+        const payload: any = {
+            testExecutionKey: finalTestExecutionKey || undefined,
+            testPlanKey: finalTestPlan || undefined,
+            tests: filteredTests.map((t: any) => t.testEntry)
+        };
+
+        log("info", `Uploading execution payload to Xray...`, "jira");
+        const response = await client.uploadXrayExecution(payload, token);
+        const finalKey = response.key || finalTestExecutionKey || "Unknown";
+
+        // Upload attachments via Jira REST API directly to the execution issue
+        for (const t of filteredTests) {
+            if (t.zipBuffer && finalKey && finalKey !== "Unknown") {
+                try {
+                    await client.addAttachment(finalKey, `${t.testCase}_logs.zip`, t.zipBuffer);
+                    log("info", `Attached ${t.testCase}_logs.zip to ${finalKey}`, "jira");
+                } catch (attachErr: any) {
+                    log("warn", `Failed to attach ${t.testCase}_logs.zip to ${finalKey}: ${attachErr.message}`, "jira");
+                }
+            }
+        }
+
+        // 6. Annotate run history with the Test Execution key
         annotateLatestRun({
             sut,
             firmwareVersion,
-            testPlan,
+            testPlan: finalTestPlan,
             environment,
-            jiraIssueKey: issue.key,
+            jiraIssueKey: finalKey,
             source: "jira-upload",
         });
 
-        log("info", `Execution metadata: SUT=${sut} FW=${firmwareVersion} ENV=${environment || "Lab"} PLAN=${testPlan || "N/A"}`, "jira");
-        log("info", `Created Test Execution ${issue.key}`, "jira");
-        res.json({ ok: true, issueKey: issue.key, url: `${effectiveConfig.jira.baseUrl}/browse/${issue.key}` });
+        log("info", `Uploaded execution to Xray: ${finalKey}`, "jira");
+        res.json({
+            ok: true,
+            issueKey: finalKey,
+            url: `${effectiveConfig.jira.baseUrl}/browse/${finalKey}`,
+            summary: {
+                total: results.length,
+                passed: results.filter(r => r.verdict === "pass").length,
+                failed: results.filter(r => r.verdict !== "pass").length,
+                passRate: Math.round((results.filter(r => r.verdict === "pass").length / results.length) * 100)
+            }
+        });
     } catch (e: any) {
-        log("error", `Jira upload failed: ${e.message}`, "jira");
+        log("error", `Jira upload-execution failed: ${e.message}`, "jira");
         res.status(500).json({ ok: false, error: e.message });
     }
 });
@@ -133,7 +406,7 @@ router.post("/create-defect", async (req, res) => {
             const files = fs.existsSync(logDir) ? fs.readdirSync(logDir).filter((f: string) => f.endsWith(".log")).sort().reverse() : [];
             for (const f of files.slice(0, 5)) {
                 if (logContext.length > 2000) break;
-                const content = fs.readFileSync(path.join(logDir, f), "utf-8");
+                const content = fs.readFileSync(path.join(logDir, "utf-8"));
                 const lines = content.split("\n").filter((l: string) => l.includes(testCase));
                 if (lines.length > 0) {
                     logContext += lines.slice(0, 15).join("\n") + "\n";
@@ -193,33 +466,122 @@ router.post("/create-defect", async (req, res) => {
 });
 
 router.post("/upload", async (req, res) => {
-    const { testcase, testplan, testexecution, ocppVersion, chargerNumber, comment } = req.body;
+    const { testcase, testExecutionKey, testKey: reqTestKey, fwVersion, dut, ocppBackend, comment, configurationName, runId } = req.body;
     try {
         const client = new JiraClient(effectiveConfig.jira);
-        const summary = `[OCPP ${ocppVersion || "1.6"}] ${testcase} — ${chargerNumber || "N/A"}`;
-        const description = [
-            `h2. Test Case: ${testcase}`,
-            `| *Test Plan* | ${testplan || "N/A"} |`,
-            `| *Test Execution* | ${testexecution || "N/A"} |`,
-            `| *OCPP Version* | ${ocppVersion || "1.6"} |`,
-            `| *Charger Number* | ${chargerNumber || "N/A"} |`,
-            ``,
-            `h3. Comment`,
-            comment || "No comment",
-        ].join("\n");
+        const octt = new OcttClient(effectiveConfig.octt);
 
-        const issue = await client.createIssue({
-            summary,
-            description,
-            issueType: "Task",
-            priority: "Medium",
-            labels: ["ocpp", "certification", testcase],
-        });
+        let finalTestExecutionKey = testExecutionKey;
+        let parsedTestKey = reqTestKey;
 
-        log("info", `Created issue ${issue.key} for ${testcase}`, "jira");
-        res.json({ ok: true, issueKey: issue.key, message: `Created ${issue.key}` });
+        if (testExecutionKey && (testExecutionKey.startsWith("http://") || testExecutionKey.startsWith("https://"))) {
+            const parsed = parseXrayUrl(testExecutionKey);
+            if (parsed) {
+                finalTestExecutionKey = parsed.testExecutionKey;
+                if (parsed.testKey) {
+                    parsedTestKey = parsed.testKey;
+                }
+            }
+        }
+
+        // 1. Find Test Key in Jira
+        let testKey = parsedTestKey;
+        if (!testKey) {
+            testKey = await client.findTestKey(testcase);
+        }
+        if (!testKey) throw new Error(`Could not find Jira Test Key for ${testcase}. Ensure the test exists in Jira with the TC name in the summary.`);
+
+        // 2. Resolve Custom Field IDs
+        const fieldIds = await client.getFieldIds(["FW Version", "DUT", "OCPP backend"]);
+
+        // 3. Get test result to determine status
+        const results = runId
+            ? (getRunHistory().find(h => h.id === runId)?.results || [])
+            : getLastResults();
+        const testResult = results.find(r => r.testCase === testcase);
+        // Map dashboard verdict to Xray status (PASSED, FAILED)
+        const xrayStatus = testResult?.verdict === "pass" ? "PASSED" : "FAILED";
+
+        // 4. Authenticate with Xray Cloud
+        if (!effectiveConfig.xray?.clientId || !effectiveConfig.xray?.clientSecret) {
+            throw new Error("Xray Client ID and Secret are not configured in the Dashboard settings.");
+        }
+        const token = await client.authenticateXray(effectiveConfig.xray.clientId, effectiveConfig.xray.clientSecret);
+
+        // Fetch steps from Xray to map them to the same status
+        let xraySteps: any[] | undefined = undefined;
+        try {
+            const issueDetails = await client.getIssue(testKey);
+            if (issueDetails && issueDetails.id) {
+                const steps = await client.getXrayTestSteps(issueDetails.id, token);
+                if (steps && steps.length > 0) {
+                    xraySteps = buildXrayStepResults(steps, xrayStatus);
+                }
+            }
+        } catch (stepErr: any) {
+            log("warn", `Could not retrieve test steps for ${testKey}: ${stepErr.message}`, "jira");
+        }
+
+        // 5. Download Evidence (OCTT ZIP)
+        let zipBuffer: Buffer | null = null;
+        try {
+            const reports = await octt.getReportsFiltered({
+                testcase_name: [testcase],
+                configuration_name: [configurationName || "AUT_SID_SAT"]
+            });
+            if (reports.data && reports.data.length > 0) {
+                const latestReport = reports.data[0];
+                const logfileName = path.basename(latestReport.logfile);
+                const configName = latestReport.configuration;
+                zipBuffer = await octt.downloadReports({
+                    format: "ZIP",
+                    configuration_name: configName,
+                    logfile_name: logfileName
+                });
+            } else {
+                log("warn", `No reports found for ${testcase} to upload as evidence`, "jira");
+            }
+        } catch (err: any) {
+            log("warn", `Could not download OCTT zip for evidence: ${err.message}`, "jira");
+        }
+
+        // 6. Construct Custom Fields Array
+        const customFields = [];
+        const fwFieldId = fieldIds["FW Version"] || "68f2fbd3a6fdbe3e4e952f0b";
+        const dutFieldId = fieldIds["DUT"] || "68f2fbd3a6fdbe3e4e952f0e";
+        const ocppFieldId = fieldIds["OCPP backend"] || "68f2fbd3a6fdbe3e4e952f13";
+
+        if (fwVersion) customFields.push({ id: fwFieldId, value: fwVersion });
+        if (dut) customFields.push({ id: dutFieldId, value: dut });
+        if (ocppBackend) customFields.push({ id: ocppFieldId, value: ocppBackend });
+
+        // 7. Build Xray Payload
+        const payload: any = {
+            testExecutionKey: finalTestExecutionKey,
+            tests: [{
+                testKey,
+                status: xrayStatus,
+                steps: xraySteps,
+                comment: comment || undefined,
+                customFields: customFields.length > 0 ? customFields : undefined
+            }]
+        };
+
+        const response = await client.uploadXrayExecution(payload, token);
+
+        if (zipBuffer && finalTestExecutionKey) {
+            try {
+                await client.addAttachment(finalTestExecutionKey, `${testcase}_logs.zip`, zipBuffer);
+                log("info", `Attached ${testcase}_logs.zip to ${finalTestExecutionKey}`, "jira");
+            } catch (attachErr: any) {
+                log("warn", `Failed to attach ${testcase}_logs.zip to ${finalTestExecutionKey}: ${attachErr.message}`, "jira");
+            }
+        }
+
+        log("info", `Uploaded execution to Xray ${finalTestExecutionKey} for ${testcase}`, "jira");
+        res.json({ ok: true, issueKey: finalTestExecutionKey, message: `Successfully updated Xray Test Execution ${finalTestExecutionKey}` });
     } catch (e: any) {
-        log("error", `Jira upload failed: ${e.message}`, "jira");
+        log("error", `Xray upload failed: ${e.message}`, "jira");
         res.status(500).json({ ok: false, error: e.message });
     }
 });

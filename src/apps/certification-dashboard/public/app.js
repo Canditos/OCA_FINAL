@@ -697,7 +697,30 @@ function selNone() { document.querySelectorAll('.tc-check').forEach(c => c.check
 function selMaint() { document.querySelectorAll('.tc-check').forEach(c => { c.checked = c.value.startsWith('tc_bi_'); }); updCount(); }
 function selReboot() {
   const rebootTests = ['TC_001_CS', 'TC_002_CS', 'TC_013_CS', 'TC_014_CS', 'TC_015_CS', 'TC_016_CS', 'TC_032_1_CS', 'TC_032_2_CS', 'TC_034_CS'];
-  document.querySelectorAll('.tc-check').forEach(c => { c.checked = rebootTests.includes(c.value); });
+  document.querySelectorAll('.tc-check').forEach(c => { c.checked = rebootTests.some(t => c.value.toLowerCase().trim().includes(t.toLowerCase().trim())); });
+  updCount();
+}
+
+function selPics() {
+  const picsTests = [
+    "TC_001_CS", "TC_002_CS", "TC_003_CS", "TC_004_1_CS", "TC_004_2_CS",
+    "TC_005_2_CS", "TC_007_1_CS", "TC_008_1_CS", "TC_010_CS", "TC_011_1_CS",
+    "TC_011_2_CS", "TC_012_CS", "TC_013_CS", "TC_014_CS", "TC_015_CS",
+    "TC_016_CS", "TC_017_2_CS", "TC_018_2_CS", "TC_019_CS", "TC_021_CS",
+    "TC_023_4_CS", "TC_026_CS", "TC_028_CS", "TC_031_CS", "TC_032_2_CS",
+    "TC_034_CS", "TC_036_CS", "TC_037_1_CS", "TC_037_2_CS", "TC_037_3_CS",
+    "TC_038_CS", "TC_039_CS", "TC_040_1_CS", "TC_040_2_CS", "TC_042_2_CS",
+    "TC_043_CS", "TC_043_2_CS", "TC_045_1_CS", "TC_045_2_CS", "TC_046_1_CS",
+    "TC_046_2_CS", "TC_047_CS", "TC_048_2_CS", "TC_048_3_CS", "TC_049_CS",
+    "TC_050_2_CS", "TC_050_3_CS", "TC_051_CS", "TC_052_CS", "TC_053_1_CS",
+    "TC_054_CS", "TC_055_CS", "TC_056_CS", "TC_057_CS", "TC_058_1_CS",
+    "TC_058_2_CS", "TC_059_CS", "TC_060_CS", "TC_061_1_CS", "TC_062_CS",
+    "TC_066_CS", "TC_067_CS", "TC_068_CS", "TC_069_CS", "TC_070_CS",
+    "TC_071_CS", "TC_072_CS", "TC_073_CS", "TC_075_1_CS", "TC_075_2_CS",
+    "TC_076_CS", "TC_078_CS", "TC_079_CS", "TC_080_CS", "TC_081_CS",
+    "TC_082_CS", "TC_083_CS", "TC_084_CS", "TC_085_CS", "TC_086_CS"
+  ];
+  document.querySelectorAll('.tc-check').forEach(c => { c.checked = picsTests.some(t => c.value.toLowerCase().trim().includes(t.toLowerCase().trim())); });
   updCount();
 }
 

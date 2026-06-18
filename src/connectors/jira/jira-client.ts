@@ -122,14 +122,171 @@ export class JiraClient {
      * and failure category label. Used by the deduplication engine
      * to avoid creating duplicate bugs.
      *
-     * @param testcaseId      - Test case identifier (e.g., "TC_001_CS")
-     * @param failureCategory - Label used to categorize the failure type
+     * @param testCase        - Test case identifier (e.g., "TC_001_CS")
+     * @param verdict - Label used to categorize the failure type
      * @returns The most recently created matching issue, or null
      */
-    async findExistingIssue(testcaseId: string, failureCategory: string): Promise<JiraIssue | null> {
-        const jql = `project = "${this.projectKey}" AND summary ~ "${testcaseId}" AND labels = "${failureCategory}" AND status != "Done" ORDER BY created DESC`;
-        const result = await this.search(jql, undefined, 1);
+    async findExistingIssue(testCase: string, verdict: string): Promise<JiraIssue | null> {
+        // Find existing open Bugs for this test case
+        const jql = `project = "${this.projectKey}" AND issuetype = Bug AND statusCategory != Done AND summary ~ "${testCase}"`;
+        const result = await this.search(jql, ["summary", "status"], 1);
         return result.issues.length > 0 ? result.issues[0] : null;
+    }
+
+    // ── Xray Integration ──
+
+    /**
+     * Resolves the custom field IDs for the given field names.
+     */
+    async getFieldIds(fieldNames: string[]): Promise<Record<string, string>> {
+        const fields = await this.getCustomFields();
+        const result: Record<string, string> = {};
+        for (const name of fieldNames) {
+            const field = fields.find((f) => f.name.toLowerCase() === name.toLowerCase());
+            if (field) result[name] = field.id;
+        }
+        return result;
+    }
+
+    /**
+     * Finds the Jira Test Key for a given OCTT test case name.
+     */
+    async findTestKey(testCaseName: string): Promise<string | null> {
+        const jql = `project = "${this.projectKey}" AND issuetype = Test AND summary ~ "${testCaseName}"`;
+        const result = await this.search(jql, ["summary"], 1);
+        return result.issues.length > 0 ? result.issues[0].key : null;
+    }
+
+    /**
+     * Authenticates with Xray Cloud and returns a Bearer token.
+     */
+    async authenticateXray(clientId: string, clientSecret: string): Promise<string> {
+        const response = await axios.post("https://xray.cloud.getxray.app/api/v2/authenticate", {
+            client_id: clientId,
+            client_secret: clientSecret
+        });
+        return response.data; // token string
+    }
+
+    /**
+     * Uploads a test execution payload to Xray Cloud.
+     */
+    async uploadXrayExecution(payload: unknown, token: string): Promise<any> {
+        console.log("Xray Payload:", JSON.stringify(payload, null, 2));
+        try {
+            const response = await axios.post("https://xray.cloud.getxray.app/api/v2/import/execution", payload, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+            return response.data;
+        } catch (err: any) {
+            if (err.response) {
+                console.error("Xray upload detailed error:", JSON.stringify(err.response.data, null, 2));
+                throw new Error(`Xray upload failed: ${err.message}. Details: ${JSON.stringify(err.response.data)}`);
+            }
+            throw err;
+        }
+    }
+
+    /**
+     * Fetches Xray Test Run Custom Fields and their allowed values.
+     */
+    async getXrayCustomFieldsSpec(clientId: string, clientSecret: string, projectKey: string): Promise<any> {
+        const token = await this.authenticateXray(clientId, clientSecret);
+        const query = `
+          query GetProjectSettings($projectIdOrKey: String!) {
+            getProjectSettings(projectIdOrKey: $projectIdOrKey) {
+              testRunCustomFieldSettings {
+                fields {
+                  id
+                  name
+                  type
+                  required
+                  values
+                }
+              }
+            }
+          }
+        `;
+        const response = await axios.post("https://xray.cloud.getxray.app/api/v2/graphql", {
+            query,
+            variables: { projectIdOrKey: projectKey }
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+        return response.data?.data?.getProjectSettings?.testRunCustomFieldSettings?.fields || [];
+    }
+
+    /**
+     * Fetches steps of a given Test case by its numeric ID using Xray GraphQL.
+     */
+    async getXrayTestSteps(issueId: string, token: string): Promise<any[]> {
+        const query = `
+          query GetTest($issueId: String!) {
+            getTest(issueId: $issueId) {
+              steps {
+                id
+              }
+            }
+          }
+        `;
+        const response = await axios.post("https://xray.cloud.getxray.app/api/v2/graphql", {
+            query,
+            variables: { issueId }
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+        return response.data?.data?.getTest?.steps || [];
+    }
+
+    /**
+     * Fetches Test Executions linked to a Test Plan using Xray Cloud GraphQL.
+     */
+    async getXrayTestPlanExecutions(issueId: string, token: string): Promise<Array<{ key: string; summary?: string }>> {
+        const query = `
+          query GetTestPlan($issueId: String!) {
+            getTestPlan(issueId: $issueId) {
+              testExecutions(limit: 100) {
+                results {
+                  issueId
+                  jira(fields: ["key", "summary"])
+                }
+              }
+            }
+          }
+        `;
+        const response = await axios.post("https://xray.cloud.getxray.app/api/v2/graphql", {
+            query,
+            variables: { issueId }
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (response.data?.errors?.length) {
+            throw new Error(response.data.errors.map((e: any) => e.message).join("; "));
+        }
+
+        const results = response.data?.data?.getTestPlan?.testExecutions?.results || [];
+        return results
+            .map((item: any) => {
+                const jira = item?.jira || {};
+                return {
+                    key: String(jira.key || ""),
+                    summary: jira.summary ? String(jira.summary) : undefined,
+                };
+            })
+            .filter((item: { key: string }) => item.key);
     }
 
     // ── CRUD ──
@@ -378,5 +535,28 @@ export class JiraClient {
             firmwares: Array.from(firmwares).sort(),
             testPlans: Array.from(testPlans).sort(),
         };
+    }
+
+    async findTestPlanKey(testPlan: string): Promise<string | null> {
+        const value = testPlan.trim();
+        if (!value) return null;
+        if (/^[A-Z][A-Z0-9]+-\d+$/.test(value)) return value;
+
+        const escaped = value.replace(/"/g, '\\"');
+        const jql = `project = "${this.projectKey}" AND issuetype = "Test Plan" AND summary ~ "${escaped}" ORDER BY updated DESC`;
+        const result = await this.search(jql, ["summary"], 1);
+        return result.issues.length > 0 ? result.issues[0].key : null;
+    }
+
+    async searchTestExecutions(testPlan: string): Promise<Array<{ key: string; summary?: string }>> {
+        const escaped = testPlan.trim().replace(/"/g, '\\"');
+        if (!escaped) return [];
+
+        const jql = `project = "${this.projectKey}" AND issuetype = "Test Execution" AND text ~ "${escaped}" ORDER BY updated DESC`;
+        const result = await this.search(jql, ["summary"], 100);
+        return result.issues.map((issue) => ({
+            key: issue.key,
+            summary: typeof issue.fields.summary === "string" ? issue.fields.summary : undefined,
+        }));
     }
 }

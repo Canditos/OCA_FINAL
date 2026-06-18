@@ -254,6 +254,34 @@
 
   <!-- CONFIG tab -->
   <div id="sidebar-config" style="display:flex;flex-direction:column;gap:10px">
+    <!-- Profiles configuration -->
+    <div class="config-section">
+      <div class="card-title">&#128229; Profiles</div>
+      <div class="card-body">
+        <div class="card">
+          <label class="f">Load Profile</label>
+          <select id="sel-preset-profile">
+            <option value="">Select a profile...</option>
+            <optgroup label="CDS Profiles">
+              <option value="CDS30">CDS30 (IP: .30, Sink: 11)</option>
+              <option value="CDS80">CDS80 (IP: .80, Sink: 7)</option>
+              <option value="CDS10">CDS10 (IP: .30, Sink: 1)</option>
+            </optgroup>
+            <optgroup label="OCTT Profiles">
+              <option value="OCTT_SID">OCTT_SID</option>
+            </optgroup>
+            <optgroup label="Jira Profiles">
+              <option value="JIRAXPECD">JIRAXPECD</option>
+            </optgroup>
+          </select>
+          <div style="margin-top:6px;display:flex;gap:4px">
+            <button onclick="loadPresetProfile()" class="sm primary" style="flex:1">Load Profile</button>
+          </div>
+          <div id="profile-load-r" style="margin-top:4px;font-size:9px;font-family:var(--font);color:var(--text-dim);display:none"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- OCTT configuration -->
     <div class="config-section">
       <div class="card-title">&#9889; OCTT</div>
@@ -278,6 +306,9 @@
           <label class="f">Port</label><input type="number" id="inp-cds-port" placeholder="51001">
           <label class="f">Sink</label><input type="number" id="inp-sink" value="1">
           <label class="f">Profile</label><select id="sel-profile"><option value="CCS_900V_300A">CCS 900V/300A/50kW ISO15118</option><option value="CCS_500V_125A">CCS 500V/125A/25kW</option><option value="CCS_1000V_400A">CCS 1000V/400A/150kW</option><option value="CCS_DIN_500V_125A">DIN70121 500V/125A/50kW</option></select>
+          <div style="margin-top:6px;display:flex;gap:4px">
+            <button onclick="saveConfig()" class="sm primary" style="flex:1">&#128190; Save</button>
+          </div>
         </div>
       </div>
     </div>
@@ -407,10 +438,12 @@
 <div class="modal" style="width:min(500px,90vw)">
   <div class="modal-head"><span>Upload to Jira</span><span id="jira-upload-tc" style="color:var(--text-dim)"></span></div>
   <div style="padding:18px">
-    <label class="f">Test Plan</label><input type="text" id="inp-testplan" placeholder="e.g. OCTT-CCS-2026-Q2">
-    <label class="f">Test Execution</label><input type="text" id="inp-testexec" placeholder="e.g. AUT_SID_SAT execution #1">
-    <label class="f">OCPP Version</label><select id="inp-ocpp-ver"><option value="1.6">1.6</option><option value="2.0.1">2.0.1</option></select>
-    <label class="f">Charger Number</label><input type="text" id="inp-charger" placeholder="e.g. EVSE-001">
+    <label class="f">Test Execution Key*</label><input type="text" id="inp-testexec" placeholder="e.g. XPECD-5264">
+    <label class="f">FW Version*</label><input type="text" id="inp-fw-ver" placeholder="e.g. 1.0.0">
+    <label class="f">DUT*</label><input type="text" id="inp-dut" placeholder="e.g. Dispenser 1">
+    <label class="f">OCPP backend*</label><input type="text" id="inp-ocpp-backend" placeholder="e.g. OCTT">
+    <label class="f">Test Plan</label><input type="text" id="inp-testplan" placeholder="e.g. TPLAN-123">
+    <label class="f">Environment</label><input type="text" id="inp-env" placeholder="e.g. Staging">
     <label class="f">Comment (optional)</label><input type="text" id="inp-jira-comment" placeholder="Additional notes...">
     <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
       <button onclick="closeJiraModal()" style="flex:none;padding:8px 16px">Cancel</button>
@@ -433,6 +466,7 @@
     <button class="sm" onclick="selAll()">All</button>
     <button class="sm" onclick="selNone()">None</button>
     <button class="sm" onclick="selReboot()">Reboot</button>
+    <button class="sm" onclick="selPics()">&#128196; PICS</button>
     <button class="sm" onclick="selCdsOnly()" style="border-color:var(--warn);color:var(--warn)" title="Select only tests requiring CDS">&#9889; CDS</button>
     <button class="sm" onclick="selNoCds()" style="border-color:var(--accent2);color:var(--accent2)" title="Select only tests that work without CDS">&#128268; No CDS</button>
     <div style="flex:1"></div>
@@ -485,6 +519,11 @@
   <div class="modal-head"><span>&#128227; Upload Results to Jira</span><span id="jira-upload-status" style="color:var(--text-dim)">Ready</span></div>
   <div class="modal-body" style="padding:16px;display:flex;flex-direction:column;gap:10px">
     <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">Select the test execution details below. Values are fetched from Jira custom fields. All test results will be uploaded as a Jira issue with an attached JSON report.</div>
+    <label class="f">Test Execution Key*</label>
+    <select id="sel-jira-testexec-list" style="width:100%">
+      <option value="">Select Test Plan first...</option>
+    </select>
+    <input type="text" id="sel-jira-testexec" placeholder="e.g. XPECD-5264" style="width:100%" required>
     <label class="f">SUT (System Under Test) *</label>
     <select id="sel-jira-sut" style="width:100%">
       <option value="">Loading SUTs from Jira...</option>
@@ -493,6 +532,8 @@
     <select id="sel-jira-fw" style="width:100%">
       <option value="">Loading firmware versions...</option>
     </select>
+    <label class="f">OCPP Backend*</label>
+    <input type="text" id="sel-jira-ocpp-backend" placeholder="e.g. OCTT" style="width:100%" value="OCTT">
     <label class="f">Test Plan</label>
     <select id="sel-jira-plan" style="width:100%">
       <option value="">Loading test plans...</option>
@@ -1673,6 +1714,7 @@ async function openJiraUploadModal(results){
       populateJiraSelect('sel-jira-sut',j.metadata.suts,'Select SUT...',true);
       populateJiraSelect('sel-jira-fw',j.metadata.firmwares,'Select Firmware...',true);
       populateJiraSelect('sel-jira-plan',j.metadata.testPlans,'Select Test Plan...',false);
+      setupJiraTestPlanExecutionDropdown();
       $('jira-upload-status').textContent=`${total} tests | ${passRate}% pass`;
       $('jira-upload-status').style.color=passRate>=80?'var(--pass)':passRate>=50?'var(--warn)':'var(--danger)';
       $('jira-upload-error').style.display='none';
@@ -1689,6 +1731,7 @@ async function openJiraUploadModal(results){
     populateJiraSelect('sel-jira-sut',[],'Enter SUT manually...',true);
     populateJiraSelect('sel-jira-fw',[],'Enter Firmware manually...',true);
     populateJiraSelect('sel-jira-plan',[],'Enter Test Plan manually...',false);
+    setupJiraTestPlanExecutionDropdown();
   }
 }
 
@@ -1733,6 +1776,64 @@ function populateJiraSelect(id,values,placeholder,required){
   }
 }
 
+function resetJiraTestExecutionSelect(message='Select Test Plan first...'){
+  const sel=$('sel-jira-testexec-list');
+  if(!sel)return;
+  sel.innerHTML='';
+  const opt=document.createElement('option');
+  opt.value='';
+  opt.textContent=message;
+  sel.appendChild(opt);
+  sel.disabled=true;
+}
+
+function setupJiraTestPlanExecutionDropdown(){
+  const planSelect=$('sel-jira-plan');
+  const execSelect=$('sel-jira-testexec-list');
+  const execInput=$('sel-jira-testexec');
+  resetJiraTestExecutionSelect();
+  if(planSelect){
+    planSelect.onchange=()=>loadJiraTestExecutionsForPlan(planSelect.value);
+  }
+  if(execSelect){
+    execSelect.onchange=()=>{
+      if(execSelect.value&&execInput)execInput.value=execSelect.value;
+    };
+  }
+}
+
+async function loadJiraTestExecutionsForPlan(testPlan){
+  const sel=$('sel-jira-testexec-list');
+  if(!sel)return;
+  const plan=(testPlan||'').trim();
+  if(!plan){
+    resetJiraTestExecutionSelect();
+    return;
+  }
+  sel.disabled=true;
+  sel.innerHTML='<option value="">Loading executions...</option>';
+  try{
+    const r=await fetch(API+'/api/jira/test-executions?testPlan='+encodeURIComponent(plan));
+    const j=await r.json();
+    if(!j.ok)throw new Error(j.error||'Failed to load test executions');
+    sel.innerHTML='<option value="">Select Test Execution...</option>';
+    (j.executions||[]).forEach(execution=>{
+      const opt=document.createElement('option');
+      opt.value=execution.key;
+      opt.textContent=execution.summary?`${execution.key} - ${execution.summary}`:execution.key;
+      sel.appendChild(opt);
+    });
+    sel.disabled=!(j.executions&&j.executions.length);
+    if(sel.disabled){
+      sel.innerHTML='<option value="">No executions found for this Test Plan</option>';
+    }
+  }catch(e){
+    console.error('Failed to load Test Executions:',e);
+    sel.innerHTML='<option value="">Could not load executions - enter key manually</option>';
+    sel.disabled=true;
+  }
+}
+
 /**
  * Closes the Jira upload modal.
  */
@@ -1750,6 +1851,8 @@ async function uploadExecutionToJira(){
   let fw=$('sel-jira-fw').value.trim();
   let plan=$('sel-jira-plan').value.trim();
   let env=$('sel-jira-env').value.trim();
+  let testexec=($('sel-jira-testexec').value||'').trim();
+  let ocppBackend=($('sel-jira-ocpp-backend').value||'OCTT').trim();
   
   // Fallback to text inputs if selects are empty/disabled
   if(!sut){sut=($('sel-jira-sut-fallback')||{}).value||''}
@@ -1758,8 +1861,10 @@ async function uploadExecutionToJira(){
 
   // Validate required fields
   const missing=[];
+  if(!testexec)missing.push('Test Execution Key');
   if(!sut)missing.push('SUT');
   if(!fw)missing.push('Firmware Version');
+  if(!ocppBackend)missing.push('OCPP Backend');
   if(missing.length>0){
     alert('Required fields missing: '+missing.join(', '));
     return;
@@ -1773,7 +1878,15 @@ async function uploadExecutionToJira(){
     const r=await fetch(API+'/api/jira/upload-execution',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({sut,firmwareVersion:fw,testPlan:plan,environment:env})
+      body:JSON.stringify({
+        sut,
+        firmwareVersion:fw,
+        testPlan:plan,
+        environment:env,
+        runId:jiraUploadBatchRunId||undefined,
+        testExecutionKey:testexec,
+        ocppBackend:ocppBackend||undefined
+      })
     });
     const j=await r.json();
     if(j.ok){

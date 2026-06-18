@@ -157,11 +157,12 @@ const openApiSpec = {
                         "application/json": {
                             schema: {
                                 type: "object",
-                                required: ["sut", "firmwareVersion"],
+                                required: ["sut", "firmwareVersion", "testExecutionKey"],
                                 properties: {
                                     sut: { type: "string" },
                                     firmwareVersion: { type: "string" },
                                     testPlan: { type: "string" },
+                                    testExecutionKey: { type: "string" },
                                     environment: { type: "string" },
                                 },
                             },

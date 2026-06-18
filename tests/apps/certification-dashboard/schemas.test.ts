@@ -11,6 +11,7 @@ import {
     pipelineRunSchema,
     cdsCheckSchema,
     octtCheckSchema,
+    jiraUploadSchema,
 } from "../../../src/apps/certification-dashboard/schemas/api.schemas.js";
 
 describe("API Schemas", () => {
@@ -116,6 +117,29 @@ describe("API Schemas", () => {
             });
             expect(result.success).toBe(false);
         });
+    });
+});
+
+describe("Jira Upload Schema", () => {
+    it("requires a test execution key", () => {
+        const result = jiraUploadSchema.safeParse({
+            sut: "COR #1",
+            firmwareVersion: "FW v9.1.0 - DEV",
+            ocppBackend: "OCTT",
+        });
+
+        expect(result.success).toBe(false);
+    });
+
+    it("accepts an optional testPlan with a test execution key", () => {
+        const result = jiraUploadSchema.safeParse({
+            sut: "COR #1",
+            firmwareVersion: "FW v9.1.0 - DEV",
+            testExecutionKey: "XPECD-5264",
+            testPlan: "Legacy plan",
+        });
+
+        expect(result.success).toBe(true);
     });
 });
 

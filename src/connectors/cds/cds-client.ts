@@ -419,23 +419,32 @@ export class CdsClient {
      */
     async reset(): Promise<boolean> {
         try {
-            // Step 1: Ensure the CDS is stopped (send Stop if needed)
-            if (!(await this.waitForStatus(CdsStatus.Stopped, 2000))
-                && !(await this.waitForStatus(CdsStatus.ErrorPending, 2000))) {
+            const status = this.statusValue.getValue();
+            const isInError = status !== -1 && (status & CdsStatus.ErrorPending) !== 0;
+            const isRunning = status !== -1 && (status & CdsStatus.Running) !== 0;
+
+            // Step 1: If running, stop first
+            if (isRunning) {
                 this.writeSinglePid(PidList.Control, "int32", CdsControl.Stop);
-                const stopped = await this.waitForStatus(CdsStatus.Stopped, 20000);
-                if (!stopped) return false;
+                await this.waitForStatus(CdsStatus.Stopped, 20000);
             }
 
-            // Step 2: Trigger the reset cycle — Initializing causes the CDS
-            // to transition through Resetting and back to Stopped automatically
+            // Step 2: If in error, send the dedicated Reset command (16) to clear it
+            if (isInError) {
+                this.writeSinglePid(PidList.Control, "int32", CdsControl.Reset);
+                // Wait for error to clear — CDS should go to Stopped
+                const cleared = await this.waitForStatus(CdsStatus.Stopped, 10000);
+                if (cleared) return true;
+            }
+
+            // Step 3: Trigger the Initializing reset cycle
             this.writeSinglePid(PidList.Control, "int32", CdsControl.Initializing);
 
-            // Step 3: Wait for the Resetting state to confirm the cycle started
-            const resetting = await this.waitForStatusBit(CdsStatus.Resetting, 3000);
+            // Step 4: Wait for the Resetting state to confirm the cycle started
+            const resetting = await this.waitForStatusBit(CdsStatus.Resetting, 5000);
             if (!resetting) return false;
 
-            // Step 4: Wait for the cycle to complete (back to Stopped)
+            // Step 5: Wait for the cycle to complete (back to Stopped)
             return await this.waitForStatus(CdsStatus.Stopped, 15000);
         } catch {
             return false;
@@ -450,7 +459,7 @@ export class CdsClient {
     async start(): Promise<boolean> {
         const written = await this.writeSinglePidAsync(PidList.Control, "int32", CdsControl.Start);
         if (!written) return false;
-        return this.waitForStatus(CdsStatus.Running, 5000);
+        return this.waitForStatusBit(CdsStatus.Running, 5000);
     }
 
     /**

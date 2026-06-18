@@ -350,7 +350,7 @@ async function executePhase(tests: string[], configName: string, profile: Timeou
         const result = await retryOctt(() => octt.startSession(configName), "start session");
         broadcastLog("info", `OCTT session started: ${JSON.stringify(result)}`, "playwright");
 
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 90; i++) {
             if (aborted) return;
             await new Promise(r => setTimeout(r, 1000));
             try {
@@ -359,7 +359,10 @@ async function executePhase(tests: string[], configName: string, profile: Timeou
                     broadcastLog("info", "SUT connected", "playwright");
                     break;
                 }
-                broadcastLog("info", `Waiting for SUT connection... (${i + 1}s)`, "playwright");
+                // Log every second for the first 10s, then every 10s
+                if (i < 10 || (i + 1) % 10 === 0) {
+                    broadcastLog("info", `Waiting for SUT connection... (${i + 1}s)`, "playwright");
+                }
             } catch { /* ignore */ }
         }
     } catch (e: any) {
@@ -393,6 +396,7 @@ async function executePhase(tests: string[], configName: string, profile: Timeou
                 OCTT_MANAGE_SESSION: "true",
                 CDS_IP: effectiveConfig.cds.ip,
                 CDS_PORT: String(effectiveConfig.cds.port),
+                CDS_SINK: String(effectiveConfig.cds.sink),
             },
         } as any);
 

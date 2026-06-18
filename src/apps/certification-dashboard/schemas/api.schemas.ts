@@ -39,13 +39,15 @@ export const pipelineRunSchema = z.object({
     testcaseNames: z.array(z.string().min(1).max(200)).max(200).optional(),
     configurationName: z.string().min(1).max(200).optional(),
 }).strict();
-
 // ── Jira ──
 export const jiraUploadSchema = z.object({
     sut: z.string().min(1).max(200),
     firmwareVersion: z.string().min(1).max(200),
     testPlan: z.string().max(500).optional(),
     environment: z.string().max(500).optional(),
+    runId: z.string().max(500).optional(),
+    testExecutionKey: z.string().min(1).max(1000),
+    ocppBackend: z.string().max(200).optional(),
 }).strict();
 
 // ── Config Save ──
