@@ -1453,6 +1453,7 @@ async function init(){
     if(j.octtToken)$('inp-octt-token').value=j.octtToken;
     if(j.cdsIp)$('inp-cds').value=j.cdsIp;
     if(j.cdsPort)$('inp-cds-port').value=j.cdsPort;
+    if(j.cdsSink)$('inp-sink').value=j.cdsSink;
     if(j.octtOcppVersion)$('sel-ver').value=j.octtOcppVersion;
     if(j.jiraBaseUrl)$('inp-jira-url').value=j.jiraBaseUrl;
     if(j.jiraEmail)$('inp-jira-email').value=j.jiraEmail;
@@ -1521,6 +1522,7 @@ async function saveConfig(){
     octtOcppVersion:$('sel-ver').value,
     cdsIp:$('inp-cds').value.trim(),
     cdsPort:parseInt($('inp-cds-port').value)||51001,
+    cdsSink:parseInt($('inp-sink').value)||12,
     jiraBaseUrl:$('inp-jira-url').value.trim(),
     jiraEmail:$('inp-jira-email').value.trim(),
     jiraApiToken:$('inp-jira-token').value.trim(),
@@ -2048,6 +2050,12 @@ function formatDuration(seconds){
   return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
 }
 
+function getRunDuration(h){
+  if(h.duration!=null)return h.duration;
+  if(h.results&&h.results.length>0)return Math.round(h.results.reduce((s,r)=>s+(r.duration||0),0));
+  return null;
+}
+
 function renderHistoryTable(history){
   if(!history||!history.length){
     $('htbody').innerHTML='<tr><td colspan="9" style="color:var(--text-dim);text-align:center;padding:16px">No past runs</td></tr>';
@@ -2064,7 +2072,7 @@ function renderHistoryTable(history){
       <td style="color:var(--pass)">${h.pass}</td>
       <td style="color:var(--fail)">${h.fail}</td>
       <td style="color:var(--inconc)">${h.inconc}</td>
-      <td style="color:var(--text-dim);font-family:var(--font)">${h.duration!=null?formatDuration(h.duration):'—'}</td>
+      <td style="color:var(--text-dim);font-family:var(--font)">${getRunDuration(h)!=null?formatDuration(getRunDuration(h)):'—'}</td>
       <td style="color:${rateColor};font-weight:700">${h.passRate}%</td>
       <td style="text-align:right;color:var(--accent)">&#9654; View</td>
     </tr>`;
