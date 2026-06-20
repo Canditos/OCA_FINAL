@@ -441,7 +441,7 @@
 <div class="modal" style="width:min(500px,90vw)">
   <div class="modal-head"><span>Upload to Jira</span><span id="jira-upload-tc" style="color:var(--text-dim)"></span></div>
   <div style="padding:18px">
-    <label class="f">Test Execution Key*</label><input type="text" id="inp-testexec" placeholder="e.g. XPECD-5264">
+    <label class="f">Test Execution Key*</label><input type="text" id="inp-testexec" value="XPECD-5264" placeholder="e.g. XPECD-5264">
     <label class="f">FW Version*</label><input type="text" id="inp-fw-ver" placeholder="e.g. 1.0.0">
     <label class="f">DUT*</label><input type="text" id="inp-dut" placeholder="e.g. Dispenser 1">
     <label class="f">OCPP backend*</label><input type="text" id="inp-ocpp-backend" placeholder="e.g. OCTT">
@@ -526,7 +526,7 @@
     <select id="sel-jira-testexec-list" style="width:100%">
       <option value="">Select Test Plan first...</option>
     </select>
-    <input type="text" id="sel-jira-testexec" placeholder="e.g. XPECD-5264" style="width:100%" required>
+    <input type="text" id="sel-jira-testexec" value="XPECD-5264" placeholder="e.g. XPECD-5264" style="width:100%" required>
     <label class="f">SUT (System Under Test) *</label>
     <select id="sel-jira-sut" style="width:100%">
       <option value="">Loading SUTs from Jira...</option>
