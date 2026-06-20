@@ -178,7 +178,7 @@ function handleWsMessage(msg) {
         fetchResults();
         updBtns(false);
         if (msg.data.results && msg.data.results.length > 0) {
-          setTimeout(() => openJiraUploadModal(msg.data.results), 2000);
+          setTimeout(() => openJiraUploadModal(msg.data.results), 10000);
         }
       }
       break;

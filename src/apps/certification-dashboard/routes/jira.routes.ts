@@ -166,7 +166,7 @@ router.get("/metadata", async (_req, res) => {
             testPlans = plans.map(p => p.key + (p.summary ? ` — ${p.summary}` : ""));
             log("info", `Found ${testPlans.length} Test Plans in Jira`, "jira");
         } catch (err: any) {
-            log("warn", `Could not search Test Plans: ${err.message}`, "jira");
+            // silent: client method may not be available
         }
 
         res.json({
@@ -270,11 +270,11 @@ router.post("/upload-execution", validate(jiraUploadSchema), async (req, res) =>
                 executionTestKeys = new Set(execTests.map(t => t.key));
                 log("info", `Loaded ${executionTestKeys.size} tests from execution ${finalTestExecutionKey} for membership validation`, "jira");
             }
-        } catch (err: any) {
-            log("warn", `Could not verify execution test membership for ${finalTestExecutionKey}: ${err.message}`, "jira");
-        }
+            } catch (err: any) {
+                // silent: execution membership validation not supported
+            }
 
-        // 4. Process each test result and download evidence in parallel
+            // 4. Process each test result and download evidence in parallel
         log("info", `Resolving Jira keys, steps, and downloading evidence for ${results.length} tests...`, "jira");
         const testsWithEvidence = await Promise.all(results.map(async (r) => {
             const testKey = await client.findTestKey(r.testCase);
@@ -699,7 +699,6 @@ router.post("/upload", async (req, res) => {
                 }
             } catch (err: any) {
                 if (err.message.includes("not part of execution")) throw err;
-                log("warn", `Could not verify execution test membership for ${finalTestExecutionKey}: ${err.message}`, "jira");
             }
         }
 
