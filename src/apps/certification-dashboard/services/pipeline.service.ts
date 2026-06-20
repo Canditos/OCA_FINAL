@@ -397,6 +397,7 @@ async function executePhase(tests: string[], configName: string, profile: Timeou
                 CDS_IP: effectiveConfig.cds.ip,
                 CDS_PORT: String(effectiveConfig.cds.port),
                 CDS_SINK: String(effectiveConfig.cds.sink),
+                NEEDS_CDS: batchNeedsCds(tests) ? "true" : "false",
             },
         } as any);
 
@@ -551,7 +552,7 @@ async function finishPipelineRun(configName: string, originalTimeouts: OcttTimeo
     await applyTimeouts(configName, timeoutsToRestore);
     broadcastLog("info", "Pipeline finished. OCTT timeouts restored.", "playwright");
 
-    if (lastResults.length > 0) saveRunToHistory(configName, lastResults);
+    const runId = lastResults.length > 0 ? saveRunToHistory(configName, lastResults) : null;
 
     broadcastAll("pipeline", {
         state: aborted ? "cancelled" : (total > 0 ? "done" : "error"),
@@ -559,6 +560,7 @@ async function finishPipelineRun(configName: string, originalTimeouts: OcttTimeo
             ? `Cancelled: ${passCount} pass, ${failCount} fail (${total} completed)`
             : `Complete: ${passCount} pass, ${failCount} fail (${total} total)`,
         results: lastResults,
+        runId,
     });
 }
 
@@ -591,7 +593,7 @@ export function clearRunHistory(): void {
     } catch { /* ignore */ }
 }
 
-function saveRunToHistory(configName: string, results: any[]): void {
+function saveRunToHistory(configName: string, results: any[]): string | null {
     try {
         const dir = path.dirname(HISTORY_FILE);
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -603,8 +605,9 @@ function saveRunToHistory(configName: string, results: any[]): void {
         const error = results.filter(r => r.verdict === "error").length;
         const total = results.length;
 
+        const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
         const entry: RunHistoryEntry = {
-            id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            id,
             timestamp: new Date().toISOString(),
             configName,
             total,
@@ -624,8 +627,11 @@ function saveRunToHistory(configName: string, results: any[]): void {
 
         fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2), "utf-8");
         pendingRunMetadata = {};
+
+        return id;
     } catch (e: any) {
         broadcastLog("error", `Failed to save run history: ${e.message}`, "dashboard");
+        return null;
     }
 }
 

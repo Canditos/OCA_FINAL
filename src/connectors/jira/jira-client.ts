@@ -548,6 +548,40 @@ export class JiraClient {
         return result.issues.length > 0 ? result.issues[0].key : null;
     }
 
+    /**
+     * Fetches tests belonging to a Test Execution using Xray Cloud GraphQL.
+     */
+    async getXrayTestExecutionTests(issueId: string, token: string): Promise<Array<{ key: string; testCaseName?: string }>> {
+        const query = `
+          query GetTestExecution($issueId: String!) {
+            getTestExecution(issueId: $issueId) {
+              tests(limit: 100) {
+                results {
+                  jira(fields: ["summary"]) {
+                    key
+                    summary
+                  }
+                }
+              }
+            }
+          }
+        `;
+        const response = await axios.post("https://xray.cloud.getxray.app/api/v2/graphql", {
+            query,
+            variables: { issueId }
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+        const results = response.data?.data?.getTestExecution?.tests?.results || [];
+        return results.map((r: any) => ({
+            key: r.jira?.key,
+            testCaseName: r.jira?.summary
+        }));
+    }
+
     async searchTestExecutions(testPlan: string): Promise<Array<{ key: string; summary?: string }>> {
         const escaped = testPlan.trim().replace(/"/g, '\\"');
         if (!escaped) return [];

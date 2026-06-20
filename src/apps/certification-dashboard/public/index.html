@@ -418,7 +418,10 @@
     <div id="history-details">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span style="font-size:10px;font-weight:700;color:var(--text-bright)" id="hd-title">Run Details</span>
-        <button class="sm" onclick="closeRunDetails()" style="flex:none">&#10005; Close</button>
+        <div style="display:flex;gap:8px">
+          <button class="sm" onclick="$('jira-upload-modal-bg').style.display='flex'" style="border-color:var(--accent);color:var(--accent)">&#8673; Upload to Jira</button>
+          <button class="sm" onclick="closeRunDetails()" style="flex:none">&#10005; Close</button>
+        </div>
       </div>
       <div class="charts-row">
         <div class="chart-container"><canvas id="chart-pie"></canvas></div>
@@ -596,12 +599,32 @@
 </div>
 
 
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL: Jira Upload Success
+     Shown after a successful upload to Jira.
+     OK button closes both this modal and the upload modal.
+     ══════════════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="jira-success-modal-bg" style="z-index:200">
+<div class="modal" style="width:min(400px,90vw)">
+  <div class="modal-head"><span>&#9989; Upload Successful</span></div>
+  <div class="modal-body" style="padding:20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px">
+    <div id="jira-success-msg" style="font-size:11px;color:var(--text-bright);font-weight:700;line-height:1.5"></div>
+    <div id="jira-success-detail" style="font-size:9px;color:var(--text-dim);line-height:1.5"></div>
+  </div>
+  <div class="modal-tools" style="border-top:1px solid var(--border);justify-content:center;padding:10px 18px">
+    <button class="sm primary" onclick="closeJiraSuccessModal()" style="padding:6px 24px">OK</button>
+  </div>
+</div>
+</div>
+
 <script>
 // ══════════════════════════════════════════════════════════════
 // SECTION: Global State & Constants
 // ══════════════════════════════════════════════════════════════
 
 /** Base API path (empty because the dashboard is served from the same origin) */
+let jiraUploadBatchRunId = null;
+let _loadedHistoryResults = [];
 const API='';
 
 /** Shorthand for document.getElementById */
@@ -1188,6 +1211,24 @@ function openJiraModal(testCaseId,verdict){
 function closeJiraModal(){$('jira-modal-bg').style.display='none'}
 
 /**
+ * Shows the success modal after a Jira upload completes.
+ * @param message - Main success message (HTML allowed)
+ * @param detail  - Additional detail text (HTML allowed, optional)
+ */
+function showJiraSuccessModal(message, detail){
+  $('jira-success-msg').innerHTML=message;
+  $('jira-success-detail').innerHTML=detail||'';
+  $('jira-success-modal-bg').style.display='flex';
+}
+
+/** Closes the Jira success modal and the underlying upload modal. */
+function closeJiraSuccessModal(){
+  $('jira-success-modal-bg').style.display='none';
+  $('jira-modal-bg').style.display='none';
+  $('jira-upload-modal-bg').style.display='none';
+}
+
+/**
  * Submits the Jira upload form. Creates or comments on a Jira issue.
  */
 async function uploadToJira(){
@@ -1206,9 +1247,16 @@ async function uploadToJira(){
       comment:$('inp-jira-comment').value
     })});
     const j=await r.json();
-    el.style.color=j.ok?'var(--pass)':'var(--danger)';
-    el.textContent=j.ok?`Uploaded to ${j.issueKey}: ${j.message}`:`Error: ${j.error}`;
-    addLog({timestamp:new Date().toISOString(),level:j.ok?'success':'error',message:j.ok?`Jira upload: ${j.issueKey}`:`Jira upload failed: ${j.error}`,service:'ui'});
+    if(j.ok){
+      el.style.color='var(--pass)';
+      el.textContent=`Uploaded to ${j.issueKey}: ${j.message}`;
+      addLog({timestamp:new Date().toISOString(),level:'success',message:`Jira upload: ${j.issueKey}`,service:'ui'});
+      showJiraSuccessModal(`Uploaded to ${j.issueKey}`, j.message);
+    }else{
+      el.style.color='var(--danger)';
+      el.textContent=`Error: ${j.error}`;
+      addLog({timestamp:new Date().toISOString(),level:'error',message:`Jira upload failed: ${j.error}`,service:'ui'});
+    }
   }catch(e){
     el.style.color='var(--danger)';
     el.textContent=`Error: ${e.message}`;
@@ -1285,6 +1333,7 @@ function togSuiteAll(suiteName){
 function selAll(){document.querySelectorAll('.tc-check').forEach(c=>c.checked=true);updCount()}
 function selNone(){document.querySelectorAll('.tc-check').forEach(c=>c.checked=false);updCount()}
 function selMaint(){document.querySelectorAll('.tc-check').forEach(c=>{c.checked=c.value.startsWith('tc_bi_')});updCount()}
+
 function selReboot(){
   const rebootTests=['TC_001_CS','TC_002_CS','TC_013_CS','TC_014_CS','TC_015_CS','TC_016_CS','TC_032_1_CS','TC_032_2_CS','TC_034_CS'];
   document.querySelectorAll('.tc-check').forEach(c=>{c.checked=rebootTests.includes(c.value)});
@@ -1902,6 +1951,11 @@ async function uploadExecutionToJira(){
       btn.style.borderColor='var(--pass)';
       btn.style.color='var(--pass)';
       addLog({timestamp:new Date().toISOString(),level:'success',message:`Jira upload: ${j.issueKey} (${j.url})`,service:'ui'});
+      showJiraSuccessModal('Upload successful!', [
+        `Issue: <a href="${j.url}" target="_blank" style="color:var(--accent)">${j.issueKey}</a>`,
+        `Total: ${j.summary.total} | Pass: ${j.summary.passed} | Fail: ${j.summary.failed}`,
+        `Pass Rate: ${j.summary.passRate}%`
+      ].join('<br>'));
     }else{
       throw new Error(j.error||'Unknown error');
     }
@@ -2114,3 +2168,5 @@ init();
 </script>
 </body>
 </html>
+
+

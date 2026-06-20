@@ -125,6 +125,7 @@ test.setTimeout(900_000);
 // ══════════════════════════════════════════════════════════════
 
 test('0a. Reset CDS to known idle state', async ({ request }) => {
+    test.skip(process.env.NEEDS_CDS === 'false', 'CDS skipped: no charging tests requested');
     const resp = await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/reset`);
     const body = await resp.json();
     if (!body.ok) {
@@ -135,6 +136,7 @@ test('0a. Reset CDS to known idle state', async ({ request }) => {
 });
 
 test('0b. Validate CDS (no errors, healthy state)', async ({ request }) => {
+    test.skip(process.env.NEEDS_CDS === 'false', 'CDS skipped: no charging tests requested');
     const resp = await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/validate`);
     const body = await resp.json();
     console.log(`[CDS] Validate: healthy=${body.healthy} status=${body.status} errors=${body.errors}`);
@@ -142,6 +144,7 @@ test('0b. Validate CDS (no errors, healthy state)', async ({ request }) => {
 });
 
 test('0c. Configure CDS (ISO 15118, DC, sink)', async ({ request }) => {
+    test.skip(process.env.NEEDS_CDS === 'false', 'CDS skipped: no charging tests requested');
     const resp = await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/configure-cds`, {
         data: { specification: 3, chargeMode: 2, sinkId: CONFIG.sinkId, mode: 2 },
     });
@@ -151,6 +154,7 @@ test('0c. Configure CDS (ISO 15118, DC, sink)', async ({ request }) => {
 });
 
 test('0d. Configure EV parameters (500V, 50A, 10kW)', async ({ request }) => {
+    test.skip(process.env.NEEDS_CDS === 'false', 'CDS skipped: no charging tests requested');
     const resp = await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/configure-ev`, {
         data: {
             EVMaximumVoltageLimit: 500,
@@ -362,15 +366,19 @@ test.afterAll(async ({ request }) => {
     }
 
     // Cleanup CDS: stop → reset → restore safe defaults
-    console.log('\n🛡️ CDS Cleanup...');
-    try {
-        await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/stop`);
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/reset`);
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/defaults`);
-        console.log('[CDS] Stopped, reset, safe defaults restored');
-    } catch {
-        console.log('[CDS] Cleanup error (non-fatal)');
+    if (process.env.NEEDS_CDS !== 'false') {
+        console.log('\n🛡️ CDS Cleanup...');
+        try {
+            await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/stop`);
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/reset`);
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/defaults`);
+            console.log('[CDS] Stopped, reset, safe defaults restored');
+        } catch {
+            console.log('[CDS] Cleanup error (non-fatal)');
+        }
+    } else {
+        console.log('\n🛡️ CDS Cleanup skipped (no charging tests run)');
     }
 });

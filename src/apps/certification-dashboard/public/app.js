@@ -42,6 +42,9 @@ let logCount = 0;
 /** ID of the test case currently being uploaded to Jira */
 let jiraUploadTc = '';
 
+/** Run ID to associate with Jira upload (set after pipeline completion) */
+let jiraUploadBatchRunId = null;
+
 /** Chart instances for history details */
 let pieChart = null;
 let barChart = null;
@@ -166,6 +169,7 @@ function handleWsMessage(msg) {
       break;
     case 'pipeline':
       updBanner(msg.data);
+      if (msg.data.runId) { jiraUploadBatchRunId = msg.data.runId; }
       if (msg.data.results) {
         renderResults(msg.data.results);
         renderResultsTable({ results: msg.data.results });
@@ -608,6 +612,18 @@ function openJiraModal(testCaseId, verdict) {
 
 function closeJiraModal() { $('jira-modal-bg').style.display = 'none'; }
 
+function showJiraSuccessModal(message, detail) {
+  $('jira-success-msg').innerHTML = message;
+  $('jira-success-detail').innerHTML = detail || '';
+  $('jira-success-modal-bg').style.display = 'flex';
+}
+
+function closeJiraSuccessModal() {
+  $('jira-success-modal-bg').style.display = 'none';
+  $('jira-modal-bg').style.display = 'none';
+  $('jira-upload-modal-bg').style.display = 'none';
+}
+
 async function uploadToJira() {
   const el = $('jira-upload-status');
   el.style.display = 'block';
@@ -626,9 +642,16 @@ async function uploadToJira() {
       })
     });
     const j = await r.json();
-    el.style.color = j.ok ? 'var(--pass)' : 'var(--danger)';
-    el.textContent = j.ok ? `Uploaded to ${j.issueKey}: ${j.message}` : `Error: ${j.error}`;
-    addLog({ timestamp: new Date().toISOString(), level: j.ok ? 'success' : 'error', message: j.ok ? `Jira upload: ${j.issueKey}` : `Jira upload failed: ${j.error}`, service: 'ui' });
+    if (j.ok) {
+      el.style.color = 'var(--pass)';
+      el.textContent = `Uploaded to ${j.issueKey}: ${j.message}`;
+      addLog({ timestamp: new Date().toISOString(), level: 'success', message: `Jira upload: ${j.issueKey}`, service: 'ui' });
+      showJiraSuccessModal(`Uploaded to ${j.issueKey}`, j.message);
+    } else {
+      el.style.color = 'var(--danger)';
+      el.textContent = `Error: ${j.error}`;
+      addLog({ timestamp: new Date().toISOString(), level: 'error', message: `Jira upload failed: ${j.error}`, service: 'ui' });
+    }
   } catch (e) {
     el.style.color = 'var(--danger)';
     el.textContent = `Error: ${e.message}`;
@@ -1227,6 +1250,7 @@ async function openJiraUploadModal(results) {
       populateJiraSelect('sel-jira-sut', j.metadata.suts, 'Select SUT...', true);
       populateJiraSelect('sel-jira-fw', j.metadata.firmwares, 'Select Firmware...', true);
       populateJiraSelect('sel-jira-plan', j.metadata.testPlans, 'Select Test Plan...', false);
+      setupJiraTestPlanExecutionDropdown();
       $('jira-upload-status').textContent = `${total} tests | ${passRate}% pass`;
       $('jira-upload-status').style.color = passRate >= 80 ? 'var(--pass)' : passRate >= 50 ? 'var(--warn)' : 'var(--danger)';
       $('jira-upload-error').style.display = 'none';
@@ -1242,6 +1266,12 @@ async function openJiraUploadModal(results) {
     populateJiraSelect('sel-jira-sut', [], 'Enter SUT manually...', true);
     populateJiraSelect('sel-jira-fw', [], 'Enter Firmware manually...', true);
     populateJiraSelect('sel-jira-plan', [], 'Enter Test Plan manually...', false);
+    setupJiraTestPlanExecutionDropdown();
+  }
+
+  // Auto-fill test execution key from previously loaded execution
+  if (typeof _loadedExecKey !== 'undefined' && _loadedExecKey) {
+    $('sel-jira-testexec').value = _loadedExecKey;
   }
 }
 
@@ -1325,6 +1355,11 @@ async function uploadExecutionToJira() {
       btn.style.borderColor = 'var(--pass)';
       btn.style.color = 'var(--pass)';
       addLog({ timestamp: new Date().toISOString(), level: 'success', message: `Jira upload: ${j.issueKey} (${j.url})`, service: 'ui' });
+      showJiraSuccessModal('Upload successful!', [
+        `Issue: <a href="${j.url}" target="_blank" style="color:var(--accent)">${j.issueKey}</a>`,
+        `Total: ${j.summary.total} | Pass: ${j.summary.passed} | Fail: ${j.summary.failed}`,
+        `Pass Rate: ${j.summary.passRate}%`
+      ].join('<br>'));
     } else {
       throw new Error(j.error || 'Unknown error');
     }
