@@ -41,6 +41,9 @@ export interface RunMetadata {
 export interface RunHistoryEntry {
     id: string;
     timestamp: string;
+    startTime?: string;
+    endTime?: string;
+    duration?: number;
     configName: string;
     total: number;
     pass: number;
@@ -293,6 +296,7 @@ export async function runPlaywright(testcaseNames: string[], configName: string)
     pendingRunMetadata = {};
     bootMetadataCapturedThisRun = false;
 
+    const pipelineStartTime = new Date().toISOString();
     const timeoutBatches = buildTimeoutBatches(testcaseNames);
     let originalTimeouts: OcttTimeouts | null = null;
 
@@ -314,7 +318,7 @@ export async function runPlaywright(testcaseNames: string[], configName: string)
         } catch (e: any) {
             broadcastLog("error", "Pipeline run error: " + e.message, "pipeline");
         } finally {
-            await finishPipelineRun(configName, originalTimeouts);
+            await finishPipelineRun(configName, originalTimeouts, pipelineStartTime);
             isRunning = false;
         }
     })();
@@ -537,10 +541,16 @@ async function captureCurrentTimeouts(configName: string): Promise<OcttTimeouts 
     }
 }
 
-async function finishPipelineRun(configName: string, originalTimeouts: OcttTimeouts | null) {
+async function finishPipelineRun(configName: string, originalTimeouts: OcttTimeouts | null, startTime?: string) {
     const passCount = lastResults.filter(r => r.verdict === "pass").length;
     const failCount = lastResults.filter(r => r.verdict === "fail").length;
     const total = lastResults.length;
+
+    const endTime = new Date().toISOString();
+    let duration: number | undefined;
+    if (startTime) {
+        duration = Math.round((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000);
+    }
 
     try {
         const octt = new OcttClient(effectiveConfig.octt);
@@ -552,7 +562,7 @@ async function finishPipelineRun(configName: string, originalTimeouts: OcttTimeo
     await applyTimeouts(configName, timeoutsToRestore);
     broadcastLog("info", "Pipeline finished. OCTT timeouts restored.", "playwright");
 
-    const runId = lastResults.length > 0 ? saveRunToHistory(configName, lastResults) : null;
+    const runId = lastResults.length > 0 ? saveRunToHistory(configName, lastResults, startTime, endTime, duration) : null;
 
     broadcastAll("pipeline", {
         state: aborted ? "cancelled" : (total > 0 ? "done" : "error"),
@@ -593,7 +603,7 @@ export function clearRunHistory(): void {
     } catch { /* ignore */ }
 }
 
-function saveRunToHistory(configName: string, results: any[]): string | null {
+function saveRunToHistory(configName: string, results: any[], startTime?: string, endTime?: string, duration?: number): string | null {
     try {
         const dir = path.dirname(HISTORY_FILE);
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -609,6 +619,9 @@ function saveRunToHistory(configName: string, results: any[]): string | null {
         const entry: RunHistoryEntry = {
             id,
             timestamp: new Date().toISOString(),
+            startTime,
+            endTime,
+            duration,
             configName,
             total,
             pass,

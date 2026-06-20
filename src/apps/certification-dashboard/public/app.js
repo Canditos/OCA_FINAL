@@ -1401,7 +1401,7 @@ async function fetchHistory() {
     populateHistoryFilters(historyCache);
     applyHistoryFilters();
   } catch (e) {
-    $('htbody').innerHTML = `<tr><td colspan="10" style="color:var(--text-dim);text-align:center;padding:16px">Error loading history: ${e.message}</td></tr>`;
+    $('htbody').innerHTML = `<tr><td colspan="11" style="color:var(--text-dim);text-align:center;padding:16px">Error loading history: ${e.message}</td></tr>`;
   }
 }
 
@@ -1441,9 +1441,16 @@ function applyHistoryFilters() {
   renderHistoryTriage(filtered);
 }
 
+function formatDuration(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
 function renderHistoryTable(history) {
   if (!history || !history.length) {
-    $('htbody').innerHTML = '<tr><td colspan="10" style="color:var(--text-dim);text-align:center;padding:16px">No past runs</td></tr>';
+    $('htbody').innerHTML = '<tr><td colspan="11" style="color:var(--text-dim);text-align:center;padding:16px">No past runs</td></tr>';
     return;
   }
   $('htbody').innerHTML = history.map((h, i) => {
@@ -1461,6 +1468,7 @@ function renderHistoryTable(history) {
       <td style="color:var(--pass)">${h.pass}</td>
       <td style="color:var(--fail)">${h.fail}</td>
       <td style="color:var(--inconc)">${h.inconc}</td>
+      <td style="color:var(--text-dim);font-family:var(--font)">${h.duration != null ? formatDuration(h.duration) : '—'}</td>
       <td style="color:${rateColor};font-weight:700">${h.passRate}%</td>
       <td style="text-align:right;color:var(--accent)">&#9654; View</td>
     </tr>`;
@@ -1527,6 +1535,7 @@ function showRunDetails(id) {
   if (entry.metadata?.sut) meta.push(`SUT ${entry.metadata.sut}`);
   if (entry.metadata?.firmwareVersion) meta.push(`FW ${entry.metadata.firmwareVersion}`);
   if (entry.metadata?.jiraIssueKey) meta.push(`Jira ${entry.metadata.jiraIssueKey}`);
+  if (entry.duration != null) meta.push(`Duration ${formatDuration(entry.duration)}`);
   const suffix = meta.length ? ` • ${meta.join(' • ')}` : '';
   $('hd-title').textContent = `Run — ${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (${entry.configName || '—'})${suffix}`;
 
