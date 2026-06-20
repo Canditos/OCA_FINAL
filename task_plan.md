@@ -7,3 +7,4 @@
 - [ ] Phase 3: Architect
 - [ ] Phase 4: Stylize
 - [ ] Phase 5: Trigger
+- [ ] Monday: Polish and validate Playwright tests requiring live CDS integration.
