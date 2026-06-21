@@ -395,6 +395,8 @@ function renderResults(results){
 function renderResultsTable(data){
   renderResults(data.results);
   const tbody=$('rtbody');
+  const btnUpload=$('btn-current-jira-upload');
+  if(btnUpload) btnUpload.style.display=data.results.length>0?'block':'none';
   if(!data.results.length){tbody.innerHTML='<tr><td colspan="5" style="color:var(--text-dim);text-align:center;padding:16px">No results</td></tr>';return}
   tbody.innerHTML=data.results.map((result,index)=>{
     const verdict=result.verdict.toLowerCase();
@@ -975,6 +977,20 @@ async function openJiraUploadModal(results){
     populateJiraSelect('sel-jira-fw',[],'Enter Firmware manually...',true);
     populateJiraSelect('sel-jira-plan',[],'Enter Test Plan manually...',false);
     setupJiraTestPlanExecutionDropdown();
+  }
+}
+
+async function openJiraUploadModalForCurrent(){
+  try{
+    const r=await fetch(API+'/api/results');
+    const j=await r.json();
+    if(j.results&&j.results.length>0){
+      openJiraUploadModal(j.results);
+    } else {
+      alert("No results to upload");
+    }
+  }catch(e){
+    alert("Error fetching results: " + e.message);
   }
 }
 
