@@ -20,7 +20,8 @@ function normalizeSutPayload(input: any): { action: string; body: any; payload: 
     if (typeof input === "string") {
         try {
             return normalizeSutPayload(JSON.parse(input));
-        } catch {
+        } catch (e: any) {
+            log("debug", `SUT payload JSON parse fallback: ${e.message}`, "sut");
             return { action: input, body: { raw: input }, payload: {} };
         }
     }

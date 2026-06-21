@@ -55,7 +55,11 @@ export function loadConfig(): SavedConfig {
             const parsed = JSON.parse(raw);
             return decryptConfig({ ...defaultConfig, ...parsed }) as SavedConfig;
         }
-    } catch { /* ignore */ }
+    } catch (e: any) {
+        if (existsSync(configPath)) {
+            console.warn("[Config] Failed to load config file:", e.message);
+        }
+    }
     return defaultConfig;
 }
 

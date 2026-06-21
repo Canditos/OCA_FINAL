@@ -14,12 +14,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "paths": {
-      "@domain/*": ["./src/domain/*"],
-      "@connectors/*": ["./src/connectors/*"],
-      "@schemas/*": ["./src/schemas/*"],
-      "@types/*": ["./src/types/*"]
-    }
+
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "tests"]

@@ -51,7 +51,8 @@ function decryptValue(value: string): string {
         const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
         decipher.setAuthTag(tag);
         return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString("utf8");
-    } catch {
+    } catch (e: any) {
+        console.warn("[crypto] Decryption failed:", e.message);
         return value; // Corrupted or wrong key — return as-is
     }
 }

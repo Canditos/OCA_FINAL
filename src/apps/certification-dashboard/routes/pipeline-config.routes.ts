@@ -8,6 +8,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { validate } from "../middleware/validate.js";
 import { z } from "zod";
+import { reloadPipelineConfig } from "../services/pipeline.service.js";
 
 const router = Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -37,7 +38,8 @@ function loadConfig(): PipelineConfig {
     try {
         const raw = fs.readFileSync(CONFIG_PATH, "utf-8");
         return JSON.parse(raw);
-    } catch {
+    } catch (e: any) {
+        console.warn("[pipeline-config] Failed to load config, using defaults:", e.message);
         return {
             rebootTests: [],
             timeouts: {
@@ -73,6 +75,7 @@ router.put("/timeouts", validate(timeoutUpdateSchema), (req, res) => {
         maxTimeDeviation,
     };
     saveConfig(config);
+    reloadPipelineConfig();
     res.json({ ok: true, timeouts: config.timeouts });
 });
 
@@ -85,6 +88,7 @@ router.put("/reboot-tests", validate(rebootTestsSchema), (req, res) => {
     const config = loadConfig();
     config.rebootTests = rebootTests;
     saveConfig(config);
+    reloadPipelineConfig();
     res.json({ ok: true, rebootTests });
 });
 

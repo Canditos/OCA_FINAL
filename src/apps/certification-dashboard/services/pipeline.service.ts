@@ -80,6 +80,8 @@ interface PipelineConfig {
     };
 }
 
+let _cachedConfig: PipelineConfig | null = null;
+
 function loadPipelineConfig(): PipelineConfig {
     try {
         const raw = fs.readFileSync(PIPELINE_CONFIG_PATH, "utf-8");
@@ -99,20 +101,31 @@ function loadPipelineConfig(): PipelineConfig {
     }
 }
 
+function getPipelineConfig(): PipelineConfig {
+    if (!_cachedConfig) {
+        _cachedConfig = loadPipelineConfig();
+    }
+    return _cachedConfig;
+}
+
+export function reloadPipelineConfig(): void {
+    _cachedConfig = null;
+}
+
 function getRebootTests(): string[] {
-    return loadPipelineConfig().rebootTests;
+    return getPipelineConfig().rebootTests;
 }
 
 function getChargingTests(): string[] {
-    return loadPipelineConfig().chargingTests || [];
+    return getPipelineConfig().chargingTests || [];
 }
 
 function getCdsResetEnabled(): boolean {
-    return loadPipelineConfig().cdsResetBeforeCharging ?? true;
+    return getPipelineConfig().cdsResetBeforeCharging ?? true;
 }
 
 function getTimeouts(profile: "default" | "reboot"): OcttTimeouts {
-    const config = loadPipelineConfig();
+    const config = getPipelineConfig();
     const t = config.timeouts[profile];
     return {
         max_timeout_period: String(t.maxTimeoutPeriod),
@@ -190,7 +203,7 @@ async function ensureCdsReady(): Promise<boolean> {
     } catch (e: any) {
         const elapsed = Date.now() - startTime;
         broadcastLog("warn", `CDS reset error (${elapsed}ms): ${e.message}, proceeding anyway`, "cds");
-        try { await cds.disconnect(); } catch { /* ignore */ }
+        try { await cds.disconnect(); } catch (e: any) { broadcastLog("warn", `CDS disconnect error: ${e.message}`, "pipeline"); }
         return true; // Don't block pipeline on CDS errors
     }
 }
@@ -256,7 +269,7 @@ function parseBootMetadataFromLogLine(line: string): RunMetadata | null {
             if (Array.isArray(parsed) && parsed[2] === "BootNotification" && parsed[3] && typeof parsed[3] === "object") {
                 payload = parsed[3];
             }
-        } catch { /* ignore parse errors */ }
+        } catch (e: any) { broadcastLog("warn", `BootNotification frame parse error: ${e.message}`, "pipeline"); }
     }
 
     if (!payload) {
@@ -264,7 +277,7 @@ function parseBootMetadataFromLogLine(line: string): RunMetadata | null {
         if (payloadMatch) {
             try {
                 payload = JSON.parse(payloadMatch[1]);
-            } catch { /* ignore parse errors */ }
+            } catch (e: any) { broadcastLog("warn", `BootNotification payload parse error: ${e.message}`, "pipeline"); }
         }
     }
 
@@ -336,7 +349,7 @@ async function executePhase(tests: string[], configName: string, profile: Timeou
     try {
         await retryOctt(() => octt.stopSession(), "stop session", 2);
         await new Promise(r => setTimeout(r, 1500));
-    } catch { /* ignore */ }
+    } catch (e: any) { broadcastLog("warn", `Error stopping previous session: ${e.message}`, "pipeline"); }
 
     // If this batch contains charging tests, ensure CDS is ready (stopped state)
     if (batchNeedsCds(tests)) {
@@ -367,7 +380,7 @@ async function executePhase(tests: string[], configName: string, profile: Timeou
                 if (i < 10 || (i + 1) % 10 === 0) {
                     broadcastLog("info", `Waiting for SUT connection... (${i + 1}s)`, "playwright");
                 }
-            } catch { /* ignore */ }
+            } catch (e: any) { broadcastLog("warn", `SUT status check error: ${e.message}`, "pipeline"); }
         }
     } catch (e: any) {
         broadcastLog("error", `OCTT session failed after retries: ${e.message}`, "playwright");
@@ -555,7 +568,7 @@ async function finishPipelineRun(configName: string, originalTimeouts: OcttTimeo
     try {
         const octt = new OcttClient(effectiveConfig.octt);
         await retryOctt(() => octt.stopSession(), "stop session (finish)", 2);
-    } catch { /* ignore */ }
+    } catch (e: any) { broadcastLog("warn", `Error stopping session on finish: ${e.message}`, "pipeline"); }
 
     // Always restore the original timeout profile so non-reboot runs are never contaminated.
     const timeoutsToRestore = originalTimeouts ?? getTimeouts("default");
@@ -593,14 +606,14 @@ export function getRunHistory(): RunHistoryEntry[] {
             const raw = fs.readFileSync(HISTORY_FILE, "utf-8");
             return JSON.parse(raw) as RunHistoryEntry[];
         }
-    } catch { /* ignore corrupt file */ }
+    } catch (e: any) { broadcastLog("warn", `Corrupt history file, ignoring: ${e.message}`, "pipeline"); }
     return [];
 }
 
 export function clearRunHistory(): void {
     try {
         fs.writeFileSync(HISTORY_FILE, "[]", "utf-8");
-    } catch { /* ignore */ }
+    } catch (e: any) { broadcastLog("warn", `Failed to clear history file: ${e.message}`, "pipeline"); }
 }
 
 function saveRunToHistory(configName: string, results: any[], startTime?: string, endTime?: string, duration?: number): string | null {

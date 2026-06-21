@@ -21,7 +21,8 @@ function maskConfig(cfg: Record<string, unknown>): string {
             try {
                 const url = new URL(v);
                 masked[k] = url.hostname;
-            } catch {
+            } catch (e: any) {
+                console.debug("[config] URL parse error during masking:", e.message);
                 masked[k] = v;
             }
         } else {

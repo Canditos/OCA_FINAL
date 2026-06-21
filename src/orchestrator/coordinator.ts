@@ -374,8 +374,8 @@ export class Orchestrator {
             await this.cds.disconnect();
             await this.octt.stopSession();
             this.emit("Cleanup complete");
-        } catch {
-            this.emit("Cleanup error (non-fatal)");
+        } catch (e: any) {
+            this.emit("Cleanup error (non-fatal): " + e.message);
         }
     }
 }

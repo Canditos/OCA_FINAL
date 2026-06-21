@@ -61,7 +61,8 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
                 next();
                 return;
             }
-        } catch {
+        } catch (e: any) {
+            console.debug("[auth] Invalid Basic Auth header:", e.message);
             // fall through to 401
         }
     }

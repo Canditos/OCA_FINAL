@@ -206,8 +206,8 @@ export class CdsClient {
                             subscription?.unsubscribe();
                             resolve(response.parafault === 0);
                         }
-                    } catch {
-                        // ignore parse errors for unrelated packets
+                    } catch (e: any) {
+                        console.debug("[CDS] Ignoring parse error for unrelated packet:", e.message);
                     }
                 });
 
@@ -446,7 +446,8 @@ export class CdsClient {
 
             // Step 5: Wait for the cycle to complete (back to Stopped)
             return await this.waitForStatus(CdsStatus.Stopped, 15000);
-        } catch {
+        } catch (e: any) {
+            console.warn("[CDS] Reset failed:", e.message);
             return false;
         }
     }

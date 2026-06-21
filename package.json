@@ -6,18 +6,13 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "dev:octt": "tsx src/mcp-servers/octt/index.ts",
-    "dev:cds": "tsx src/mcp-servers/cds/index.ts",
-    "dev:jira": "tsx src/mcp-servers/jira/index.ts",
-    "dev:orchestrator": "tsx src/mcp-servers/orchestrator/index.ts",
+    "dev": "tsx src/apps/certification-dashboard/server.ts",
     "dev:cert": "tsx src/apps/certification-dashboard/server.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dev:dashboard": "tsx src/apps/cds-dashboard/server.ts",
-    "start": "tsx src/apps/cds-dashboard/launcher.ts"
+    "start": "tsx src/apps/certification-dashboard/server.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/ws": "^8.18.1",
@@ -37,7 +32,6 @@
     "@types/supertest": "^7.2.0",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
-    "cypress": "^15.14.0",
     "dotenv": "^17.4.2",
     "supertest": "^7.2.2",
     "tsx": "^4.19.0",

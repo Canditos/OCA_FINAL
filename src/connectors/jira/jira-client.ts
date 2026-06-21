@@ -91,6 +91,7 @@ export class JiraClient {
 
         this.axios = axios.create({
             baseURL: `${config.baseUrl.replace(/\/+$/, "")}/rest/api/3`,
+            timeout: 30000,
             headers: {
                 Authorization: `Basic ${auth}`,
                 Accept: "application/json",
@@ -580,6 +581,44 @@ export class JiraClient {
             key: r.jira?.key,
             testCaseName: r.jira?.summary
         }));
+    }
+
+    async searchTestPlans(): Promise<Array<{ key: string; summary?: string }>> {
+        const jql = `project = "${this.projectKey}" AND issuetype = "Test Plan" ORDER BY updated DESC`;
+        const result = await this.search(jql, ["summary"], 100);
+        return result.issues.map((issue) => ({
+            key: issue.key,
+            summary: typeof issue.fields.summary === "string" ? issue.fields.summary : undefined,
+        }));
+    }
+
+    async getXrayExecutionCustomFields(issueId: string, token: string): Promise<Array<{ id: string; values: string[] }>> {
+        const query = `
+          query GetTestExecution($issueId: String!) {
+            getTestExecution(issueId: $issueId) {
+              testRuns(limit: 1) {
+                results {
+                  customFields {
+                    id
+                    values
+                  }
+                }
+              }
+            }
+          }
+        `;
+        const response = await axios.post("https://xray.cloud.getxray.app/api/v2/graphql", {
+            query,
+            variables: { issueId }
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+        const runs = response.data?.data?.getTestExecution?.testRuns?.results || [];
+        const firstRun = runs[0];
+        return firstRun?.customFields || [];
     }
 
     async searchTestExecutions(testPlan: string): Promise<Array<{ key: string; summary?: string }>> {
