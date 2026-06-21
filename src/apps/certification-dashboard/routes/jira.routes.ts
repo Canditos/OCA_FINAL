@@ -81,7 +81,7 @@ router.get("/metadata", async (_req, res) => {
                 if (dutField && dutField.values) {
                     suts = dutField.values.filter((v: string) => v !== "no run (SKIPPED or BLOCKED)");
                 }
-                log("info", `Xray custom fields: ${firmwares.length} FW versions, ${suts.length} SUTs`, "jira");
+                log("debug", `Xray custom fields: ${firmwares.length} FW versions, ${suts.length} SUTs`, "jira");
             } else {
                 log("warn", "Xray credentials not configured — skipping custom field fetch", "jira");
             }
@@ -117,7 +117,7 @@ router.get("/metadata", async (_req, res) => {
         try {
             const plans = await withTimeout(client.searchTestPlans(), METADATA_TIMEOUT_MS);
             testPlans = plans.map(p => p.key + (p.summary ? ` — ${p.summary}` : ""));
-            log("info", `Found ${testPlans.length} Test Plans in Jira`, "jira");
+            log("debug", `Found ${testPlans.length} Test Plans in Jira`, "jira");
         } catch (err: any) {
             // silent: client method may not be available
         }

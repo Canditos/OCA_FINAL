@@ -101,7 +101,7 @@ function connectSSE(){
       fetchResults();
       updBtns(false);
       if(p.results&&p.results.length>0){
-        setTimeout(()=>openJiraUploadModal(p.results),10000);
+        setTimeout(()=>openJiraUploadModal(p.results),500);
       }
     }
   });
