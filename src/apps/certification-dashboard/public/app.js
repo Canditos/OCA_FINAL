@@ -930,6 +930,14 @@ async function openJiraUploadModal(results){
   if(!modal){console.warn('openJiraUploadModal: modal not found');return}
   modal.style.display='flex';
   
+  const btn=$('btn-jira-exec-upload');
+  if(btn){
+    btn.disabled=false;
+    btn.innerHTML='&#128227; Upload to Jira';
+    btn.style.borderColor='';
+    btn.style.color='';
+  }
+  
   $('jira-exec-upload-status').textContent='Loading Jira metadata...';
   $('jira-exec-upload-status').style.color='var(--warn)';
   
@@ -998,6 +1006,14 @@ async function openJiraUploadModalFromHistory(){
   const modal=$('jira-upload-modal-bg');
   if(!modal){console.warn('openJiraUploadModalFromHistory: modal not found');return}
   modal.style.display='flex';
+  
+  const btn=$('btn-jira-exec-upload');
+  if(btn){
+    btn.disabled=false;
+    btn.innerHTML='&#128227; Upload to Jira';
+    btn.style.borderColor='';
+    btn.style.color='';
+  }
 
   $('jira-exec-upload-status').textContent='Loading Jira metadata...';
   $('jira-exec-upload-status').style.color='var(--warn)';

@@ -50,6 +50,7 @@ export function startSutRelay() {
                 log("info", `SUT Relay: ${msg.operation} -> ${targetUrl}`, "sut-relay");
                 
                 let success = false;
+                let isSupported = true;
                 try {
                     const resp = await axios({
                         method: msg.method || "POST",
@@ -58,6 +59,9 @@ export function startSutRelay() {
                         timeout: 30000,
                         validateStatus: () => true
                     });
+                    if (resp.status === 501) {
+                        isSupported = false;
+                    }
                     success = [200, 201, 204].includes(resp.status);
                     log("info", `SUT Relay Response: ${resp.status} -> ${success ? "OK" : "NOK"}`, "sut-relay");
                 } catch (err: any) {
@@ -65,11 +69,13 @@ export function startSutRelay() {
                     success = false;
                 }
 
-                if (ws?.readyState === WebSocket.OPEN) {
+                if (isSupported && ws?.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({
                         id: msg.id,
                         status: success ? "OK" : "NOK"
                     }));
+                } else if (!isSupported) {
+                    log("info", `SUT Relay: Ignored ${msg.operation} (501) so OCTT leaves prompt open for manual intervention.`, "sut-relay");
                 }
             } catch (e: any) {
                 log("error", `SUT Relay message error: ${e.message}`, "sut-relay");

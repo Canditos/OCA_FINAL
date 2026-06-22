@@ -23,6 +23,14 @@ const PIPELINE_CONFIG_PATH = path.resolve(__dirname, "../config/pipeline.config.
 let playwrightProcess: ChildProcess | null = null;
 let isRunning = false;
 let aborted = false;
+
+export let isCdsLogicalPluggedIn = false;
+export function setCdsLogicalPluggedIn(state: boolean) {
+    isCdsLogicalPluggedIn = state;
+}
+
+export let currentRunningTestId: string | null = null;
+
 let lastResults: any[] = [];
 let verdictMap = new Map<string, { verdict: string; duration: number }>();
 let pendingRunMetadata: RunMetadata = {};
@@ -136,10 +144,19 @@ function getTimeouts(profile: "default" | "reboot"): OcttTimeouts {
 
 /**
  * Checks if any tests in the batch require CDS (charging tests).
+ * Instead of maintaining a huge explicit list, we configure the CDS by default
+ * UNLESS the batch exclusively contains tests we know for sure don't need it
+ * (like pure offline, reboot, or maintenance tests).
  */
 function batchNeedsCds(tests: string[]): boolean {
-    const chargingTests = getChargingTests();
-    return tests.some(t => chargingTests.includes(t));
+    const nonChargingSuites = [
+        'tc_bi_', // Maintenance
+        'TC_001_CS', 'TC_002_CS' // ColdBoot
+    ];
+    
+    // If there is ANY test in this batch that is NOT in the non-charging list,
+    // we assume it might need the CDS, so we configure it.
+    return tests.some(t => !nonChargingSuites.some(prefix => t.startsWith(prefix)));
 }
 
 /**
@@ -162,6 +179,14 @@ async function ensureCdsReady(): Promise<boolean> {
     }
 
     broadcastLog("info", `Ensuring CDS ready at ${ip}:${port}...`, "cds");
+    try {
+        const dashboardPort = process.env.CERT_DASHBOARD_PORT || 3101;
+        const cdsId = `cds-${ip.replace(/\./g, "-")}-${port}`;
+        await axios.post(`http://127.0.0.1:${dashboardPort}/api/i/${cdsId}/stop`, {}, { timeout: 10000 });
+        isCdsLogicalPluggedIn = false;
+    } catch (e: any) {
+        broadcastLog("warn", `Failed to stop CDS before batch: ${e.message}`, "cds");
+    }
     
     const cds = new CdsClient(ip, port);
     const startTime = Date.now();
@@ -436,8 +461,29 @@ async function executePhase(tests: string[], configName: string, profile: Timeou
                 const execMatch = line.match(/\[OCTT\] Executing\s+(\S+)/);
                 if (execMatch) {
                     currentTestId = execMatch[1].replace(/\.+$/, "");
+                    currentRunningTestId = currentTestId;
                     seenInPhase.add(currentTestId);
                     continue;
+                }
+
+                if (/SUT__CONNECTED/i.test(line) && isCdsLogicalPluggedIn) {
+                    broadcastLog("info", "SUT Reconnected and EV was logically plugged in. Auto-recovering CDS state...", "playwright");
+                    const port = process.env.CERT_DASHBOARD_PORT ?? "3101";
+                    const cdsId = `cds-${effectiveConfig.cds.ip.replace(/\./g, "-")}-${effectiveConfig.cds.port}`;
+                    axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/start`).catch(err => {
+                        broadcastLog("error", `Failed to auto-recover CDS state: ${err.message}`, "playwright");
+                    });
+                }
+
+                const promptMatch = line.match(/\[api\]\s+Please (plug in|unplug)/i);
+                if (promptMatch) {
+                    const action = promptMatch[1].toLowerCase().includes("plug in") ? "plugin" : "plugout";
+                    broadcastLog("info", `Playwright intercepted API prompt to ${action}. Triggering CDS...`, "playwright");
+                    const port = process.env.CERT_DASHBOARD_PORT ?? "3101";
+                    const cdsId = `cds-${effectiveConfig.cds.ip.replace(/\./g, "-")}-${effectiveConfig.cds.port}`;
+                    axios.post(`http://127.0.0.1:${port}/api/sut/${action}`).catch(err => {
+                        broadcastLog("error", `Failed to auto-trigger CDS on prompt: ${err.message}`, "playwright");
+                    });
                 }
 
                 const verdictMatch = line.match(/\s*→\s+(\S+):\s+(PASS|FAIL|ERROR|INCONC)\s+\(([\d.]+)s\)/i);
@@ -590,8 +636,18 @@ async function finishPipelineRun(configName: string, originalTimeouts: OcttTimeo
 export function stopPlaywright(): void {
     if (playwrightProcess) {
         aborted = true;
-        playwrightProcess.kill("SIGTERM");
-        playwrightProcess = null;
+        const pid = playwrightProcess.pid;
+        
+        if (process.platform === 'win32') {
+            import('child_process').then(cp => {
+                cp.exec(`taskkill /pid ${pid} /T /F`, (err) => {
+                    if (err) broadcastLog("error", `Failed to kill Playwright tree: ${err.message}`, "pipeline");
+                });
+            });
+        } else {
+            playwrightProcess.kill("SIGTERM");
+        }
+        
         broadcastAll("pipeline", { state: "cancelled", message: "Aborting by user..." });
     }
 }

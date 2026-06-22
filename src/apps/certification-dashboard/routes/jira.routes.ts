@@ -39,7 +39,7 @@ router.post("/check", async (_req, res) => {
 let metadataCache: any = null;
 let metadataCacheTime = 0;
 
-const METADATA_TIMEOUT_MS = 8000;
+const METADATA_TIMEOUT_MS = 30000;
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
     return Promise.race([

@@ -9,7 +9,7 @@
 import { Router } from "express";
 import { log } from "./logs.routes.js";
 import { broadcast } from "../services/sse.service.js";
-import { annotateLatestRun } from "../services/pipeline.service.js";
+import { annotateLatestRun, setCdsLogicalPluggedIn } from "../services/pipeline.service.js";
 
 const router = Router();
 
@@ -191,20 +191,43 @@ router.use(async (req, res) => {
         
         if (req.url.includes("plugin")) {
             log("info", "[SUT Bridge] Translating 'plugin' to CDS Start...", "sut");
+            setCdsLogicalPluggedIn(true);
             await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/start`);
         } else if (req.url.includes("plugout") || req.url.includes("unplug")) {
             log("info", "[SUT Bridge] Translating 'plugout' to CDS Stop...", "sut");
+            setCdsLogicalPluggedIn(false);
             await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/stop`);
         } else if (req.url.includes("authorize") || req.url.includes("rfid") || req.url.includes("pin")) {
-            log("info", "[SUT Bridge] Triggering automatic Keypad Authentication...", "sut");
+            const urlObj = new URL(req.url, 'http://localhost');
+            const id = urlObj.searchParams.get("id") || (req.query?.id as string) || "111111";
+            const connectorId = urlObj.searchParams.get("connector_id") || (req.query?.connector_id as string) || "3";
+            
+            if (id === "ABCDEF12") {
+                log("warn", "==========================================================", "sut");
+                log("warn", `🚨 [TESTE CACHE] PASSA O CARTÃO FÍSICO ${id} NO POSTO AGORA!`, "sut");
+                log("warn", "==========================================================", "sut");
+                return res.json({ ok: true, status: "Waiting for manual swipe" });
+            }
+
+            log("info", `[SUT Bridge] Triggering automatic Keypad Authentication for connector ${connectorId} with PIN ${id}...`, "sut");
             const { authenticateViaKeypad } = await import("../services/sut-automation.service.js");
             // Run asynchronously so we don't block the HTTP response
-            authenticateViaKeypad().catch(err => {
+            authenticateViaKeypad(id, connectorId).catch(err => {
                  log("error", `[SUT Bridge] Keypad automation failed: ${err.message}`, "sut");
             });
+        } else if (req.url.includes("reboot")) {
+            log("warn", "=========================================================================", "sut");
+            log("warn", "🚨 AÇÃO MANUAL NECESSÁRIA: Por favor, reinicie o posto FISICAMENTE AGORA!", "sut");
+            log("warn", "=========================================================================", "sut");
+            // We return OK so OCTT dismisses the prompt and starts waiting for StatusNotification.
+            // The human operator must manually reboot the charger.
+        } else {
+            log("warn", `[SUT Bridge] Unsupported operation: ${req.url}. Returning 501 so OCTT prompts the user.`, "sut");
+            return res.status(501).json({ ok: false, error: "Not Implemented" });
         }
     } catch (e: any) {
         log("error", `[SUT Bridge] Failed to control CDS: ${e.message}`, "sut");
+        return res.status(500).json({ ok: false, error: e.message });
     }
     res.json({ ok: true, status: "Accepted by SUT Bridge" });
 });

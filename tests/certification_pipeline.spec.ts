@@ -212,6 +212,28 @@ Object.entries(testSuites).forEach(([suiteName, tests]) => {
             test(`Execute ${testId}`, async ({ request }) => {
                 console.log(`[OCTT] Executing ${testId}...`);
 
+                let originalTag = "111111";
+                const PHYSICAL_TAG = "ABCDEF12";
+
+                if (testId === 'TC_007_1_CS') {
+                    console.log(`[OCTT] Preparando para injetar tag física (${PHYSICAL_TAG}) no PIXIT...`);
+                    if (sessionStarted) {
+                        await request.post(`${CONFIG.octtBaseUrl}/session/stop`, { headers: authHeader });
+                        sessionStarted = false;
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+
+                    const cfgUrl = `${CONFIG.octtBaseUrl}${versionedPath}/configurations/${encodeURIComponent(CONFIG.configurationName)}`;
+                    const cfgResp = await request.get(cfgUrl, { headers: authHeader });
+                    if (cfgResp.ok()) {
+                        const cfgBody = await cfgResp.json();
+                        originalTag = cfgBody.data.config["ValidIdTag"] || "111111";
+                        cfgBody.data.config["ValidIdTag"] = PHYSICAL_TAG;
+                        await request.put(cfgUrl, { headers: authHeader, data: cfgBody.data.config });
+                        console.log(`[OCTT] PIXIT atualizado com ValidIdTag = ${PHYSICAL_TAG}`);
+                    }
+                }
+
                 // ── Fallback session start ──
                 // When running with --grep (subset of tests), the global
                 // "Start OCTT session" test may be skipped. Each test case
@@ -317,6 +339,23 @@ Object.entries(testSuites).forEach(([suiteName, tests]) => {
 
                 // Brief pause between tests to let the SUT settle after heavy operations
                 await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                if (testId === 'TC_007_1_CS') {
+                    if (sessionStarted) {
+                        await request.post(`${CONFIG.octtBaseUrl}/session/stop`, { headers: authHeader });
+                        sessionStarted = false;
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+
+                    const cfgUrl = `${CONFIG.octtBaseUrl}${versionedPath}/configurations/${encodeURIComponent(CONFIG.configurationName)}`;
+                    const cfgResp = await request.get(cfgUrl, { headers: authHeader });
+                    if (cfgResp.ok()) {
+                        const cfgBody = await cfgResp.json();
+                        cfgBody.data.config["ValidIdTag"] = originalTag;
+                        await request.put(cfgUrl, { headers: authHeader, data: cfgBody.data.config });
+                        console.log(`[OCTT] PIXIT restaurado para ValidIdTag = ${originalTag}`);
+                    }
+                }
             });
         }
     });

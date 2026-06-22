@@ -202,13 +202,25 @@ server.listen(PORT, async () => {
             
             if (req.url.includes("plugin")) {
                 log("info", "[SUT Bridge] Translating 'plugin' to CDS Start...", "sut");
-                await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/start`);
+                setTimeout(() => {
+                    axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/start`).catch(err => log("error", `[SUT Bridge] Failed CDS Start: ${err.message}`, "sut"));
+                }, 1000);
             } else if (req.url.includes("plugout") || req.url.includes("unplug")) {
                 log("info", "[SUT Bridge] Translating 'plugout' to CDS Stop...", "sut");
-                await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/stop`);
+                setTimeout(() => {
+                    axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/stop`).catch(err => log("error", `[SUT Bridge] Failed CDS Stop: ${err.message}`, "sut"));
+                }, 1000);
+            } else if (req.url.includes("reboot")) {
+                log("warn", "=========================================================================", "sut");
+                log("warn", "🚨 AÇÃO MANUAL NECESSÁRIA: Por favor, reinicie o posto FISICAMENTE AGORA!", "sut");
+                log("warn", "=========================================================================", "sut");
+            } else {
+                log("warn", `[SUT Bridge] Unsupported operation on 3100: ${req.url}. Returning 501.`, "sut");
+                return res.status(501).json({ ok: false, error: "Not Implemented" });
             }
         } catch (e: any) {
             log("error", `[SUT Bridge] Failed to control CDS: ${e.message}`, "sut");
+            return res.status(500).json({ ok: false, error: e.message });
         }
         
         res.json({ ok: true, status: "Accepted by SUT Bridge" });
