@@ -1,5 +1,5 @@
 {
-  "rebootTests": ["TC_001_CS", "TC_002_CS", "TC_013_CS", "TC_014_CS", "TC_015_CS", "TC_016_CS", "TC_032_1_CS", "TC_032_2_CS", "TC_034_CS"],
+  "rebootTests": ["TC_001_CS", "TC_002_CS", "TC_013_CS", "TC_014_CS", "TC_015_CS", "TC_016_CS", "TC_032_1_CS", "TC_032_2_CS", "TC_034_CS", "TC_085_CS", "TC_086_CS"],
   "chargingTests": ["TC_003_CS", "TC_004_1_CS", "TC_004_2_CS", "TC_005_1_CS", "TC_005_2_CS", "TC_005_3_CS", "TC_068_CS", "TC_069_CS", "TC_007_1_CS", "TC_007_2_CS", "TC_061_1_CS", "TC_061_2_CS", "TC_010_CS", "TC_011_1_CS", "TC_011_2_CS", "TC_012_CS"],
   "cdsResetBeforeCharging": true,
   "cdsResetTimeoutMs": 15000,

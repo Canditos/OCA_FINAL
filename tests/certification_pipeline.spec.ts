@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // ══════════════════════════════════════════════════════════════
 // CERTIFICATION PIPELINE — CDS + OCTT (Playwright)
@@ -106,14 +108,112 @@ const testSuites: Record<string, string[]> = {
 /** Tests that involve a charge point reboot and need extra recovery time */
 const REBOOT_TESTS = ['TC_001_CS', 'TC_002_CS', 'TC_013_CS', 'TC_014_CS', 'TC_015_CS', 'TC_016_CS', 'TC_032_1_CS', 'TC_032_2_CS', 'TC_034_CS'];
 
+/** State shared between hooks */
+const testHookState: Record<string, string> = {};
+
+type TestHook = {
+    before?: (request: any) => Promise<void>;
+    after?: (request: any) => Promise<void>;
+};
+
+const testHooks: Record<string, TestHook> = {
+    'TC_007_1_CS': {
+        before: async (request) => {
+            const PHYSICAL_TAG = "ABCDEF12";
+            console.log(`[OCTT] Preparando para injetar tag física (${PHYSICAL_TAG}) no PIXIT...`);
+            if (sessionStarted) {
+                await request.post(`${CONFIG.octtBaseUrl}/session/stop`, { headers: authHeader });
+                sessionStarted = false;
+                await new Promise(r => setTimeout(r, 2000));
+            }
+            const cfgUrl = `${CONFIG.octtBaseUrl}${versionedPath}/configurations/${encodeURIComponent(CONFIG.configurationName)}`;
+            const cfgResp = await request.get(cfgUrl, { headers: authHeader });
+            if (cfgResp.ok()) {
+                const cfgBody = await cfgResp.json();
+                testHookState['ValidIdTag'] = cfgBody.data.config["ValidIdTag"] || "111111";
+                cfgBody.data.config["ValidIdTag"] = PHYSICAL_TAG;
+                await request.put(cfgUrl, { headers: authHeader, data: cfgBody.data.config });
+                console.log(`[OCTT] PIXIT atualizado com ValidIdTag = ${PHYSICAL_TAG}`);
+            }
+        },
+        after: async (request) => {
+            if (sessionStarted) {
+                await request.post(`${CONFIG.octtBaseUrl}/session/stop`, { headers: authHeader });
+                sessionStarted = false;
+                await new Promise(r => setTimeout(r, 2000));
+            }
+            const cfgUrl = `${CONFIG.octtBaseUrl}${versionedPath}/configurations/${encodeURIComponent(CONFIG.configurationName)}`;
+            const cfgResp = await request.get(cfgUrl, { headers: authHeader });
+            if (cfgResp.ok() && testHookState['ValidIdTag']) {
+                const cfgBody = await cfgResp.json();
+                cfgBody.data.config["ValidIdTag"] = testHookState['ValidIdTag'];
+                await request.put(cfgUrl, { headers: authHeader, data: cfgBody.data.config });
+                console.log(`[OCTT] PIXIT restaurado para ValidIdTag = ${testHookState['ValidIdTag']}`);
+            }
+        }
+    },
+    'TC_080_CS': {
+        before: async (request) => {
+            console.log(`[OCTT] Preparando PIXIT para Atualização de Firmware Seguro (TC_080_CS)...`);
+            if (sessionStarted) {
+                await request.post(`${CONFIG.octtBaseUrl}/session/stop`, { headers: authHeader });
+                sessionStarted = false;
+                await new Promise(r => setTimeout(r, 2000));
+            }
+
+            const cert = fs.readFileSync(path.join(process.cwd(), 'valid-cert.txt'), 'utf8');
+            const sig = fs.readFileSync(path.join(process.cwd(), 'valid-signature.txt'), 'utf8');
+
+            const cfgUrl = `${CONFIG.octtBaseUrl}${versionedPath}/configurations/${encodeURIComponent(CONFIG.configurationName)}`;
+            const cfgResp = await request.get(cfgUrl, { headers: authHeader });
+            
+            if (cfgResp.ok()) {
+                const cfgBody = await cfgResp.json();
+                
+                // Save original values
+                testHookState['FirmwareUpdateUrl'] = cfgBody.data.config["FirmwareUpdateUrl"] || "";
+                testHookState['SigningCertificate'] = cfgBody.data.config["SigningCertificate"] || "";
+                testHookState['FirmwareSignature'] = cfgBody.data.config["FirmwareSignature"] || "";
+                
+                // Inject new values
+                // NOTE: Adjust the FTP URL placeholder here to point to your real FTP server!
+                cfgBody.data.config["FirmwareUpdateUrl"] = "ftp://IP_DO_SEU_FTP/hotfix.swu";
+                cfgBody.data.config["SigningCertificate"] = cert;
+                cfgBody.data.config["FirmwareSignature"] = sig;
+                
+                await request.put(cfgUrl, { headers: authHeader, data: cfgBody.data.config });
+                console.log(`[OCTT] PIXIT atualizado com URL FTP, Certificado e Assinatura para o hotfix.swu`);
+            }
+        },
+        after: async (request) => {
+            if (sessionStarted) {
+                await request.post(`${CONFIG.octtBaseUrl}/session/stop`, { headers: authHeader });
+                sessionStarted = false;
+                await new Promise(r => setTimeout(r, 2000));
+            }
+            const cfgUrl = `${CONFIG.octtBaseUrl}${versionedPath}/configurations/${encodeURIComponent(CONFIG.configurationName)}`;
+            const cfgResp = await request.get(cfgUrl, { headers: authHeader });
+            if (cfgResp.ok()) {
+                const cfgBody = await cfgResp.json();
+                if (testHookState['FirmwareUpdateUrl'] !== undefined) cfgBody.data.config["FirmwareUpdateUrl"] = testHookState['FirmwareUpdateUrl'];
+                if (testHookState['SigningCertificate'] !== undefined) cfgBody.data.config["SigningCertificate"] = testHookState['SigningCertificate'];
+                if (testHookState['FirmwareSignature'] !== undefined) cfgBody.data.config["FirmwareSignature"] = testHookState['FirmwareSignature'];
+                
+                await request.put(cfgUrl, { headers: authHeader, data: cfgBody.data.config });
+                console.log(`[OCTT] PIXIT restaurado para os valores originais de Firmware`);
+            }
+        }
+    }
+};
+
 /** Accumulated results for the final summary report */
 const results: { suite: string; testCase: string; verdict: string; duration: number }[] = [];
 
 /** Tracks whether the OCTT session has been started */
 let sessionStarted = process.env.OCTT_SESSION_STARTED === "true";
 
-// Run tests sequentially — OCTT does not support parallel sessions
-test.describe.configure({ mode: 'serial' });
+// Run tests sequentially — workers: 1 in playwright.config.ts already guarantees this.
+// We DO NOT use mode: 'serial' here because it skips all subsequent tests if one fails.
 
 // Global timeout: 15 minutes per test (reboot tests can take 10+ minutes)
 test.setTimeout(900_000);
@@ -207,31 +307,29 @@ test.skip('1. Start OCTT session', async ({ request }) => {
 Object.entries(testSuites).forEach(([suiteName, tests]) => {
     test.describe(`Suite: ${suiteName}`, () => {
 
+        // Strategy 4: CDS Reset between specific suites
+        if (['SmartCharging', 'Reservation', 'FaultBehavior', 'PowerFailure'].includes(suiteName)) {
+            test.beforeAll(async ({ request }) => {
+                if (process.env.NEEDS_CDS !== 'false') {
+                    console.log(`[CDS] Preparando ambiente limpo para a suíte ${suiteName}...`);
+                    try {
+                        await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/reset`);
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        console.log(`[CDS] Reset concluído para a suíte ${suiteName}`);
+                    } catch {
+                        console.warn(`[CDS] Aviso: Falha ao resetar CDS antes da suíte ${suiteName}`);
+                    }
+                }
+            });
+        }
+
         for (const testId of tests) {
 
             test(`Execute ${testId}`, async ({ request }) => {
                 console.log(`[OCTT] Executing ${testId}...`);
 
-                let originalTag = "111111";
-                const PHYSICAL_TAG = "ABCDEF12";
-
-                if (testId === 'TC_007_1_CS') {
-                    console.log(`[OCTT] Preparando para injetar tag física (${PHYSICAL_TAG}) no PIXIT...`);
-                    if (sessionStarted) {
-                        await request.post(`${CONFIG.octtBaseUrl}/session/stop`, { headers: authHeader });
-                        sessionStarted = false;
-                        await new Promise(r => setTimeout(r, 2000));
-                    }
-
-                    const cfgUrl = `${CONFIG.octtBaseUrl}${versionedPath}/configurations/${encodeURIComponent(CONFIG.configurationName)}`;
-                    const cfgResp = await request.get(cfgUrl, { headers: authHeader });
-                    if (cfgResp.ok()) {
-                        const cfgBody = await cfgResp.json();
-                        originalTag = cfgBody.data.config["ValidIdTag"] || "111111";
-                        cfgBody.data.config["ValidIdTag"] = PHYSICAL_TAG;
-                        await request.put(cfgUrl, { headers: authHeader, data: cfgBody.data.config });
-                        console.log(`[OCTT] PIXIT atualizado com ValidIdTag = ${PHYSICAL_TAG}`);
-                    }
+                if (testHooks[testId]?.before) {
+                    await testHooks[testId].before(request);
                 }
 
                 // ── Fallback session start ──
@@ -253,7 +351,20 @@ Object.entries(testSuites).forEach(([suiteName, tests]) => {
                         console.log(`[OCTT] Session started: ${CONFIG.configurationName}`);
                     }
                     sessionStarted = true;
-                    await new Promise((resolve) => setTimeout(resolve, 3000));
+                    console.log('[OCTT] Waiting for SUT connection (up to 30s)...');
+                    for (let i = 0; i < 30; i++) {
+                        await new Promise((resolve) => setTimeout(resolve, 1000));
+                        try {
+                            const sutResp = await request.get(`${CONFIG.octtBaseUrl}/sut_connection_status`, { headers: authHeader });
+                            if (sutResp.ok()) {
+                                const sutStatus = await sutResp.json();
+                                if (sutStatus.data && sutStatus.data.isConnected) {
+                                    console.log('[OCTT] SUT connected successfully');
+                                    break;
+                                }
+                            }
+                        } catch { /* ignore */ }
+                    }
                 }
 
                 // ── Execute the test case via OCTT REST API ──
@@ -279,6 +390,12 @@ Object.entries(testSuites).forEach(([suiteName, tests]) => {
                             console.warn(`[WARN] ${testId} HTTP 504 Gateway Timeout — charge point reboot took longer than cloud proxy allows. Treating as inconc.`);
                             verdict = 'inconc';
                             duration = 0;
+                            // Strategy 2: Safe stop 504
+                            console.log(`[OCTT] Forcing session stop to clear dangling 504 cloud task...`);
+                            try {
+                                await request.post(`${CONFIG.octtBaseUrl}/session/stop`, { headers: authHeader });
+                            } catch { /* ignore */ }
+                            sessionStarted = false;
                         } else {
                             console.error(`[ERROR] ${testId} HTTP ${resp.status()}: ${errorBody.slice(0, 500)}`);
                             verdict = 'error';
@@ -340,21 +457,13 @@ Object.entries(testSuites).forEach(([suiteName, tests]) => {
                 // Brief pause between tests to let the SUT settle after heavy operations
                 await new Promise((resolve) => setTimeout(resolve, 1000));
 
-                if (testId === 'TC_007_1_CS') {
-                    if (sessionStarted) {
-                        await request.post(`${CONFIG.octtBaseUrl}/session/stop`, { headers: authHeader });
-                        sessionStarted = false;
-                        await new Promise(r => setTimeout(r, 2000));
-                    }
+                if (testHooks[testId]?.after) {
+                    await testHooks[testId].after(request);
+                }
 
-                    const cfgUrl = `${CONFIG.octtBaseUrl}${versionedPath}/configurations/${encodeURIComponent(CONFIG.configurationName)}`;
-                    const cfgResp = await request.get(cfgUrl, { headers: authHeader });
-                    if (cfgResp.ok()) {
-                        const cfgBody = await cfgResp.json();
-                        cfgBody.data.config["ValidIdTag"] = originalTag;
-                        await request.put(cfgUrl, { headers: authHeader, data: cfgBody.data.config });
-                        console.log(`[OCTT] PIXIT restaurado para ValidIdTag = ${originalTag}`);
-                    }
+                // Strategy 1: Explicitly fail to trigger Playwright retries if verdict is error/fail
+                if (verdict === 'fail' || verdict === 'error') {
+                    expect(verdict, `[OCTT] Test case ${testId} failed. See logs above.`).toBe('pass');
                 }
             });
         }

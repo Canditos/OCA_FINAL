@@ -149,14 +149,8 @@ function getTimeouts(profile: "default" | "reboot"): OcttTimeouts {
  * (like pure offline, reboot, or maintenance tests).
  */
 function batchNeedsCds(tests: string[]): boolean {
-    const nonChargingSuites = [
-        'tc_bi_', // Maintenance
-        'TC_001_CS', 'TC_002_CS' // ColdBoot
-    ];
-    
-    // If there is ANY test in this batch that is NOT in the non-charging list,
-    // we assume it might need the CDS, so we configure it.
-    return tests.some(t => !nonChargingSuites.some(prefix => t.startsWith(prefix)));
+    // CDS is disabled globally because no CDS hardware is available
+    return false;
 }
 
 /**
