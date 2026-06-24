@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking Dashboard</title>
+    <link rel="stylesheet" href="tracking.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div class="background-glow"></div>
+    <div class="background-glow glow-2"></div>
+    
+    <nav class="navbar">
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+            </svg>
+            <span>Certification Dashboard</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Live View</a>
+            <a href="tracking.html" class="active">Tracking</a>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1>Execution Tracking</h1>
+                <p>Real-time progress of Xray Test Plans</p>
+            </div>
+            <div class="search-box">
+                <input type="text" id="testplan-input" placeholder="e.g. XPECD-4990" value="XPECD-4990">
+                <button id="btn-load">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Load Data
+                </button>
+            </div>
+        </header>
+
+        <div id="loader" class="loader hidden">
+            <div class="spinner"></div>
+            <p>Fetching data from Jira...</p>
+        </div>
+
+        <div id="error-message" class="error-message hidden"></div>
+
+        <div id="dashboard-content" class="dashboard-content hidden">
+            <div class="top-row" style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                <div class="glass-card summary-card">
+                    <h2 id="plan-title">Test Plan Summary</h2>
+                    <h3 id="plan-key">XPECD-4990</h3>
+                    
+                    <div class="progress-container">
+                        <div class="circular-progress">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="bg" cx="50" cy="50" r="45"></circle>
+                                <circle class="progress" cx="50" cy="50" r="45" id="progress-circle"></circle>
+                            </svg>
+                            <div class="percentage">
+                                <span id="progress-value">0</span>%
+                            </div>
+                        </div>
+                        <div class="progress-details">
+                            <p class="label">Total Progress</p>
+                            <p class="sub-label">Tests executed</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card summary-card quality-card" style="border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <h2>Quality Goal</h2>
+                    <h3 style="color: var(--passed)">Tests pass & fail coverage</h3>
+                    
+                    <div class="progress-container">
+                        <div class="circular-progress">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="bg" cx="50" cy="50" r="45"></circle>
+                                <circle class="progress" cx="50" cy="50" r="45" id="quality-circle" stroke="var(--passed)"></circle>
+                            </svg>
+                            <div class="percentage">
+                                <span id="quality-value">0</span>%
+                            </div>
+                        </div>
+                        <div class="progress-details">
+                            <p class="label">Evidence / Defects</p>
+                            <p class="sub-label" style="font-size: 0.75rem; color: var(--text-dim);">Passed w/ log & Failed w/ bug</p>
+                        </div>
+                    </div>
+                    <div class="quality-highlights" style="margin-top: 1rem; font-size: 0.85rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div style="display: flex; justify-content: space-between; color: var(--failed); margin-bottom: 0.25rem;">
+                            <span>Fails sem Bug:</span>
+                            <span id="fail-no-defect" style="font-weight: bold;">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; color: #fbbf24;">
+                            <span>Pass sem Evidência:</span>
+                            <span id="pass-no-evidence" style="font-weight: bold;">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid" style="flex: 1; min-width: 300px;">
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon passed-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Passed</p>
+                            <h3 class="stat-value" id="stat-passed">0</h3>
+                        </div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon failed-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Failed</p>
+                            <h3 class="stat-value" id="stat-failed">0</h3>
+                        </div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon executing-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">Executing</p>
+                            <h3 class="stat-value" id="stat-executing">0</h3>
+                        </div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-icon todo-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <p class="stat-label">To Do</p>
+                            <h3 class="stat-value" id="stat-todo">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="executions-container" class="executions-container hidden">
+                <div class="list-header" style="margin-bottom: 1rem; border: none; padding: 0;">
+                    <h2>Test Executions</h2>
+                </div>
+                <div class="executions-grid" id="executions-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <div class="glass-card list-card" style="margin-top: 1.5rem;">
+                <div class="list-header">
+                    <h2>Test Cases</h2>
+                    <div class="filters">
+                        <button class="filter-btn active" data-filter="all">All (<span id="filter-all-count">0</span>)</button>
+                        <button class="filter-btn" data-filter="passed">Passed</button>
+                        <button class="filter-btn" data-filter="failed">Failed</button>
+                        <button class="filter-btn" data-filter="todo">Pending</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="test-table">
+                        <thead>
+                            <tr>
+                                <th>Test Key</th>
+                                <th>Summary</th>
+                                <th style="text-align: center;">Evidence</th>
+                                <th style="text-align: center;">Defect</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="test-list-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="tracking.js"></script>
+</body>
+</html>

@@ -632,4 +632,78 @@ export class JiraClient {
             summary: typeof issue.fields.summary === "string" ? issue.fields.summary : undefined,
         }));
     }
+
+    async getXrayTestPlanTracking(issueId: string, token: string): Promise<{ tests: any[], executions: any[] }> {
+        const query = `
+          query GetTestPlanTracking($issueId: String!, $start: Int!) {
+            getTestPlan(issueId: $issueId) {
+              tests(limit: 100, start: $start) {
+                total
+                results {
+                  status {
+                    name
+                    color
+                  }
+                  jira(fields: ["key", "summary"])
+                }
+              }
+              testExecutions(limit: 100) {
+                results {
+                  jira(fields: ["key", "summary"])
+                  testRuns(limit: 100) {
+                    results {
+                      status { name color }
+                      defects
+                      evidence { filename }
+                      test {
+                        jira(fields: ["key"])
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `;
+
+        let allTests: any[] = [];
+        let allExecutions: any[] = [];
+        let start = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+            const response = await axios.post("https://xray.cloud.getxray.app/api/v2/graphql", {
+                query,
+                variables: { issueId, start }
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (response.data?.errors?.length) {
+                throw new Error(response.data.errors.map((e: any) => e.message).join("; "));
+            }
+
+            const data = response.data?.data?.getTestPlan;
+            if (!data) break;
+
+            const fetchedTests = data.tests?.results || [];
+            allTests.push(...fetchedTests);
+            
+            if (start === 0 && data.testExecutions?.results) {
+                allExecutions = data.testExecutions.results;
+            }
+
+            const total = data.tests?.total || 0;
+            if (allTests.length >= total || fetchedTests.length === 0) {
+                hasMore = false;
+            } else {
+                start += 100;
+            }
+        }
+
+        return { tests: allTests, executions: allExecutions };
+    }
 }

@@ -20,6 +20,7 @@ import {
     prepareTestEntry,
     uploadAndAttach,
     validateTestInExecution,
+    findTestKeyForUpload,
 } from "../services/xray-upload.service.js";
 
 const router = Router();
@@ -209,7 +210,7 @@ router.post("/upload-execution", validate(jiraUploadSchema), async (req, res) =>
 
         log("info", `Resolving Jira keys, steps, and downloading evidence for ${results.length} tests...`, "jira");
         const testsWithEvidence = await Promise.all(results.map(async (r) => {
-            const testKey = await client.findTestKey(r.testCase);
+            const testKey = await findTestKeyForUpload(client, r.testCase, finalTestExecutionKey, token);
             if (!testKey) {
                 throw new Error(
                     `Test case "${r.testCase}" does not exist in Jira. ` +
@@ -517,7 +518,15 @@ router.post("/upload", async (req, res) => {
         }
 
         let testKey = parsedTestKey;
-        if (!testKey) testKey = await client.findTestKey(testcase);
+        
+        if (!effectiveConfig.xray?.clientId || !effectiveConfig.xray?.clientSecret) {
+            throw new Error("Xray Client ID and Secret are not configured in the Dashboard settings.");
+        }
+        const token = await client.authenticateXray(effectiveConfig.xray.clientId, effectiveConfig.xray.clientSecret);
+
+        if (!testKey) {
+            testKey = await findTestKeyForUpload(client, testcase, finalTestExecutionKey, token);
+        }
         if (!testKey) throw new Error(`Could not find Jira Test Key for ${testcase}. Ensure the test exists in Jira with the TC name in the summary.`);
 
         const results = runId
@@ -525,11 +534,6 @@ router.post("/upload", async (req, res) => {
             : getLastResults();
         const testResult = results.find(r => r.testCase === testcase);
         const xrayStatus = testResult?.verdict === "pass" ? "PASSED" : "FAILED";
-
-        if (!effectiveConfig.xray?.clientId || !effectiveConfig.xray?.clientSecret) {
-            throw new Error("Xray Client ID and Secret are not configured in the Dashboard settings.");
-        }
-        const token = await client.authenticateXray(effectiveConfig.xray.clientId, effectiveConfig.xray.clientSecret);
 
         if (finalTestExecutionKey) {
             await validateTestInExecution(client, finalTestExecutionKey, testKey, token);
@@ -565,6 +569,155 @@ router.post("/upload", async (req, res) => {
     } catch (e: any) {
         log("error", `Xray upload failed: ${e.message}`, "jira");
         res.status(500).json({ ok: false, error: e.message });
+    }
+});
+
+router.get("/testplan/:key/tracking", async (req, res) => {
+    const { key } = req.params;
+    try {
+        const client = new JiraClient(effectiveConfig.jira);
+        const config = effectiveConfig;
+        
+        if (!config.xray?.clientId || !config.xray?.clientSecret) {
+            return res.status(500).json({ error: "Xray Client ID and Secret are not configured." });
+        }
+        
+        const token = await client.authenticateXray(config.xray.clientId, config.xray.clientSecret);
+        
+        const issue = await client.getIssue(key);
+        if (!issue || !issue.id) {
+            return res.status(404).json({ error: `Test Plan ${key} not found.` });
+        }
+        
+        const { tests, executions } = await client.getXrayTestPlanTracking(issue.id, token);
+        
+        let passed = 0;
+        let failed = 0;
+        let executing = 0;
+        let todo = 0;
+        
+        // Build a map of latest status for each test from Executions
+        // Assuming executions are ordered newest to oldest, we find the first run for each test.
+        // Wait, Xray GraphQL testExecutions doesn't strictly guarantee order, but usually latest first.
+        // If not, we could iterate from oldest to newest to overwrite.
+        // Actually, let's reverse the array to process oldest first so the latest overwrites.
+        // Build a map of latest run data for each test from Executions
+        const testStatusMap = new Map<string, { status: { name: string; color: string }, defects: string[], hasEvidence: boolean }>();
+        const orderedExecutions = [...(executions || [])].reverse();
+        
+        for (const exec of orderedExecutions) {
+            const runs = exec.testRuns?.results || [];
+            for (const run of runs) {
+                const testKey = run.test?.jira?.key;
+                if (testKey && run.status) {
+                    testStatusMap.set(testKey, {
+                        status: run.status,
+                        defects: Array.isArray(run.defects) ? run.defects : [],
+                        hasEvidence: Array.isArray(run.evidence) && run.evidence.length > 0
+                    });
+                }
+            }
+        }
+        
+        let passedWithEvidence = 0;
+        let passedWithoutEvidence = 0;
+        let failedWithDefect = 0;
+        let failedWithoutDefect = 0;
+
+        const testList = tests.map(t => {
+            const key = t.jira?.key;
+            // Use the status from executions if available, otherwise strictly TODO
+            const computedData = (key && testStatusMap.has(key)) 
+                ? testStatusMap.get(key)! 
+                : { status: { name: "TODO", color: "#5e6c84" }, defects: [], hasEvidence: false };
+            
+            const statusName = computedData.status.name || "TODO";
+            const color = computedData.status.color || "#5e6c84";
+            
+            const n = statusName.toLowerCase();
+            const hasDefect = computedData.defects.length > 0;
+
+            if (n === "passed" || n === "pass") {
+                passed++;
+                if (computedData.hasEvidence) passedWithEvidence++;
+                else passedWithoutEvidence++;
+            }
+            else if (n === "failed" || n === "fail") {
+                failed++;
+                if (hasDefect) failedWithDefect++;
+                else failedWithoutDefect++;
+            }
+            else if (n === "executing") executing++;
+            else todo++;
+            
+            return {
+                key,
+                summary: t.jira?.summary,
+                status: statusName,
+                color: color,
+                defects: computedData.defects,
+                hasDefect: hasDefect,
+                hasEvidence: computedData.hasEvidence
+            };
+        });
+        
+        const total = passed + failed + executing + todo;
+        const progress = total > 0 ? ((passed + failed) / total) * 100 : 0;
+        const successRate = (passed + failed) > 0 ? (passed / (passed + failed)) * 100 : 0;
+
+
+        const qualityGoal = total > 0 ? ((passedWithEvidence + failedWithDefect) / total) * 100 : 0;
+
+        res.json({
+            ok: true,
+            testPlanKey: key,
+            summary: issue.fields?.summary,
+            stats: {
+                total,
+                passed,
+                failed,
+                todo,
+                executing,
+                progress: Math.round(progress),
+                quality: {
+                    passedWithEvidence,
+                    passedWithoutEvidence,
+                    failedWithDefect,
+                    failedWithoutDefect,
+                    goal: Math.round(qualityGoal)
+                }
+            },
+            tests: testList,
+            executions: executions.map(e => {
+                const runs = e.testRuns?.results || [];
+                let epCount = 0;
+                let efCount = 0;
+                let eeCount = 0;
+                let etCount = 0;
+                runs.forEach((r: any) => {
+                    const s = (r.status?.name || "TODO").toLowerCase();
+                    if (s === "passed") epCount++;
+                    else if (s === "failed") efCount++;
+                    else if (s === "executing") eeCount++;
+                    else etCount++;
+                });
+                const eTotal = epCount + efCount + eeCount + etCount;
+                const eProgress = eTotal > 0 ? ((epCount + efCount) / eTotal) * 100 : 0;
+                return {
+                    key: e.jira?.key,
+                    summary: e.jira?.summary,
+                    total: eTotal,
+                    passed: epCount,
+                    failed: efCount,
+                    executing: eeCount,
+                    todo: etCount,
+                    progress: Math.round(eProgress)
+                };
+            })
+        });
+    } catch (err: any) {
+        log("error", `Failed to fetch tracking for ${key}: ${err.message}`, "jira");
+        res.status(500).json({ error: err.message });
     }
 });
 

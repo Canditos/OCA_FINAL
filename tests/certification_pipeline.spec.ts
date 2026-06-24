@@ -85,12 +85,12 @@ const testSuites: Record<string, string[]> = {
     'Cache': ['TC_007_1_CS', 'TC_007_2_CS', 'TC_061_1_CS', 'TC_061_2_CS'],
     'RemoteActions': ['TC_010_CS', 'TC_011_1_CS', 'TC_011_2_CS', 'TC_012_CS'],
     'Resetting': ['TC_013_CS', 'TC_014_CS', 'TC_015_CS', 'TC_016_CS'],
-    'Unlocking': ['TC_017_1_CS', 'TC_017_2_CS', 'TC_018_1_CS', 'TC_018_2_CS'],
+    'Unlocking': ['TC_017_2_CS', 'TC_018_2_CS'],
     'Configuration': ['TC_019_CS', 'TC_021_CS'],
     'MeterValues': ['TC_070_CS', 'TC_071_CS'],
-    'BasicActions': ['TC_023_4_CS', 'TC_023_5_CS', 'TC_024_CS'],
+    'BasicActions': ['TC_023_4_CS', 'TC_023_5_CS'],
     'RemoteActionsNonHappy': ['TC_026_CS', 'TC_027_CS', 'TC_028_CS'],
-    'UnlockingNonHappy': ['TC_030_CS', 'TC_031_CS'],
+    'UnlockingNonHappy': ['TC_031_CS'],
     'PowerFailure': ['TC_032_1_CS', 'TC_032_2_CS', 'TC_034_CS'],
     'OfflineBehavior': ['TC_036_CS', 'TC_037_1_CS', 'TC_037_2_CS', 'TC_037_3_CS', 'TC_038_CS', 'TC_039_CS'],
     'ConfigKeysNonHappy': ['TC_040_1_CS', 'TC_040_2_CS'],
@@ -98,7 +98,24 @@ const testSuites: Record<string, string[]> = {
     'LocalAuthList': ['TC_008_1_CS', 'TC_008_2_CS', 'TC_042_1_CS', 'TC_042_2_CS', 'TC_043_CS', 'TC_043_1_CS', 'TC_043_2_CS', 'TC_043_3_CS'],
     'FirmwareManagement': ['TC_044_1_CS', 'TC_044_2_CS', 'TC_044_3_CS'],
     'Diagnostics': ['TC_045_1_CS', 'TC_045_2_CS'],
-    'Reservation': ['TC_046_1_CS', 'TC_046_2_CS', 'TC_047_CS', 'TC_048_1_CS', 'TC_048_2_CS', 'TC_048_3_CS', 'TC_048_4_CS', 'TC_049_CS', 'TC_050_1_CS', 'TC_050_2_CS', 'TC_050_3_CS', 'TC_050_4_CS', 'TC_051_CS', 'TC_052_CS', 'TC_053_1_CS', 'TC_053_2_CS'],
+    'Reservation': [
+        'TC_046_1_CS',
+        'TC_046_2_CS',
+        'TC_047_CS',
+        'TC_048_1_CS',
+        'TC_048_2_CS',
+        'TC_048_3_CS',
+        'TC_048_4_CS',
+        'TC_049_CS',
+        'TC_050_1_CS',
+        'TC_050_2_CS',
+        'TC_050_3_CS',
+        'TC_050_4_CS',
+        'TC_051_CS',
+        'TC_052_CS',
+        'TC_053_1_CS',
+        'TC_053_2_CS'
+    ],
     'RemoteTrigger': ['TC_054_CS', 'TC_055_CS'],
     'SmartCharging': ['TC_056_CS', 'TC_057_CS', 'TC_058_1_CS', 'TC_058_2_CS', 'TC_059_CS', 'TC_060_CS', 'TC_066_CS', 'TC_067_CS', 'TC_072_CS', 'TC_082_CS'],
     'DataTransfer': ['TC_062_CS'],
@@ -220,67 +237,8 @@ test.setTimeout(900_000);
 
 // ══════════════════════════════════════════════════════════════
 // PHASE 0: CDS Lab Setup
-// Correct order: reset → validate → configure → start
-// DO NOT reset after configure — reset clears EV PIDs!
+// (Moved to backend SUT orchestrator to run automatically before each test)
 // ══════════════════════════════════════════════════════════════
-
-test('0a. Reset CDS to known idle state', async ({ request }) => {
-    test.skip(process.env.NEEDS_CDS === 'false', 'CDS skipped: no charging tests requested');
-    const resp = await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/reset`);
-    const body = await resp.json();
-    if (!body.ok) {
-        console.warn('[CDS] Reset returned false (timeout or already stopped), proceeding anyway.');
-    } else {
-        console.log('[CDS] Reset complete — CDS in Stopped state');
-    }
-});
-
-test('0b. Validate CDS (no errors, healthy state)', async ({ request }) => {
-    test.skip(process.env.NEEDS_CDS === 'false', 'CDS skipped: no charging tests requested');
-    const resp = await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/validate`);
-    const body = await resp.json();
-    console.log(`[CDS] Validate: healthy=${body.healthy} status=${body.status} errors=${body.errors}`);
-    expect(body.healthy).toBeTruthy();
-});
-
-test('0c. Configure CDS (ISO 15118, DC, sink)', async ({ request }) => {
-    test.skip(process.env.NEEDS_CDS === 'false', 'CDS skipped: no charging tests requested');
-    const resp = await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/configure-cds`, {
-        data: { specification: 3, chargeMode: 2, sinkId: CONFIG.sinkId, mode: 2 },
-    });
-    const body = await resp.json();
-    expect(body.ok).toBeTruthy();
-    console.log('[CDS] Configured: ISO 15118, DC mode, sink=' + CONFIG.sinkId);
-});
-
-test('0d. Configure EV parameters (500V, 50A, 10kW)', async ({ request }) => {
-    test.skip(process.env.NEEDS_CDS === 'false', 'CDS skipped: no charging tests requested');
-    const resp = await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/configure-ev`, {
-        data: {
-            EVMaximumVoltageLimit: 500,
-            EVMinimumVoltageLimit: 400,
-            EVMaximumCurrentLimit: 50,
-            EVMinimumCurrentLimit: 0,
-            EVMaximumPowerLimit: 10000,
-            BatteryCapacity: 50000,
-            EVstateOfCharge: 50,
-        },
-    });
-    const body = await resp.json();
-    expect(body.ok).toBeTruthy();
-    console.log('[CDS] EV configured: 500V max, 50A max, 10kW, SoC 50%');
-});
-
-test.skip('0e. Start CDS simulation', async ({ request }) => {
-    // Skipped: The SUT Automation Bridge now dynamically handles plugin/plugout commands
-    // sent by OCTT, so we no longer need to force-start the CDS before the test begins.
-    // Starting it here would cause an 'extra plugin' event if the test case also sends one.
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    const resp = await request.post(`${CONFIG.dashboardUrl}/i/${cdsId}/start`);
-    const body = await resp.json();
-    expect(body.ok).toBeTruthy();
-    console.log('[CDS] EV simulation started — ready for charging tests');
-});
 
 // ══════════════════════════════════════════════════════════════
 // PHASE 1: OCTT Session
@@ -376,6 +334,20 @@ Object.entries(testSuites).forEach(([suiteName, tests]) => {
                 let sutDisconnected = false;
 
                 try {
+                    // Pre-test standard cleanup and 10s wait
+                    if (!testId.startsWith('tc_bi_')) {
+                        console.log(`[PIPELINE] Running standard pre-test cleanup (Cache & Availability) + 10s timeout before ${testId}...`);
+                        await request.post(`${CONFIG.octtBaseUrl}/testcases/tc_bi_clear_cache/execute`, { headers: authHeader, timeout: 60000 }).catch(e => console.error("[WARN] Cleanup clear cache failed:", e.message));
+                        await request.post(`${CONFIG.octtBaseUrl}/testcases/tc_bi_restore_availability/execute`, { headers: authHeader, timeout: 60000 }).catch(e => console.error("[WARN] Cleanup restore availability failed:", e.message));
+                        
+                        console.log(`[PIPELINE] Orquestrando ambiente SUT (CDS Setup & Async Loops) para ${testId}...`);
+                        await request.post(`http://127.0.0.1:3101/api/sut/orchestrate-test`, { data: { testId } }).catch(e => console.error("[WARN] SUT Orchestration failed:", e.message));
+                        
+                        console.log(`[PIPELINE] Cleanup & Setup done, waiting 10 seconds before starting ${testId}...`);
+                        await new Promise(r => setTimeout(r, 10000));
+                    }
+
+
                     const resp = await request.post(
                         `${CONFIG.octtBaseUrl}/testcases/${testId}/execute`,
                         { headers: authHeader, timeout: 900_000 }

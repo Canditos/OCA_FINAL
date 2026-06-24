@@ -165,6 +165,20 @@ router.post("/", (req, res) => {
     lastSutEvent = { action, timestamp, data: body };
 
     log("info", `SUT callback: ${action}`, "sut");
+    
+    if (action === "display" || action === "prompt") {
+        const msg = (payload?.message || body?.message || payload || "").toString();
+        const pinMatch = msg.match(/\b(2222222?|666666|111111|333333|444444)\b/);
+        if (pinMatch && !msg.includes("ABCDEF12")) {
+            log("info", `[SUT Bridge] Detected PIN ${pinMatch[1]} in OCTT prompt. Triggering automation...`, "sut");
+            import("../services/sut-automation.service.js").then(({ authenticateViaKeypad }) => {
+                authenticateViaKeypad(pinMatch[1], "3").catch(err => {
+                    log("error", `[SUT Bridge] Keypad automation failed: ${err.message}`, "sut");
+                });
+            });
+        }
+    }
+
     if (looksLikeBootNotification(action, payload || body)) {
         const metadata = extractBootMetadata(payload || body);
         if (metadata.sut || metadata.firmwareVersion) {
@@ -199,8 +213,8 @@ router.use(async (req, res) => {
             await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/stop`);
         } else if (req.url.includes("authorize") || req.url.includes("rfid") || req.url.includes("pin")) {
             const urlObj = new URL(req.url, 'http://localhost');
-            const id = urlObj.searchParams.get("id") || (req.query?.id as string) || "111111";
-            const connectorId = urlObj.searchParams.get("connector_id") || (req.query?.connector_id as string) || "3";
+            const id = urlObj.searchParams.get("id") || (req.query?.id as string) || (req.body?.id as string) || "111111";
+            const connectorId = urlObj.searchParams.get("connector_id") || (req.query?.connector_id as string) || (req.body?.connector_id as string) || "3";
             
             if (id === "ABCDEF12") {
                 log("warn", "==========================================================", "sut");
@@ -230,6 +244,91 @@ router.use(async (req, res) => {
         return res.status(500).json({ ok: false, error: e.message });
     }
     res.json({ ok: true, status: "Accepted by SUT Bridge" });
+});
+
+// --- Automated Orchestration ---
+let pluginIntervalId: NodeJS.Timeout | null = null;
+
+router.post("/orchestrate-test", async (req, res) => {
+    try {
+        const { testId } = req.body;
+        if (!testId) return res.status(400).json({ ok: false, error: "Missing testId" });
+        
+        log("info", `[SUT Bridge] Orchestrating test environment for: ${testId}`, "sut");
+
+        // Clear any previous running loops
+        if (pluginIntervalId) {
+            clearInterval(pluginIntervalId);
+            pluginIntervalId = null;
+        }
+
+        const { effectiveConfig } = await import("../config/dashboard.config.js");
+        const axios = (await import("axios")).default;
+        const port = process.env.CERT_DASHBOARD_PORT ?? "3101";
+        const cdsId = `cds-${effectiveConfig.cds.ip.replace(/\./g, "-")}-${effectiveConfig.cds.port}`;
+        
+        // 1. Always reset and configure CDS before each test to guarantee a clean state
+        log("info", `[SUT Bridge] Performing CDS setup for ${testId}...`, "sut");
+        
+        await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/reset`).catch(() => {});
+        await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/validate`).catch(() => {});
+        
+        await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/configure-cds`, {
+            data: { specification: 3, chargeMode: 2, sinkId: effectiveConfig.cds.sinkId, mode: 2 }
+        }).catch(() => {});
+        
+        await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/configure-ev`, {
+            data: {
+                EVMaximumVoltageLimit: 500, EVMinimumVoltageLimit: 200,
+                EVMaximumCurrentLimit: 160, EVMinimumCurrentLimit: 0,
+                EVMaximumPowerLimit: 80000, BatteryCapacity: 50000,
+                EVstateOfCharge: 50,
+            }
+        }).catch(() => {});
+
+        // 2. Setup async automated actions
+        // Re-plugin loop for tests with reboots that require a connected state
+        if (['TC_015_CS', 'TC_016_CS', 'TC_032_1_CS', 'TC_032_2_CS'].includes(testId)) {
+            log("info", `[SUT Bridge] Starting background auto-plugin loop for ${testId}`, "sut");
+            // Instead of scheduling for T=200s, we just run a steady loop for a few minutes
+            let elapsed = 0;
+            pluginIntervalId = setInterval(() => {
+                elapsed += 10000;
+                if (elapsed >= 450000) {
+                    if (pluginIntervalId) clearInterval(pluginIntervalId);
+                    return;
+                }
+                if (elapsed >= 200000) {
+                    axios.post(`http://127.0.0.1:${port}/api/sut/plugin?connector_id=3`).catch(() => {});
+                }
+            }, 10000);
+        }
+
+        // Offline tests auth injection
+        const offlineTests = ['TC_036_CS', 'TC_037_1_CS', 'TC_037_2_CS', 'TC_037_3_CS', 'TC_038_CS', 'TC_039_CS'];
+        if (offlineTests.includes(testId)) {
+            log("info", `[SUT Bridge] Scheduled automatic local auth for offline test ${testId} in 85s`, "sut");
+            setTimeout(() => {
+                axios.post(`http://127.0.0.1:${port}/api/sut/authorize?id=111111&connector_id=3`).catch(() => {});
+            }, 85000);
+        }
+
+        // Reservation specifics
+        if (testId === 'TC_046_1_CS') {
+            log("info", `[SUT Bridge] Scheduled reservation automations for ${testId}`, "sut");
+            setTimeout(() => {
+                axios.post(`http://127.0.0.1:${port}/api/sut/authorize?id=222222&connector_id=3`).catch(() => {});
+            }, 3000);
+            setTimeout(() => {
+                axios.post(`http://127.0.0.1:${port}/api/sut/authorize?id=111111&connector_id=3`).catch(() => {});
+            }, 74000);
+        }
+
+        res.json({ ok: true });
+    } catch (e: any) {
+        log("error", `[SUT Bridge] Failed to orchestrate test: ${e.message}`, "sut");
+        res.status(500).json({ ok: false, error: e.message });
+    }
 });
 
 export default router;

@@ -125,6 +125,30 @@ export async function validateTestInExecution(
     }
 }
 
+export async function findTestKeyForUpload(
+    client: JiraClient,
+    testCaseName: string,
+    testExecutionKey: string | undefined,
+    token: string
+): Promise<string | null> {
+    if (testExecutionKey) {
+        try {
+            const execIssue = await client.getIssue(testExecutionKey);
+            if (execIssue && execIssue.id) {
+                const execTests = await client.getXrayTestExecutionTests(execIssue.id, token);
+                const matchingTest = execTests.find(t => t.testCaseName && t.testCaseName.includes(testCaseName));
+                if (matchingTest && matchingTest.key) {
+                    return matchingTest.key;
+                }
+            }
+        } catch (err: any) {
+            log("debug", `Could not check execution for existing test key: ${err.message}`, "jira");
+        }
+    }
+    
+    return await client.findTestKey(testCaseName);
+}
+
 export async function prepareTestEntry(params: {
     client: JiraClient;
     octt: OcttClient;
