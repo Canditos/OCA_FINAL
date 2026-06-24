@@ -216,25 +216,32 @@ router.use(async (req, res) => {
             const id = urlObj.searchParams.get("id") || (req.query?.id as string) || (req.body?.id as string) || "111111";
             const connectorId = urlObj.searchParams.get("connector_id") || (req.query?.connector_id as string) || (req.body?.connector_id as string) || "3";
             
-            if (id === "ABCDEF12") {
-                log("warn", "==========================================================", "sut");
-                log("warn", `🚨 [TESTE CACHE] PASSA O CARTÃO FÍSICO ${id} NO POSTO AGORA!`, "sut");
-                log("warn", "==========================================================", "sut");
-                return res.json({ ok: true, status: "Waiting for manual swipe" });
-            }
-
-            log("info", `[SUT Bridge] Triggering automatic Keypad Authentication for connector ${connectorId} with PIN ${id}...`, "sut");
+            log("info", `[SUT Bridge] Triggering automatic Keypad Authentication for connector ${connectorId} with PIN/ID ${id}...`, "sut");
             const { authenticateViaKeypad } = await import("../services/sut-automation.service.js");
             // Run asynchronously so we don't block the HTTP response
             authenticateViaKeypad(id, connectorId).catch(err => {
                  log("error", `[SUT Bridge] Keypad automation failed: ${err.message}`, "sut");
             });
+            return res.json({ ok: true, status: "Keypad automation started" });
         } else if (req.url.includes("reboot")) {
+            const sshUser = process.env.SUT_SSH_USER || "root";
+            const sshIp = process.env.SUT_SSH_IP || "192.168.100.10"; // Assume default IP
+            
             log("warn", "=========================================================================", "sut");
-            log("warn", "🚨 AÇÃO MANUAL NECESSÁRIA: Por favor, reinicie o posto FISICAMENTE AGORA!", "sut");
+            log("warn", `🔄 [SUT Bridge] Recebido comando de Reboot. A reiniciar o posto via SSH (${sshUser}@${sshIp})...`, "sut");
             log("warn", "=========================================================================", "sut");
-            // We return OK so OCTT dismisses the prompt and starts waiting for StatusNotification.
-            // The human operator must manually reboot the charger.
+            
+            const { exec } = await import("child_process");
+            // Executa o reboot via SSH em background
+            exec(`ssh -o StrictHostKeyChecking=no ${sshUser}@${sshIp} "reboot"`, (error, stdout, stderr) => {
+                if (error) {
+                    log("error", `[SUT Bridge] Falha ao enviar comando SSH de reboot: ${error.message}`, "sut");
+                } else {
+                    log("info", `[SUT Bridge] Reboot via SSH enviado com sucesso!`, "sut");
+                }
+            });
+            // Retornamos logo OK para não bloquear a OCTT, que ficará à espera que o posto volte online
+            return res.json({ ok: true, status: "Rebooting via SSH" });
         } else {
             log("warn", `[SUT Bridge] Unsupported operation: ${req.url}. Returning 501 so OCTT prompts the user.`, "sut");
             return res.status(501).json({ ok: false, error: "Not Implemented" });

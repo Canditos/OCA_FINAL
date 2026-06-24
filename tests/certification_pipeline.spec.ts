@@ -232,8 +232,8 @@ let sessionStarted = process.env.OCTT_SESSION_STARTED === "true";
 // Run tests sequentially — workers: 1 in playwright.config.ts already guarantees this.
 // We DO NOT use mode: 'serial' here because it skips all subsequent tests if one fails.
 
-// Global timeout: 15 minutes per test (reboot tests can take 10+ minutes)
-test.setTimeout(900_000);
+// Global timeout: 25 minutes per test (reboot tests can take 10+ minutes, user requested 20 min hard cutoff)
+test.setTimeout(1_500_000);
 
 // ══════════════════════════════════════════════════════════════
 // PHASE 0: CDS Lab Setup
@@ -265,7 +265,7 @@ test.skip('1. Start OCTT session', async ({ request }) => {
 Object.entries(testSuites).forEach(([suiteName, tests]) => {
     test.describe(`Suite: ${suiteName}`, () => {
 
-        // Strategy 4: CDS Reset between specific suites
+        // Strategy 4: CDS Reset and PIXIT setup between specific suites
         if (['SmartCharging', 'Reservation', 'FaultBehavior', 'PowerFailure'].includes(suiteName)) {
             test.beforeAll(async ({ request }) => {
                 if (process.env.NEEDS_CDS !== 'false') {
@@ -276,6 +276,23 @@ Object.entries(testSuites).forEach(([suiteName, tests]) => {
                         console.log(`[CDS] Reset concluído para a suíte ${suiteName}`);
                     } catch {
                         console.warn(`[CDS] Aviso: Falha ao resetar CDS antes da suíte ${suiteName}`);
+                    }
+                }
+
+                if (suiteName === 'Reservation') {
+                    console.log(`[OCTT] Configurando PIXIT para Reservation (Expiry Date Offset = 250)...`);
+                    if (sessionStarted) {
+                        await request.post(`${CONFIG.octtBaseUrl}/session/stop`, { headers: authHeader });
+                        sessionStarted = false;
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+                    const cfgUrl = `${CONFIG.octtBaseUrl}${versionedPath}/configurations/${encodeURIComponent(CONFIG.configurationName)}`;
+                    const cfgResp = await request.get(cfgUrl, { headers: authHeader });
+                    if (cfgResp.ok()) {
+                        const cfgBody = await cfgResp.json();
+                        cfgBody.data.config["ExpiryDateOffset"] = 250;
+                        await request.put(cfgUrl, { headers: authHeader, data: cfgBody.data.config });
+                        console.log(`[OCTT] PIXIT atualizado com ExpiryDateOffset = 250`);
                     }
                 }
             });
@@ -350,7 +367,7 @@ Object.entries(testSuites).forEach(([suiteName, tests]) => {
 
                     const resp = await request.post(
                         `${CONFIG.octtBaseUrl}/testcases/${testId}/execute`,
-                        { headers: authHeader, timeout: 900_000 }
+                        { headers: authHeader, timeout: 1_200_000 } // 20 minutes timeout
                     );
 
                     if (!resp.ok()) {

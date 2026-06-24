@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Logs - OCPP Pipeline</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text-bright); overflow: hidden; }
+  .logs { height: 100%; max-height: none; border: none; border-radius: 0; padding: 12px; font-size: 11px; overflow-y: auto; font-family: monospace; }
+  .log-line { margin-bottom: 3px; display: flex; gap: 8px; }
+  .log-time { color: var(--text-dim); }
+  .log-svc { font-weight: 700; }
+  .log-msg { white-space: pre-wrap; word-break: break-all; }
+</style>
+</head>
+<body class="dark-theme">
+  <div class="logs" id="logs"></div>
+  <script>
+    const logsEl = document.getElementById('logs');
+    
+    // Pull existing logs from opener
+    if (window.opener && window.opener.document.getElementById('logs')) {
+      logsEl.innerHTML = window.opener.document.getElementById('logs').innerHTML;
+      logsEl.scrollTop = logsEl.scrollHeight;
+    }
+
+    // Connect to SSE for new logs
+    const evtSource = new EventSource('/api/logs/stream');
+    evtSource.addEventListener('playwright', e => {
+      const data = JSON.parse(e.data);
+      appendLog(data.level, data.message, data.service);
+    });
+    evtSource.addEventListener('pipeline', e => {
+      const data = JSON.parse(e.data);
+      appendLog('info', `[PIPELINE] ${data.state.toUpperCase()}: ${data.message}`, 'pipeline');
+    });
+    evtSource.addEventListener('sut', e => {
+      const data = JSON.parse(e.data);
+      appendLog(data.level, data.message, data.service);
+    });
+    evtSource.addEventListener('cds', e => {
+      const data = JSON.parse(e.data);
+      appendLog(data.level, data.message, data.service);
+    });
+    evtSource.addEventListener('dashboard', e => {
+      const data = JSON.parse(e.data);
+      appendLog(data.level, data.message, data.service);
+    });
+
+    function appendLog(level, msg, service) {
+      let color = 'var(--text-bright)';
+      if (level === 'warn') color = 'var(--warn)';
+      else if (level === 'error') color = 'var(--danger)';
+      else if (level === 'success') color = 'var(--pass)';
+      else if (service === 'cds') color = '#20C997';
+
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      line.style.color = color;
+      
+      const time = new Date().toLocaleTimeString('en-US', {hour12:false});
+      line.innerHTML = `<span class="log-time">${time}</span><span class="log-svc">[${(service||'SYS').toUpperCase()}]</span> <span class="log-msg">${escapeHtml(msg)}</span>`;
+      
+      const autoScroll = logsEl.scrollTop + logsEl.clientHeight >= logsEl.scrollHeight - 20;
+      logsEl.appendChild(line);
+      if (autoScroll) logsEl.scrollTop = logsEl.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

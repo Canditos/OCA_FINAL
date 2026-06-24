@@ -328,6 +328,16 @@ export async function runPlaywright(testcaseNames: string[], configName: string)
     pendingRunMetadata = {};
     bootMetadataCapturedThisRun = false;
 
+    // Ensure tests that require manual reboot (Power Cycle) always run first
+    const MANUAL_REBOOT_TESTS = ['TC_001_CS', 'TC_002_CS', 'TC_032_1_CS', 'TC_032_2_CS', 'TC_034_CS'];
+    testcaseNames.sort((a, b) => {
+        const aIsManual = MANUAL_REBOOT_TESTS.includes(a);
+        const bIsManual = MANUAL_REBOOT_TESTS.includes(b);
+        if (aIsManual && !bIsManual) return -1;
+        if (!aIsManual && bIsManual) return 1;
+        return 0;
+    });
+
     const pipelineStartTime = new Date().toISOString();
     const timeoutBatches = buildTimeoutBatches(testcaseNames);
     let originalTimeouts: OcttTimeouts | null = null;
