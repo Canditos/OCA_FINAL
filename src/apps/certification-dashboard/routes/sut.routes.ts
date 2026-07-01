@@ -15,6 +15,23 @@ const router = Router();
 
 // Store the last SUT event for status display
 let lastSutEvent: { action: string; timestamp: string; data: any } | null = null;
+let activeOrchestratedTestId: string | null = null;
+
+const gentleStopTests = new Set(['TC_005_1_CS', 'TC_005_2_CS', 'TC_005_3_CS']);
+
+const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+async function applyGentleEvStop(axios: any, baseUrl: string): Promise<void> {
+    // Ramp EV demand down before disconnect to reduce abrupt contactor transitions.
+    await axios.post(`${baseUrl}/configure-ev`, {
+        EVMaximumCurrentLimit: 0,
+        EVMinimumCurrentLimit: 0,
+        EVTargetCurrent: 0,
+        EVChargingCurrent: 0
+    }).catch(() => {});
+
+    await wait(1200);
+}
 
 function normalizeSutPayload(input: any): { action: string; body: any; payload: any } {
     if (typeof input === "string") {
@@ -195,7 +212,9 @@ router.get("/status", (_req, res) => {
     res.json({ ok: true, lastEvent: lastSutEvent });
 });
 
-router.use(async (req, res) => {
+router.use(async (req, res, next) => {
+    if (req.url.includes("orchestrate")) return next();
+    
     log("info", `[SUT Bridge 3101] Received ${req.method} ${req.url}`, "sut");
     try {
         const { effectiveConfig } = await import("../config/dashboard.config.js");
@@ -207,25 +226,79 @@ router.use(async (req, res) => {
             log("info", "[SUT Bridge] Translating 'plugin' to CDS Start...", "sut");
             setCdsLogicalPluggedIn(true);
             await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/start`);
+        } else if (req.url.includes("api")) {
+            const msg = (req.body?.message || "").toString();
+            const cdsBaseUrl = `http://127.0.0.1:${port}/api/i/${cdsId}`;
+            const useGentleStop = !!activeOrchestratedTestId && gentleStopTests.has(activeOrchestratedTestId);
+            if (msg.includes("make the EV stop charging")) {
+                log("info", "[SUT Bridge] Translating 'make EV stop charging' to EV Current = 0...", "sut");
+                await applyGentleEvStop(axios, cdsBaseUrl);
+            } else if (msg.includes("unplug your cable") || msg.includes("plugout")) {
+                if (useGentleStop) {
+                    log("info", `[SUT Bridge] Gentle stop active for ${activeOrchestratedTestId}: setting 0A before CDS Stop...`, "sut");
+                    await applyGentleEvStop(axios, cdsBaseUrl);
+                }
+                log("info", "[SUT Bridge] Translating API 'unplug your cable' to CDS Stop...", "sut");
+                setCdsLogicalPluggedIn(false);
+                await axios.post(`${cdsBaseUrl}/stop`).catch(() => {});
+            } else if (msg.includes("plug in your cable") || msg.includes("plugin")) {
+                log("info", "[SUT Bridge] Translating API 'plug in your cable' to CDS Start...", "sut");
+                setCdsLogicalPluggedIn(true);
+                await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/start`).catch(() => {});
+            }
+            return res.json({ action: "continue", status: "API prompt processed" });
         } else if (req.url.includes("plugout") || req.url.includes("unplug")) {
+            const cdsBaseUrl = `http://127.0.0.1:${port}/api/i/${cdsId}`;
+            const useGentleStop = !!activeOrchestratedTestId && gentleStopTests.has(activeOrchestratedTestId);
+            if (useGentleStop) {
+                log("info", `[SUT Bridge] Gentle stop active for ${activeOrchestratedTestId}: setting 0A before CDS Stop...`, "sut");
+                await applyGentleEvStop(axios, cdsBaseUrl);
+            }
             log("info", "[SUT Bridge] Translating 'plugout' to CDS Stop...", "sut");
             setCdsLogicalPluggedIn(false);
-            await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/stop`);
+            await axios.post(`${cdsBaseUrl}/stop`);
+        } else if (req.url.includes("end")) {
+            log("info", `[SUT Bridge] Received 'end' command. Simulating EV stopping charging (0A)...`, "sut");
+            await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/configure-ev`, {
+                EVMaximumCurrentLimit: 0,
+                EVMinimumCurrentLimit: 0,
+                EVTargetCurrent: 0,
+                EVChargingCurrent: 0
+            }).catch(() => {});
         } else if (req.url.includes("authorize") || req.url.includes("rfid") || req.url.includes("pin")) {
             const urlObj = new URL(req.url, 'http://localhost');
-            const id = urlObj.searchParams.get("id") || (req.query?.id as string) || (req.body?.id as string) || "111111";
-            const connectorId = urlObj.searchParams.get("connector_id") || (req.query?.connector_id as string) || (req.body?.connector_id as string) || "3";
+            
+            // Extract ID from query, body, or OCTT params array
+            let id = urlObj.searchParams.get("id") || (req.query?.id as string) || (req.body?.id as string);
+            if (!id && req.body?.params && Array.isArray(req.body.params)) {
+                const idParam = req.body.params.find((p: any) => p.key === 'id');
+                if (idParam) id = idParam.value;
+            }
+            id = id || "111111";
+
+            let connectorId = urlObj.searchParams.get("connector_id") || (req.query?.connector_id as string) || (req.body?.connector_id as string);
+            if (!connectorId && req.body?.params && Array.isArray(req.body.params)) {
+                const connParam = req.body.params.find((p: any) => p.key === 'connector_id');
+                if (connParam) connectorId = connParam.value;
+            }
+            connectorId = connectorId || "2";
             
             log("info", `[SUT Bridge] Triggering automatic Keypad Authentication for connector ${connectorId} with PIN/ID ${id}...`, "sut");
             const { authenticateViaKeypad } = await import("../services/sut-automation.service.js");
+            
             // Run asynchronously so we don't block the HTTP response
             authenticateViaKeypad(id, connectorId).catch(err => {
                  log("error", `[SUT Bridge] Keypad automation failed: ${err.message}`, "sut");
             });
+
+            // OCTT sends a prompt to authorize with 111111 after the 70 seconds wait,
+            // so we do not need to do it automatically with a setTimeout.
+
             return res.json({ ok: true, status: "Keypad automation started" });
         } else if (req.url.includes("reboot")) {
             const sshUser = process.env.SUT_SSH_USER || "root";
-            const sshIp = process.env.SUT_SSH_IP || "192.168.100.10"; // Assume default IP
+            const sshIp = process.env.SUT_SSH_IP || "10.20.17.14";
+            const sshKey = process.env.SUT_SSH_KEY || "d:/OCA_FINAL_CANDITOS/.ssh/key";
             
             log("warn", "=========================================================================", "sut");
             log("warn", `🔄 [SUT Bridge] Recebido comando de Reboot. A reiniciar o posto via SSH (${sshUser}@${sshIp})...`, "sut");
@@ -233,9 +306,10 @@ router.use(async (req, res) => {
             
             const { exec } = await import("child_process");
             // Executa o reboot via SSH em background
-            exec(`ssh -o StrictHostKeyChecking=no ${sshUser}@${sshIp} "reboot"`, (error, stdout, stderr) => {
+            const cmd = `ssh -i "${sshKey}" -o StrictHostKeyChecking=no ${sshUser}@${sshIp} "reboot"`;
+            exec(cmd, (error, stdout, stderr) => {
                 if (error) {
-                    log("error", `[SUT Bridge] Falha ao enviar comando SSH de reboot: ${error.message}`, "sut");
+                    log("error", `[SUT Bridge] Falha ao enviar comando SSH de reboot: ${error.message} - ${stderr}`, "sut");
                 } else {
                     log("info", `[SUT Bridge] Reboot via SSH enviado com sucesso!`, "sut");
                 }
@@ -260,6 +334,7 @@ router.post("/orchestrate-test", async (req, res) => {
     try {
         const { testId } = req.body;
         if (!testId) return res.status(400).json({ ok: false, error: "Missing testId" });
+        activeOrchestratedTestId = testId;
         
         log("info", `[SUT Bridge] Orchestrating test environment for: ${testId}`, "sut");
 
@@ -274,24 +349,36 @@ router.post("/orchestrate-test", async (req, res) => {
         const port = process.env.CERT_DASHBOARD_PORT ?? "3101";
         const cdsId = `cds-${effectiveConfig.cds.ip.replace(/\./g, "-")}-${effectiveConfig.cds.port}`;
         
-        // 1. Always reset and configure CDS before each test to guarantee a clean state
-        log("info", `[SUT Bridge] Performing CDS setup for ${testId}...`, "sut");
-        
-        await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/reset`).catch(() => {});
-        await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/validate`).catch(() => {});
-        
-        await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/configure-cds`, {
-            data: { specification: 3, chargeMode: 2, sinkId: effectiveConfig.cds.sinkId, mode: 2 }
-        }).catch(() => {});
-        
-        await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/configure-ev`, {
-            data: {
+        // 1. Reset and configure CDS before each test to guarantee a clean state.
+        // Exception: StopSession tests (TC_068_CS, TC_069_CS, TC_005_x_CS) must NOT reset the CDS
+        // here because the reset causes a delayed connector bounce (~15s after CDS Start) that
+        // disrupts the RemoteStart→Authorize→StartTransaction sequence, producing INCONC.
+        // These tests rely on the connector being in a stable Preparing state after RemoteStart.
+        // TC_068_CS still needs reset (first in sequence, CDS may be in unknown state).
+        // TC_069_CS and TC_005_x come right after a completed charging test — CDS already clean.
+        const noResetTests = ['TC_069_CS', 'TC_005_1_CS', 'TC_005_2_CS', 'TC_005_3_CS'];
+        const noCdsSetupTests = ['TC_034_CS'];
+        const skipReset = noResetTests.includes(testId);
+        const skipCdsSetup = noCdsSetupTests.includes(testId);
+        log("info", `[SUT Bridge] Performing CDS setup for ${testId}${skipCdsSetup ? ' (skipped)' : skipReset ? ' (no reset)' : ''}...`, "sut");
+
+        if (!skipCdsSetup) {
+            if (!skipReset) {
+                await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/reset`).catch(() => {});
+                await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/validate`).catch(() => {});
+            }
+
+            await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/configure-cds`, {
+                specification: 3, chargeMode: 2, sinkId: effectiveConfig.cds.sink, mode: 2
+            }).catch(() => {});
+
+            await axios.post(`http://127.0.0.1:${port}/api/i/${cdsId}/configure-ev`, {
                 EVMaximumVoltageLimit: 500, EVMinimumVoltageLimit: 200,
                 EVMaximumCurrentLimit: 160, EVMinimumCurrentLimit: 0,
                 EVMaximumPowerLimit: 80000, BatteryCapacity: 50000,
                 EVstateOfCharge: 50,
-            }
-        }).catch(() => {});
+            }).catch(() => {});
+        }
 
         // 2. Setup async automated actions
         // Re-plugin loop for tests with reboots that require a connected state
